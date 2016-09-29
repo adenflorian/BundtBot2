@@ -1,0 +1,7 @@
+.vs/
+bin/
+node_modules/
+obj/
+
+*.gz
+*.lock.json
