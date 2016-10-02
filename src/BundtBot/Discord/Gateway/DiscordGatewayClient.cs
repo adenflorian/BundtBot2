@@ -32,7 +32,6 @@ namespace BundtBot.Discord.Gateway {
 			// other classes which can specify a prefix
 			MyLogger.LogInfo("Gateway: Received Hello from Discord Gateway", ConsoleColor.Green);
 			var hello = JsonConvert.DeserializeObject<GatewayHello>(eventData.ToString());
-			await SendHeartBeat();
 			StartHeartBeatLoop(hello.HeartbeatInterval);
 			await SendGatewayIdentify();
 		}
@@ -59,10 +58,11 @@ namespace BundtBot.Discord.Gateway {
 		}
 
 		public void StartHeartBeatLoop(TimeSpan interval) {
+			MyLogger.LogInfo("Gateway: Heartbeat loop started", ConsoleColor.Green);
 			Task.Run(async () => {
 				while (true) {
-					Thread.Sleep(interval);
 					await SendHeartBeat();
+					Thread.Sleep(interval);
 				}
 			});
 		}
