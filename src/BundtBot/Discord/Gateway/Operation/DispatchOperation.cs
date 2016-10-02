@@ -1,13 +1,13 @@
 ﻿using System;
-using System.Threading.Tasks;
 using BundtBot.Discord.Gateway.Models;
 using Newtonsoft.Json;
 
 namespace BundtBot.Discord.Gateway.Operation {
-	public class DispatchOperation : IGatewayOperation {
-		public Task Execute(DiscordGatewayClient gatewayClient, string eventName, object eventData) {
+	public class DispatchOperation : IGatewayCommand {
+		public static readonly DispatchOperation Instance = new DispatchOperation();
+
+		public void Execute(string eventName, object eventData) {
 			ProcessEvent(eventName, eventData.ToString());
-			return Task.CompletedTask;
 		}
 
 		static void ProcessEvent(string eventName, string eventJsonData) {

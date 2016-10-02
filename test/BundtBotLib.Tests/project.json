@@ -9,7 +9,7 @@
     "dotnet-test-xunit": "1.0.0-rc2-build10025",
     "BundtBotLib": {
       "target": "project"
-    },
+    }
   },
   "testRunner": "xunit",
   "frameworks": {

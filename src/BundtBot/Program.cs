@@ -4,15 +4,14 @@ using System.Threading;
 using System.Threading.Tasks;
 using BundtBot.Discord;
 using BundtBot.Discord.Gateway;
-using BundtBot.Discord.Gateway.Models;
 using BundtBot.Discord.Gateway.Operation;
-using Newtonsoft.Json;
 
 namespace BundtBot {
 	public class Program {
-		static readonly string _version = "0.0.1";
-		static readonly string _name = "bundtbot";
-		static readonly string _botToken = "";
+		// TODO https://docs.asp.net/en/latest/fundamentals/configuration.html
+		const string Version = "0.0.1";
+		const string Name = "bundtbot";
+		const string BotToken = "MjA5NDU2NjYyOTI1NDEwMzA1.CsjHmg.pyJbVPWaP4Pkdv8zQ55qLFUxFdM";
 
 		static DiscordGatewayClient _gatewayClient;
 
@@ -31,26 +30,22 @@ namespace BundtBot {
 		static void SetupConsole() {
 			Console.OutputEncoding = Encoding.UTF8;
 			if (Console.LargestWindowHeight > 0) {
-				Console.WindowHeight = (int) (Console.LargestWindowHeight * 0.75);
+				Console.WindowHeight = (int)(Console.LargestWindowHeight * 0.75);
 			}
 		}
 
 		static async Task Run() {
-			var discordRestApiClient = new DiscordRestApiHttpClient(_botToken, _name, _version);
+			var discordRestApiClient = new DiscordRestApiHttpClient(BotToken, Name, Version);
 
 			var gatewayUrl = discordRestApiClient.GetGatewayUrl();
 
-			_gatewayClient = new DiscordGatewayClient(_botToken);
+			_gatewayClient = new DiscordGatewayClient(BotToken);
 
-			_gatewayClient.MessageReceived += OnMessageReceived;
+			_gatewayClient.DispatchReceived += DispatchOperation.Instance.Execute;
+			_gatewayClient.HeartbackAckReceived += HeartbackAckOperation.Instance.Execute;
 
 			await _gatewayClient.Connect(gatewayUrl);
 			_gatewayClient.StartReceiveLoop();
-		}
-
-		static async void OnMessageReceived(GatewayPayload gatewayPayload) {
-			var operation = GatewayOperationFactory.Create(gatewayPayload.GatewayOpCode);
-			await operation.Execute(_gatewayClient, gatewayPayload.EventName, gatewayPayload.EventData);
 		}
 	}
 }

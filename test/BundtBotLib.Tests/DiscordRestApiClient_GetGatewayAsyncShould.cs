@@ -2,7 +2,7 @@
 
 namespace BundtBotLib.Tests {
 	public class DiscordRestApiClient_GetGatewayAsyncShould {
-		private readonly DiscordRestApiClient _discordRestApiClient;
+		readonly DiscordRestApiClient _discordRestApiClient;
 
 		public DiscordRestApiClient_GetGatewayAsyncShould() {
 			_discordRestApiClient = new DiscordRestApiClient();

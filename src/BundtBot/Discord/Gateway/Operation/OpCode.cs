@@ -58,6 +58,6 @@
 		/// <summary>
 		/// Sent immediately following a client heartbeat that was received. "Heartback ACK"
 		/// </summary>
-		HeartbackAck = 11,
+		HeartbackAck = 11
 	}
 }

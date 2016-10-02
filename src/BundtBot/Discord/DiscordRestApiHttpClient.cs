@@ -7,7 +7,7 @@ using Newtonsoft.Json.Linq;
 
 namespace BundtBot.Discord {
 	public class DiscordRestApiHttpClient : HttpClient {
-		static readonly string _logPrefix = "API: ";
+		const string LogPrefix = "API: ";
 
 		public DiscordRestApiHttpClient(string botToken, string name, string version) : base(new LoggingHandler(new HttpClientHandler())) {
 			BaseAddress = new Uri("https://discordapp.com/api/");
@@ -33,18 +33,18 @@ namespace BundtBot.Discord {
 
 			protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,
 				CancellationToken cancellationToken) {
-				MyLogger.LogInfo(_logPrefix + "Request: " + request.RequestUri);
-				MyLogger.LogDebug(_logPrefix + request);
+				MyLogger.LogInfo(LogPrefix + "Request: " + request.RequestUri);
+				MyLogger.LogDebug(LogPrefix + request);
 				if (request.Content != null) {
-					MyLogger.LogDebug(_logPrefix + await request.Content.ReadAsStringAsync());
+					MyLogger.LogDebug(LogPrefix + await request.Content.ReadAsStringAsync());
 				}
 
 				var response = await base.SendAsync(request, cancellationToken);
 
-				MyLogger.LogInfo(_logPrefix + "Response: " + response.StatusCode);
-				MyLogger.LogDebug(_logPrefix + response);
+				MyLogger.LogInfo(LogPrefix + "Response: " + response.StatusCode);
+				MyLogger.LogDebug(LogPrefix + response);
 				if (response.Content != null) {
-					MyLogger.LogDebug(_logPrefix + await response.Content.ReadAsStringAsync());
+					MyLogger.LogDebug(LogPrefix + await response.Content.ReadAsStringAsync());
 				}
 
 				return response;
