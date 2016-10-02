@@ -24,10 +24,13 @@ namespace BundtBot.Discord.Gateway {
 
 		public DiscordGatewayClient(string authToken) {
 			_authToken = authToken;
-			HelloReceived += HandleHelloOperation;
+			HelloReceived += OnHelloReceived;
 		}
 
-		async void HandleHelloOperation(string eventName, object eventData) {
+		async void OnHelloReceived(string eventName, object eventData) {
+			// TODO Drop the static MyLogger class for a normal class that gets passed into
+			// other classes which can specify a prefix
+			MyLogger.LogInfo("Gateway: Received Hello from Discord Gateway", ConsoleColor.Green);
 			var hello = JsonConvert.DeserializeObject<GatewayHello>(eventData.ToString());
 			await SendHeartBeat();
 			StartHeartBeatLoop(hello.HeartbeatInterval);
