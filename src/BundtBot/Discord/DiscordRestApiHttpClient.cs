@@ -3,13 +3,18 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
+using BundtBot.Extensions;
 using Newtonsoft.Json.Linq;
 
 namespace BundtBot.Discord {
 	public class DiscordRestApiHttpClient : HttpClient {
 		const string LogPrefix = "API: ";
 
-		public DiscordRestApiHttpClient(string botToken, string name, string version) : base(new LoggingHandler(new HttpClientHandler())) {
+		public DiscordRestApiHttpClient(string botToken, string name, string version)
+			: base(new LoggingHandler(new HttpClientHandler())) {
+			if (botToken.IsNullOrWhiteSpace()) {
+				throw new ArgumentException(nameof(botToken));
+			}
 			BaseAddress = new Uri("https://discordapp.com/api/");
 			Timeout = TimeSpan.FromSeconds(1);
 			SetHeaders(botToken, name, version);
