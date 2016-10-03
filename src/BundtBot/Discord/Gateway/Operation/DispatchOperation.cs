@@ -19,7 +19,7 @@ namespace BundtBot.Discord.Gateway.Operation {
 					break;
 				case "READY":
 					var ready = JsonConvert.DeserializeObject<Ready>(eventJsonData);
-					MyLogger.LogInfo("Gateway: Received Event: READY " + ready.SessionId);
+					MyLogger.LogInfo("Gateway: Received Event: READY " + ready.SessionId, ConsoleColor.Green);
 					break;
 				default:
 					var ex = new ArgumentOutOfRangeException(nameof(eventName), eventName, "Unexpected Event Name");

@@ -30,7 +30,7 @@ namespace BundtBot.Discord.Gateway {
 		async void OnHelloReceived(string eventName, object eventData) {
 			// TODO Drop the static MyLogger class for a normal class that gets passed into
 			// other classes which can specify a prefix
-			MyLogger.LogInfo("Gateway: Received Hello from Discord Gateway", ConsoleColor.Green);
+			MyLogger.LogInfo("Gateway: Received Hello from Gateway", ConsoleColor.Green);
 			var hello = JsonConvert.DeserializeObject<GatewayHello>(eventData.ToString());
 			StartHeartBeatLoop(hello.HeartbeatInterval);
 			await SendGatewayIdentify();
@@ -39,10 +39,11 @@ namespace BundtBot.Discord.Gateway {
 		public async Task Connect(Uri gatewayUrl) {
 			var modifiedGatewayUrl = gatewayUrl.AddParameter("v", "5").AddParameter("encoding", "'json'");
 			await _clientWebSocket.ConnectAsync(modifiedGatewayUrl, CancellationToken.None);
-			MyLogger.LogInfo($"Gateway: Connected to Gateway (state: {_clientWebSocket.State})", ConsoleColor.Green);
+			MyLogger.LogInfo($"Gateway: Connected to Gateway (ClientWebSocket State: {_clientWebSocket.State})", ConsoleColor.Green);
 		}
 
 		public async Task SendGatewayIdentify() {
+			MyLogger.LogInfo("Gateway: Sending GatewayIdentify to Gateway", ConsoleColor.Green);
 			await SendAsync(OpCode.Identify, new GatewayIdentify {
 				AuthenticationToken = _authToken,
 				ConnectionProperties = new ConnectionProperties {
@@ -83,7 +84,7 @@ namespace BundtBot.Discord.Gateway {
 			var sendBuffer = new ArraySegment<byte>(bytes);
 			await _clientWebSocket.SendAsync(sendBuffer, WebSocketMessageType.Text, true, CancellationToken.None);
 
-			MyLogger.LogInfo($"Gateway: Sent (socket-state: {_clientWebSocket.State})");
+			MyLogger.LogInfo($"Gateway: Sent (ClientWebSocket State: {_clientWebSocket.State})");
 		}
 
 		public void StartReceiveLoop() {
