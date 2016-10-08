@@ -44,7 +44,7 @@ namespace BundtBot {
 			_gatewayClient.DispatchReceived += DispatchOperation.Instance.Execute;
 			_gatewayClient.HeartbackAckReceived += HeartbackAckOperation.Instance.Execute;
 
-			await _gatewayClient.Connect(gatewayUrl);
+			await _gatewayClient.ConnectAsync(gatewayUrl);
 			_gatewayClient.StartReceiveLoop();
 		}
 	}

@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Net.WebSockets;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using BundtBot.Discord.Gateway.Models;
@@ -9,15 +7,13 @@ using BundtBot.Extensions;
 using Newtonsoft.Json;
 
 namespace BundtBot.Discord.Gateway {
-	// TODO Extract methods that use _clientWebSocket into new class
 	public class DiscordGatewayClient {
 		public delegate void OperationHandler(string eventName, object eventData);
 		public event OperationHandler DispatchReceived;
 		public event OperationHandler HeartbackAckReceived;
 		public event OperationHandler HelloReceived;
 
-		readonly ClientWebSocket _clientWebSocket = new ClientWebSocket();
-		readonly UTF8Encoding _utf8Encoding = new UTF8Encoding();
+		readonly ClientWebSocketWrapper _clientWebSocketWrapper = new ClientWebSocketWrapper();
 		readonly string _authToken;
 
 		int _lastSequenceReceived;
@@ -25,6 +21,7 @@ namespace BundtBot.Discord.Gateway {
 		public DiscordGatewayClient(string authToken) {
 			_authToken = authToken;
 			HelloReceived += OnHelloReceived;
+			_clientWebSocketWrapper.MessageReceived += OnMessageReceived;
 		}
 
 		async void OnHelloReceived(string eventName, object eventData) {
@@ -36,15 +33,15 @@ namespace BundtBot.Discord.Gateway {
 			await SendGatewayIdentify();
 		}
 
-		public async Task Connect(Uri gatewayUrl) {
+		public async Task ConnectAsync(Uri gatewayUrl) {
 			var modifiedGatewayUrl = gatewayUrl.AddParameter("v", "5").AddParameter("encoding", "'json'");
-			await _clientWebSocket.ConnectAsync(modifiedGatewayUrl, CancellationToken.None);
-			MyLogger.LogInfo($"Gateway: Connected to Gateway (ClientWebSocket State: {_clientWebSocket.State})", ConsoleColor.Green);
+			await _clientWebSocketWrapper.ConnectAsync(modifiedGatewayUrl);
+			MyLogger.LogInfo($"Gateway: Connected to Gateway", ConsoleColor.Green);
 		}
 
 		public async Task SendGatewayIdentify() {
 			MyLogger.LogInfo("Gateway: Sending GatewayIdentify to Gateway", ConsoleColor.Green);
-			await SendAsync(OpCode.Identify, new GatewayIdentify {
+			await SendOpCodeAsync(OpCode.Identify, new GatewayIdentify {
 				AuthenticationToken = _authToken,
 				ConnectionProperties = new ConnectionProperties {
 					OperatingSystem = "windows",
@@ -70,52 +67,23 @@ namespace BundtBot.Discord.Gateway {
 
 		public async Task SendHeartBeat() {
 			MyLogger.LogInfo("Gateway: Sending Heartbeat ♥ →");
-			await SendAsync(OpCode.Heartbeat, _lastSequenceReceived);
+			await SendOpCodeAsync(OpCode.Heartbeat, _lastSequenceReceived);
 		}
 
-		async Task SendAsync(OpCode opCode, object eventData) {
+		async Task SendOpCodeAsync(OpCode opCode, object eventData) {
 			var gatewayPayload = new GatewayPayload(opCode, eventData);
-			var jsonGatewayDispatch = gatewayPayload.Serialize();
+			var jsonGatewayPayload = gatewayPayload.Serialize();
 
 			MyLogger.LogInfo($"Gateway: Sending opcode {gatewayPayload.GatewayOpCode} to gateway...");
-			MyLogger.LogDebug("Gateway: " + jsonGatewayDispatch);
+			MyLogger.LogDebug("Gateway: " + jsonGatewayPayload);
 
-			var bytes = _utf8Encoding.GetBytes(jsonGatewayDispatch);
-			var sendBuffer = new ArraySegment<byte>(bytes);
-			await _clientWebSocket.SendAsync(sendBuffer, WebSocketMessageType.Text, true, CancellationToken.None);
+			await _clientWebSocketWrapper.SendAsync(jsonGatewayPayload);
 
-			MyLogger.LogInfo($"Gateway: Sent (ClientWebSocket State: {_clientWebSocket.State})");
+			MyLogger.LogInfo($"Gateway: Sent {gatewayPayload.GatewayOpCode}");
 		}
 
 		public void StartReceiveLoop() {
-			Task.Run(async () => {
-				await ReceiveLoop();
-			});
-		}
-
-		async Task ReceiveLoop() {
-			var message = "";
-			while (_clientWebSocket.State == WebSocketState.Open) {
-				var result = await ReceiveAsync();
-
-				MyLogger.LogDebug("Gateway: Received bytes on ClientWebSocket\n" +
-				                  JsonConvert.SerializeObject(result.Item1, Formatting.Indented));
-
-				message += result.Item2;
-
-				if (result.Item1.EndOfMessage == false) continue;
-
-				OnMessageReceived(message);
-				message = "";
-			}
-		}
-
-		async Task<Tuple<WebSocketReceiveResult, string>> ReceiveAsync() {
-			const int arbitraryBufferSize = 8192;
-			var receiveBuffer = new ArraySegment<byte>(new byte[arbitraryBufferSize]);
-			var receiveResult = await _clientWebSocket.ReceiveAsync(receiveBuffer, CancellationToken.None);
-			var msg = _utf8Encoding.GetString(receiveBuffer.Array, 0, receiveResult.Count);
-			return Tuple.Create(receiveResult, msg);
+			_clientWebSocketWrapper.StartReceiveLoop();
 		}
 
 		void OnMessageReceived(string message) {
