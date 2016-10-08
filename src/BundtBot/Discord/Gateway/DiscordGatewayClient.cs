@@ -14,6 +14,7 @@ namespace BundtBot.Discord.Gateway {
 		public event OperationHandler HelloReceived;
 
 		readonly ClientWebSocketWrapper _clientWebSocketWrapper = new ClientWebSocketWrapper();
+		readonly MyLogger _logger = new MyLogger(nameof(DiscordGatewayClient));
 		readonly string _authToken;
 
 		int _lastSequenceReceived;
@@ -27,7 +28,7 @@ namespace BundtBot.Discord.Gateway {
 		async void OnHelloReceived(string eventName, object eventData) {
 			// TODO Drop the static MyLogger class for a normal class that gets passed into
 			// other classes which can specify a prefix
-			MyLogger.LogInfo("Gateway: Received Hello from Gateway", ConsoleColor.Green);
+			_logger.LogInfo("Received Hello from Gateway", ConsoleColor.Green);
 			var hello = JsonConvert.DeserializeObject<GatewayHello>(eventData.ToString());
 			StartHeartBeatLoop(hello.HeartbeatInterval);
 			await SendGatewayIdentify();
@@ -36,11 +37,11 @@ namespace BundtBot.Discord.Gateway {
 		public async Task ConnectAsync(Uri gatewayUrl) {
 			var modifiedGatewayUrl = gatewayUrl.AddParameter("v", "5").AddParameter("encoding", "'json'");
 			await _clientWebSocketWrapper.ConnectAsync(modifiedGatewayUrl);
-			MyLogger.LogInfo($"Gateway: Connected to Gateway", ConsoleColor.Green);
+			_logger.LogInfo($"Connected to Gateway", ConsoleColor.Green);
 		}
 
 		public async Task SendGatewayIdentify() {
-			MyLogger.LogInfo("Gateway: Sending GatewayIdentify to Gateway", ConsoleColor.Green);
+			_logger.LogInfo("Sending GatewayIdentify to Gateway", ConsoleColor.Green);
 			await SendOpCodeAsync(OpCode.Identify, new GatewayIdentify {
 				AuthenticationToken = _authToken,
 				ConnectionProperties = new ConnectionProperties {
@@ -56,7 +57,7 @@ namespace BundtBot.Discord.Gateway {
 		}
 
 		public void StartHeartBeatLoop(TimeSpan interval) {
-			MyLogger.LogInfo("Gateway: Heartbeat loop started", ConsoleColor.Green);
+			_logger.LogInfo("Heartbeat loop started", ConsoleColor.Green);
 			Task.Run(async () => {
 				while (true) {
 					await SendHeartBeat();
@@ -66,7 +67,7 @@ namespace BundtBot.Discord.Gateway {
 		}
 
 		public async Task SendHeartBeat() {
-			MyLogger.LogInfo("Gateway: Sending Heartbeat ♥ →");
+			_logger.LogInfo("Sending Heartbeat ♥ →");
 			await SendOpCodeAsync(OpCode.Heartbeat, _lastSequenceReceived);
 		}
 
@@ -74,16 +75,16 @@ namespace BundtBot.Discord.Gateway {
 			var gatewayPayload = new GatewayPayload(opCode, eventData);
 			var jsonGatewayPayload = gatewayPayload.Serialize();
 
-			MyLogger.LogInfo($"Gateway: Sending opcode {gatewayPayload.GatewayOpCode} to gateway...");
-			MyLogger.LogDebug("Gateway: " + jsonGatewayPayload);
+			_logger.LogInfo($"Sending opcode {gatewayPayload.GatewayOpCode} to gateway...");
+			_logger.LogDebug("" + jsonGatewayPayload);
 
 			await _clientWebSocketWrapper.SendAsync(jsonGatewayPayload);
 
-			MyLogger.LogInfo($"Gateway: Sent {gatewayPayload.GatewayOpCode}");
+			_logger.LogInfo($"Sent {gatewayPayload.GatewayOpCode}");
 		}
 
 		public void StartReceiveLoop() {
-			_clientWebSocketWrapper.StartReceiveLoop();
+			_clientWebSocketWrapper.StartReceiving();
 		}
 
 		void OnMessageReceived(string message) {
@@ -91,9 +92,9 @@ namespace BundtBot.Discord.Gateway {
 
 			StoreSequenceNumberForHeartbeat(gatewayPayload);
 
-			MyLogger.LogInfo("Gateway: Message received from gateway (opcode: " +
+			_logger.LogInfo("Message received from gateway (opcode: " +
 				gatewayPayload.GatewayOpCode + ")");
-			MyLogger.LogDebug("Gateway: " + message.Prettify());
+			_logger.LogDebug("" + message.Prettify());
 
 			switch (gatewayPayload.GatewayOpCode) {
 				case OpCode.Dispatch:
@@ -106,7 +107,7 @@ namespace BundtBot.Discord.Gateway {
 					HelloReceived?.Invoke(gatewayPayload.EventName, gatewayPayload.EventData);
 					break;
 				default:
-					MyLogger.LogWarning($"Received an OpCode with no handler: {gatewayPayload.GatewayOpCode}");
+					_logger.LogWarning($"Received an OpCode with no handler: {gatewayPayload.GatewayOpCode}");
 					break;
 			}
 		}

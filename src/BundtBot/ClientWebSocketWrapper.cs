@@ -14,11 +14,12 @@ namespace BundtBot
 
 		readonly ClientWebSocket _clientWebSocket = new ClientWebSocket();
 		readonly UTF8Encoding _utf8Encoding = new UTF8Encoding();
+		readonly MyLogger _logger = new MyLogger(nameof(ClientWebSocketWrapper));
 
 		public async Task ConnectAsync(Uri serverUri)
 		{
 			await _clientWebSocket.ConnectAsync(serverUri, CancellationToken.None);
-			MyLogger.LogInfo($"Gateway: Connected to {serverUri} (ClientWebSocket State: {_clientWebSocket.State})",
+			_logger.LogInfo($"Connected to {serverUri} (ClientWebSocket State: {_clientWebSocket.State})",
 				ConsoleColor.Green);
 		}
 
@@ -28,10 +29,10 @@ namespace BundtBot
 
 			await _clientWebSocket.SendAsync(sendBuffer, WebSocketMessageType.Text, true, CancellationToken.None);
 
-			MyLogger.LogInfo($"Gateway: Sent (ClientWebSocket State: {_clientWebSocket.State})");
+			_logger.LogInfo($"Sent (ClientWebSocket State: {_clientWebSocket.State})");
 		}
 
-		public void StartReceiveLoop() {
+		public void StartReceiving() {
 			Task.Run(async () => {
 				await ReceiveLoop();
 			});
@@ -42,8 +43,8 @@ namespace BundtBot
 			while (_clientWebSocket.State == WebSocketState.Open) {
 				var result = await ReceiveAsync();
 
-				MyLogger.LogDebug("Gateway: Received bytes on ClientWebSocket\n" +
-								  JsonConvert.SerializeObject(result.Item1, Formatting.Indented));
+				_logger.LogInfo("Received bytes on ClientWebSocket");
+				_logger.LogDebug(JsonConvert.SerializeObject(result.Item1, Formatting.Indented));
 
 				message += result.Item2;
 

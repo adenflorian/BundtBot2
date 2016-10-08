@@ -1,46 +1,73 @@
 ﻿using System;
 
-namespace BundtBot {
-	public class MyLogger {
-		public static bool EnableTimestamps = true;
+namespace BundtBot
+{
+	class MyLogger
+	{
 		public const ConsoleColor DefaultColor = ConsoleColor.Gray;
-		public static LogLevel MaxLogLevel = LogLevel.Info;
 
-		public static void LogDebug(object message, ConsoleColor color = DefaultColor) {
+		public bool EnableTimestamps = true;
+		public LogLevel MaxLogLevel = LogLevel.Info;
+
+		readonly string _prefix;
+
+		public MyLogger(string prefix)
+		{
+			_prefix = prefix;
+		}
+
+		public void LogDebug(object message, ConsoleColor color = DefaultColor)
+		{
 			if (LogLevel.Debug > MaxLogLevel) return;
 			Log(message, color);
 		}
 
-		public static void LogInfo(object message, ConsoleColor color = DefaultColor) {
+		public void LogInfo(object message, ConsoleColor color = DefaultColor)
+		{
 			if (LogLevel.Info > MaxLogLevel) return;
 			Log(message, color);
 		}
 
-		public static void LogWarning(object message) {
+		public void LogWarning(object message)
+		{
 			if (LogLevel.Warning > MaxLogLevel) return;
 			Log(message, ConsoleColor.Yellow);
 		}
 
-		public static void LogError(Exception exception) {
+		public void LogError(Exception exception)
+		{
 			if (LogLevel.Error > MaxLogLevel) return;
 			Log(exception, ConsoleColor.Red);
 			Log(exception.StackTrace ?? "No stack trace available", ConsoleColor.Red);
 		}
 
-		static void Log(object message, ConsoleColor color) {
-			if (EnableTimestamps) {
-				message = DateTime.Now + " | " + message;
-			}
-
-			message = message.ToString().Replace("\n", "\n\t");
+		void Log(object messageObject, ConsoleColor color)
+		{
+			var message = PrepareMessage(messageObject);
 
 			Console.ForegroundColor = color;
 			Console.WriteLine(message);
 			Console.ForegroundColor = DefaultColor;
 		}
+
+		string PrepareMessage(object messageObject)
+		{
+			var message = messageObject.ToString();
+
+			message = $"{_prefix}: {message}";
+
+			if (EnableTimestamps) {
+				message = $"{DateTime.Now} | {message}";
+			}
+
+			message = message.Replace("\n", "\n\t");
+
+			return message;
+		}
 	}
 
-	public enum LogLevel {
+	public enum LogLevel
+	{
 		Nothing = 0,
 		Error = 25,
 		Warning = 50,

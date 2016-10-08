@@ -6,12 +6,15 @@ using System.Threading.Tasks;
 using BundtBot.Extensions;
 using Newtonsoft.Json.Linq;
 
-namespace BundtBot.Discord {
-	public class DiscordRestApiHttpClient : HttpClient {
+namespace BundtBot.Discord
+{
+	public class DiscordRestClient : HttpClient
+	{
 		const string LogPrefix = "API: ";
 
-		public DiscordRestApiHttpClient(string botToken, string name, string version)
-			: base(new LoggingHandler(new HttpClientHandler())) {
+		public DiscordRestClient(string botToken, string name, string version)
+			: base(new DiscordRestClientLogger(new HttpClientHandler()))
+		{
 			if (botToken.IsNullOrWhiteSpace()) {
 				throw new ArgumentException(nameof(botToken));
 			}
@@ -20,36 +23,44 @@ namespace BundtBot.Discord {
 			SetHeaders(botToken, name, version);
 		}
 
-		void SetHeaders(string botToken, string name, string version) {
+		void SetHeaders(string botToken, string name, string version)
+		{
 			DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bot", botToken);
 			DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue(name, version));
 		}
 
-		public Uri GetGatewayUrl() {
+		public Uri GetGatewayUrl()
+		{
 			var response = GetAsync("gateway").Result.Content.ReadAsStringAsync().Result;
 			var url = JObject.Parse(response)["url"];
 			return new Uri(url.ToString());
 		}
 
-		class LoggingHandler : DelegatingHandler {
-			public LoggingHandler(HttpMessageHandler innerHandler)
-				: base(innerHandler) {
+		class DiscordRestClientLogger : DelegatingHandler
+		{
+			readonly MyLogger _logger = new MyLogger(nameof(DiscordRestClientLogger));
+
+			public DiscordRestClientLogger(HttpMessageHandler innerHandler)
+				: base(innerHandler)
+			{
 			}
 
 			protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,
-				CancellationToken cancellationToken) {
-				MyLogger.LogInfo(LogPrefix + "Request: " + request.RequestUri);
-				MyLogger.LogDebug(LogPrefix + request);
+				CancellationToken cancellationToken)
+			{
+
+				_logger.LogInfo(LogPrefix + "Request: " + request.RequestUri);
+				_logger.LogDebug(LogPrefix + request);
 				if (request.Content != null) {
-					MyLogger.LogDebug(LogPrefix + await request.Content.ReadAsStringAsync());
+					_logger.LogDebug(LogPrefix + await request.Content.ReadAsStringAsync());
 				}
 
 				var response = await base.SendAsync(request, cancellationToken);
 
-				MyLogger.LogInfo(LogPrefix + "Response: " + response.StatusCode);
-				MyLogger.LogDebug(LogPrefix + response);
+				_logger.LogInfo(LogPrefix + "Response: " + response.StatusCode);
+				_logger.LogDebug(LogPrefix + response);
 				if (response.Content != null) {
-					MyLogger.LogDebug(LogPrefix + await response.Content.ReadAsStringAsync());
+					_logger.LogDebug(LogPrefix + await response.Content.ReadAsStringAsync());
 				}
 
 				return response;
