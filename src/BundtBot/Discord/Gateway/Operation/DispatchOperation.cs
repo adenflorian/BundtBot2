@@ -8,7 +8,7 @@ namespace BundtBot.Discord.Gateway.Operation
 	{
 		public static readonly DispatchOperation Instance = new DispatchOperation();
 
-		static readonly MyLogger _logger = new MyLogger(nameof(ClientWebSocketWrapper));
+		static readonly MyLogger _logger = new MyLogger(nameof(DispatchOperation));
 
 		public void Execute(string eventName, object eventData)
 		{
