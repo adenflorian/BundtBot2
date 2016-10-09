@@ -4,13 +4,15 @@ using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
 using BundtBot.Extensions;
-using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
 
 namespace BundtBot.Discord
 {
 	public class DiscordRestClient
 	{
 		public readonly HttpClient HttpClient;
+
+		static readonly MyLogger _logger = new MyLogger(nameof(DiscordRestClient));
 
 		public DiscordRestClient(string botToken, string name, string version)
 			: this(botToken, name, version, new HttpClient(new DiscordRestClientLogger(new HttpClientHandler())))
@@ -30,6 +32,7 @@ namespace BundtBot.Discord
 		{
 			HttpClient.BaseAddress = new Uri("https://discordapp.com/api/");
 			HttpClient.Timeout = TimeSpan.FromSeconds(1);
+			HttpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 			HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bot", botToken);
 			HttpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue(name, version));
 		}
@@ -47,11 +50,46 @@ namespace BundtBot.Discord
 			}
 		}
 
-		public Uri GetGatewayUrl()
+		/// <exception cref="DiscordRestException" />
+		public async Task<Uri> GetGatewayUrlAsync()
 		{
-			var response = HttpClient.GetAsync("gateway").Result.Content.ReadAsStringAsync().Result;
-			var url = JObject.Parse(response)["url"];
-			return new Uri(url.ToString());
+			var response = await GetAsync("gateway");
+			var gateway = await DeserializeResponse<GatewayUrl>(response);
+			return gateway.Url;
+		}
+
+		/// <exception cref="DiscordRestException" />
+		async Task<HttpResponseMessage> GetAsync(string requestUri)
+		{
+			var response = await HttpClient.GetAsync(requestUri);
+			if (response.IsSuccessStatusCode == false) {
+				var ex = new DiscordRestException("Response did not contain a success status code" +
+				                                  ", but instead contained status code " + response.StatusCode);
+				_logger.LogError(ex);
+				throw ex;
+			}
+			return response;
+		}
+
+		/// <exception cref="DiscordRestException" />
+		static async Task<T> DeserializeResponse<T>(HttpResponseMessage response)
+		{
+			var contentString = await response.Content.ReadAsStringAsync();
+			T deserializedObject;
+			try {
+				deserializedObject = JsonConvert.DeserializeObject<T>(contentString);
+			} catch (Exception ex) {
+				_logger.LogError(ex);
+				throw new DiscordRestException("Error while deserializing json", ex);
+			}
+			if (deserializedObject == null) {
+				var ex = new DiscordRestException("Failed to deserialize object from json" +
+											   ", deserialized object was null" +
+				                                  ", json content: " + contentString);
+				_logger.LogError(ex);
+				throw ex;
+			}
+			return deserializedObject;
 		}
 
 		class DiscordRestClientLogger : DelegatingHandler
@@ -73,12 +111,17 @@ namespace BundtBot.Discord
 
 				var response = await base.SendAsync(request, cancellationToken);
 
-				_logger.LogInfo("Response: " + response.StatusCode);
+				var logResponseMessage = "Response: " + response.StatusCode;
+				if (response.IsSuccessStatusCode) {
+					_logger.LogInfo(logResponseMessage);
+				} else {
+					_logger.LogWarning(logResponseMessage);
+				}
 				_logger.LogDebug(response);
 				if (response.Content != null) {
 					_logger.LogDebug(await response.Content.ReadAsStringAsync());
 				}
-
+				
 				return response;
 			}
 		}

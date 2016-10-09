@@ -21,7 +21,7 @@ namespace BundtBot
 		{
 			SetupConsole();
 
-			Run().Wait();
+			RunAsync().Wait();
 
 			var x = 0;
 			var myLogger = new MyLogger(nameof(Program));
@@ -39,11 +39,11 @@ namespace BundtBot
 			}
 		}
 
-		static async Task Run()
+		static async Task RunAsync()
 		{
 			var discordRestApiClient = new DiscordRestClient(BotToken, Name, Version);
 
-			var gatewayUrl = discordRestApiClient.GetGatewayUrl();
+			var gatewayUrl = await discordRestApiClient.GetGatewayUrlAsync();
 
 			_gatewayClient = new DiscordGatewayClient(BotToken);
 
