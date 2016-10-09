@@ -1,9 +1,11 @@
 ﻿using System;
 using Newtonsoft.Json;
 
-namespace BundtBot.Discord.Gateway.Models {
+namespace BundtBot.Discord.Gateway.Models
+{
 	[JsonObject]
-	public class GatewayHello {
+	public class GatewayHello
+	{
 		/// <summary>
 		/// The interval (in milliseconds) the client should heartbeat with.
 		/// </summary>
