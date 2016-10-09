@@ -10,17 +10,27 @@ namespace BundtBot.Discord
 {
 	public class DiscordRestClient : HttpClient
 	{
-		const string LogPrefix = "API: ";
-
 		public DiscordRestClient(string botToken, string name, string version)
 			: base(new DiscordRestClientLogger(new HttpClientHandler()))
+		{
+			ValidateArguments(botToken, name, version);
+
+			BaseAddress = new Uri("https://discordapp.com/api/");
+			Timeout = TimeSpan.FromSeconds(1);
+			SetHeaders(botToken, name, version);
+		}
+
+		static void ValidateArguments(string botToken, string name, string version)
 		{
 			if (botToken.IsNullOrWhiteSpace()) {
 				throw new ArgumentException(nameof(botToken));
 			}
-			BaseAddress = new Uri("https://discordapp.com/api/");
-			Timeout = TimeSpan.FromSeconds(1);
-			SetHeaders(botToken, name, version);
+			if (name.IsNullOrWhiteSpace()) {
+				throw new ArgumentException(nameof(name));
+			}
+			if (version.IsNullOrWhiteSpace()) {
+				throw new ArgumentException(nameof(version));
+			}
 		}
 
 		void SetHeaders(string botToken, string name, string version)
@@ -40,27 +50,25 @@ namespace BundtBot.Discord
 		{
 			readonly MyLogger _logger = new MyLogger(nameof(DiscordRestClientLogger));
 
-			public DiscordRestClientLogger(HttpMessageHandler innerHandler)
-				: base(innerHandler)
+			public DiscordRestClientLogger(HttpMessageHandler innerHandler) : base(innerHandler)
 			{
 			}
 
 			protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,
 				CancellationToken cancellationToken)
 			{
-
-				_logger.LogInfo(LogPrefix + "Request: " + request.RequestUri);
-				_logger.LogDebug(LogPrefix + request);
+				_logger.LogInfo("Request: " + request.RequestUri);
+				_logger.LogDebug(request);
 				if (request.Content != null) {
-					_logger.LogDebug(LogPrefix + await request.Content.ReadAsStringAsync());
+					_logger.LogDebug(await request.Content.ReadAsStringAsync());
 				}
 
 				var response = await base.SendAsync(request, cancellationToken);
 
-				_logger.LogInfo(LogPrefix + "Response: " + response.StatusCode);
-				_logger.LogDebug(LogPrefix + response);
+				_logger.LogInfo("Response: " + response.StatusCode);
+				_logger.LogDebug(response);
 				if (response.Content != null) {
-					_logger.LogDebug(LogPrefix + await response.Content.ReadAsStringAsync());
+					_logger.LogDebug(await response.Content.ReadAsStringAsync());
 				}
 
 				return response;
