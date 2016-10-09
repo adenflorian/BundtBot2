@@ -7,7 +7,7 @@ using Newtonsoft.Json;
 
 namespace BundtBot
 {
-    public class ClientWebSocketWrapper
+	public class ClientWebSocketWrapper
 	{
 		public delegate void MessageReceivedHandler(string message);
 		public event MessageReceivedHandler MessageReceived;
@@ -23,22 +23,31 @@ namespace BundtBot
 				ConsoleColor.Green);
 		}
 
-		public async Task SendAsync(string data) {
-			var bytes = _utf8Encoding.GetBytes(data);
-			var sendBuffer = new ArraySegment<byte>(bytes);
+		public async Task SendAsync(string data)
+		{
+			var sendBuffer = CreateSendBuffer(data);
 
 			await _clientWebSocket.SendAsync(sendBuffer, WebSocketMessageType.Text, true, CancellationToken.None);
 
 			_logger.LogInfo($"Sent (ClientWebSocket State: {_clientWebSocket.State})");
 		}
 
-		public void StartReceiving() {
+		ArraySegment<byte> CreateSendBuffer(string data)
+		{
+			var bytes = _utf8Encoding.GetBytes(data);
+			var sendBuffer = new ArraySegment<byte>(bytes);
+			return sendBuffer;
+		}
+
+		public void StartReceiving()
+		{
 			Task.Run(async () => {
 				await ReceiveLoop();
 			});
 		}
 
-		async Task ReceiveLoop() {
+		async Task ReceiveLoop()
+		{
 			var message = "";
 			while (_clientWebSocket.State == WebSocketState.Open) {
 				var result = await ReceiveAsync();
@@ -55,7 +64,8 @@ namespace BundtBot
 			}
 		}
 
-		async Task<Tuple<WebSocketReceiveResult, string>> ReceiveAsync() {
+		async Task<Tuple<WebSocketReceiveResult, string>> ReceiveAsync()
+		{
 			const int arbitraryBufferSize = 8192;
 			var receiveBuffer = new ArraySegment<byte>(new byte[arbitraryBufferSize]);
 			var receiveResult = await _clientWebSocket.ReceiveAsync(receiveBuffer, CancellationToken.None);
@@ -63,7 +73,8 @@ namespace BundtBot
 			return Tuple.Create(receiveResult, msg);
 		}
 
-		void OnMessageReceived(string message) {
+		void OnMessageReceived(string message)
+		{
 			MessageReceived?.Invoke(message);
 		}
 	}

@@ -6,8 +6,10 @@ using BundtBot.Discord;
 using BundtBot.Discord.Gateway;
 using BundtBot.Discord.Gateway.Operation;
 
-namespace BundtBot {
-	public class Program {
+namespace BundtBot
+{
+	public class Program
+	{
 		// TODO https://docs.asp.net/en/latest/fundamentals/configuration.html
 		const string Version = "0.0.1";
 		const string Name = "bundtbot";
@@ -15,7 +17,8 @@ namespace BundtBot {
 
 		static DiscordGatewayClient _gatewayClient;
 
-		public static void Main(string[] args) {
+		public static void Main(string[] args)
+		{
 			SetupConsole();
 
 			Run().Wait();
@@ -28,14 +31,16 @@ namespace BundtBot {
 			}
 		}
 
-		static void SetupConsole() {
+		static void SetupConsole()
+		{
 			Console.OutputEncoding = Encoding.UTF8;
 			if (Console.LargestWindowHeight > 0) {
 				Console.WindowHeight = (int)(Console.LargestWindowHeight * 0.75);
 			}
 		}
 
-		static async Task Run() {
+		static async Task Run()
+		{
 			var discordRestApiClient = new DiscordRestClient(BotToken, Name, Version);
 
 			var gatewayUrl = discordRestApiClient.GetGatewayUrl();
