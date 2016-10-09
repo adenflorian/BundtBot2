@@ -8,16 +8,30 @@ using Newtonsoft.Json.Linq;
 
 namespace BundtBot.Discord
 {
-	public class DiscordRestClient : HttpClient
+	public class DiscordRestClient
 	{
+		public readonly HttpClient HttpClient;
+
 		public DiscordRestClient(string botToken, string name, string version)
-			: base(new DiscordRestClientLogger(new HttpClientHandler()))
+			: this(botToken, name, version, new HttpClient(new DiscordRestClientLogger(new HttpClientHandler())))
+		{
+		}
+
+		public DiscordRestClient(string botToken, string name, string version, HttpClient httpClient)
 		{
 			ValidateArguments(botToken, name, version);
 
-			BaseAddress = new Uri("https://discordapp.com/api/");
-			Timeout = TimeSpan.FromSeconds(1);
-			SetHeaders(botToken, name, version);
+			HttpClient = httpClient;
+
+			InitializeHttpClient(botToken, name, version);
+		}
+
+		void InitializeHttpClient(string botToken, string name, string version)
+		{
+			HttpClient.BaseAddress = new Uri("https://discordapp.com/api/");
+			HttpClient.Timeout = TimeSpan.FromSeconds(1);
+			HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bot", botToken);
+			HttpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue(name, version));
 		}
 
 		static void ValidateArguments(string botToken, string name, string version)
@@ -33,15 +47,9 @@ namespace BundtBot.Discord
 			}
 		}
 
-		void SetHeaders(string botToken, string name, string version)
-		{
-			DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bot", botToken);
-			DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue(name, version));
-		}
-
 		public Uri GetGatewayUrl()
 		{
-			var response = GetAsync("gateway").Result.Content.ReadAsStringAsync().Result;
+			var response = HttpClient.GetAsync("gateway").Result.Content.ReadAsStringAsync().Result;
 			var url = JObject.Parse(response)["url"];
 			return new Uri(url.ToString());
 		}

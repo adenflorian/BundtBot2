@@ -2,7 +2,7 @@
 using BundtBot.Discord;
 using Xunit;
 
-namespace BundtBot.Tests
+namespace BundtBot.Tests.Discord
 {
 	public class DiscordRestClient_ConstructorShould
 	{
@@ -20,29 +20,35 @@ namespace BundtBot.Tests
 		}
 
 		[Fact]
+		public void SetBaseAddressToDiscordAppDotComSlashApiAlways()
+		{
+			Assert.Equal(new Uri("https://discordapp.com/api/"), CreateDiscordRestClient().HttpClient.BaseAddress);
+		}
+
+		[Fact]
 		public void SetTimeoutToOneSecondAlways()
 		{
-			Assert.Equal(TimeSpan.FromSeconds(1), CreateDiscordRestClient().Timeout);
+			Assert.Equal(TimeSpan.FromSeconds(1), CreateDiscordRestClient().HttpClient.Timeout);
 		}
 
 		[Fact]
 		public void SetAuthorizationHeaderSchemeToBotAlways()
 		{
-			Assert.Equal("Bot", CreateDiscordRestClient().DefaultRequestHeaders.Authorization.Scheme);
+			Assert.Equal("Bot", CreateDiscordRestClient().HttpClient.DefaultRequestHeaders.Authorization.Scheme);
 		}
 
 		[Fact]
 		public void SetAuthorizationHeaderUsingBotTokenAlways()
 		{
 			var discordRestClient = CreateDiscordRestClient("botToken");
-			Assert.Equal("botToken", discordRestClient.DefaultRequestHeaders.Authorization.Parameter);
+			Assert.Equal("botToken", discordRestClient.HttpClient.DefaultRequestHeaders.Authorization.Parameter);
 		}
 
 		[Fact]
 		public void SetUserAgentHeaderUsingNameAndVersionAlways()
 		{
 			var discordRestClient = CreateDiscordRestClient("token", "productName", "productVersion");
-			var userAgentHeader = discordRestClient.DefaultRequestHeaders.UserAgent.ToString();
+			var userAgentHeader = discordRestClient.HttpClient.DefaultRequestHeaders.UserAgent.ToString();
 			Assert.Equal("productName/productVersion", userAgentHeader);
 		}
 
