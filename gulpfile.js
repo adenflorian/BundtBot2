@@ -14,6 +14,10 @@ gulp.task('deploy', ['build'], shell.task(
 	'scripts\\deploy.sh',
 	{verbose: true}))
 
+gulp.task('runlocal', ['build'], shell.task(
+	'cd src\\BundtBot && dotnet run && cd ..\\..',
+	{verbose: true}))
+
 gulp.task('watch', function() {
 	var watcher = gulp.watch('**/*.cs', ['default'])
 	watcher.on('change', function(event) {
