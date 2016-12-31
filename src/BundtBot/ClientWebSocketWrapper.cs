@@ -35,12 +35,12 @@ namespace BundtBot
 					isDone = true;
 				}));
 				while (isDone == false) {
-					
+					Thread.Sleep(10);
 				}
 			});
 		}
 
-		public void StartSending()
+		void StartSending()
 		{
 			Task.Run(async () => {
 				await SendLoop();
@@ -51,7 +51,7 @@ namespace BundtBot
 		{
 			while (_clientWebSocket.State == WebSocketState.Open) {
 				while (_outgoingQueue.Count == 0) {
-					Thread.Sleep(TimeSpan.FromMilliseconds(100));
+					Thread.Sleep(50);
 				}
 				var msg = _outgoingQueue.Dequeue();
 				await SendAsync(msg.Item1);
