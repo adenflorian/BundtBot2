@@ -1,4 +1,5 @@
 ﻿using System;
+using BundtBot.Discord.Models;
 using Newtonsoft.Json;
 
 namespace BundtBot.Discord.Gateway.Models {
@@ -50,7 +51,7 @@ namespace BundtBot.Discord.Gateway.Models {
 		public object[] Roles;
 
 		[JsonProperty("emojis")]
-		public object[] Emojis;
+		public Emoji[] Emojis;
 
 		[JsonProperty("features")]
 		public object[] Features;
@@ -95,11 +96,10 @@ namespace BundtBot.Discord.Gateway.Models {
 		public object[] Members;
 
 		/// <summary>
-		/// Array of channel objects.
 		/// Only sent within the GUILD_CREATE event.
 		/// </summary>
 		[JsonProperty("channels")]
-		public object[] Channels;
+		public Channel[] Channels;
 
 		/// <summary>
 		/// Array of simple presence objects,

@@ -3,6 +3,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
+using BundtBot.Discord.Gateway.Models;
 using BundtBot.Extensions;
 using Newtonsoft.Json;
 
@@ -58,6 +59,20 @@ namespace BundtBot.Discord
 			return gateway.Url;
 		}
 
+		/// <summary>
+		/// TODO Requires the 'SEND_MESSAGES' permission to be present on the current user.
+		/// </summary>
+		/// <exception cref="DiscordRestException" />
+		public async Task<Message> CreateMessageAsync(ulong channelId, CreateMessage createMessage)
+		{
+			var body = JsonConvert.SerializeObject(createMessage);
+			var content = new StringContent(body);
+			content.Headers.ContentType = MediaTypeHeaderValue.Parse("application/json");
+			var response = await PostAsync($"channels/{channelId}/messages", content);
+			var message = await DeserializeResponse<Message>(response);
+			return message;
+		}
+
 		/// <exception cref="DiscordRestException" />
 		async Task<HttpResponseMessage> GetAsync(string requestUri)
 		{
@@ -65,6 +80,19 @@ namespace BundtBot.Discord
 			if (response.IsSuccessStatusCode == false) {
 				var ex = new DiscordRestException("Response did not contain a success status code" +
 				                                  ", but instead contained status code " + response.StatusCode);
+				_logger.LogError(ex);
+				throw ex;
+			}
+			return response;
+		}
+
+		/// <exception cref="DiscordRestException" />
+		async Task<HttpResponseMessage> PostAsync(string requestUri, HttpContent content)
+		{
+			var response = await HttpClient.PostAsync(requestUri, content);
+			if (response.IsSuccessStatusCode == false) {
+				var ex = new DiscordRestException("Response did not contain a success status code" +
+												  ", but instead contained status code " + response.StatusCode);
 				_logger.LogError(ex);
 				throw ex;
 			}

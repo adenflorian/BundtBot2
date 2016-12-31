@@ -18,6 +18,7 @@ namespace BundtBot.Discord.Gateway.Operation
 		static void ProcessEvent(string eventName, string eventJsonData)
 		{
 			_logger.LogInfo("Processing Gateway Event " + eventName);
+
 			switch (eventName) {
 				case "GUILD_CREATE":
 					var guild = JsonConvert.DeserializeObject<Guild>(eventJsonData);

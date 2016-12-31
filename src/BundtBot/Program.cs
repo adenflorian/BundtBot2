@@ -22,12 +22,10 @@ namespace BundtBot
 			SetupConsole();
 
 			RunAsync().Wait();
-
-			var x = 0;
+			
 			var myLogger = new MyLogger(nameof(Program));
 			while (true) {
 				Thread.Sleep(TimeSpan.FromSeconds(10));
-				myLogger.LogInfo("test " + x++);
 			}
 		}
 
