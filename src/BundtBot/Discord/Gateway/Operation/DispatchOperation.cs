@@ -1,5 +1,6 @@
 ﻿using System;
 using BundtBot.Discord.Gateway.Models;
+using BundtBot.Discord.Gateway.Models.Events;
 using Newtonsoft.Json;
 
 namespace BundtBot.Discord.Gateway.Operation
@@ -20,6 +21,10 @@ namespace BundtBot.Discord.Gateway.Operation
 			_logger.LogInfo("Processing Gateway Event " + eventName);
 
 			switch (eventName) {
+				case "MESSAGE_CREATE":
+					var message = JsonConvert.DeserializeObject<Message>(eventJsonData);
+					_logger.LogInfo("Received Event: MESSAGE_CREATE " + message.Content);
+					break;
 				case "GUILD_CREATE":
 					var guild = JsonConvert.DeserializeObject<Guild>(eventJsonData);
 					_logger.LogInfo("Received Event: GUILD_CREATE " + guild.Name);
@@ -27,6 +32,10 @@ namespace BundtBot.Discord.Gateway.Operation
 				case "READY":
 					var ready = JsonConvert.DeserializeObject<Ready>(eventJsonData);
 					_logger.LogInfo("Received Event: READY " + ready.SessionId, ConsoleColor.Green);
+					break;
+				case "TYPING_START":
+					var typingStart = JsonConvert.DeserializeObject<TypingStart>(eventJsonData);
+					_logger.LogInfo("Received Event: TYPING_START " + typingStart.UserId, ConsoleColor.Green);
 					break;
 				default:
 					var ex = new ArgumentOutOfRangeException(nameof(eventName), eventName, "Unexpected Event Name");
