@@ -4,7 +4,7 @@
 	{
 		public static readonly HeartbackAckOperation Instance = new HeartbackAckOperation();
 
-		readonly MyLogger _logger = new MyLogger(nameof(ClientWebSocketWrapper));
+		readonly MyLogger _logger = new MyLogger(nameof(HeartbackAckOperation));
 
 		public void Execute(string eventName, object eventData)
 		{

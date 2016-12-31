@@ -85,7 +85,7 @@ namespace BundtBot.Discord.Gateway
 			_logger.LogInfo($"Sending opcode {gatewayPayload.GatewayOpCode} to gateway...");
 			_logger.LogDebug("" + jsonGatewayPayload);
 
-			await _clientWebSocketWrapper.SendAsync(jsonGatewayPayload);
+			await _clientWebSocketWrapper.SendQueuedAsync(jsonGatewayPayload);
 
 			_logger.LogInfo($"Sent {gatewayPayload.GatewayOpCode}");
 		}

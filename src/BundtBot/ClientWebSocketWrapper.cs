@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
@@ -16,14 +17,49 @@ namespace BundtBot
 		readonly UTF8Encoding _utf8Encoding = new UTF8Encoding();
 		readonly MyLogger _logger = new MyLogger(nameof(ClientWebSocketWrapper));
 
+		readonly Queue<Tuple<string, Action>> _outgoingQueue = new Queue<Tuple<string, Action>>();
+
 		public async Task ConnectAsync(Uri serverUri)
 		{
 			await _clientWebSocket.ConnectAsync(serverUri, CancellationToken.None);
 			_logger.LogInfo($"Connected to {serverUri} (ClientWebSocket State: {_clientWebSocket.State})",
 				ConsoleColor.Green);
+			StartSending();
 		}
 
-		public async Task SendAsync(string data)
+		public async Task SendQueuedAsync(string data)
+		{
+			await Task.Run(() => {
+				var isDone = false;
+				_outgoingQueue.Enqueue(Tuple.Create<string, Action>(data, () => {
+					isDone = true;
+				}));
+				while (isDone == false) {
+					
+				}
+			});
+		}
+
+		public void StartSending()
+		{
+			Task.Run(async () => {
+				await SendLoop();
+			});
+		}
+
+		async Task SendLoop()
+		{
+			while (_clientWebSocket.State == WebSocketState.Open) {
+				while (_outgoingQueue.Count == 0) {
+					Thread.Sleep(TimeSpan.FromMilliseconds(100));
+				}
+				var msg = _outgoingQueue.Dequeue();
+				await SendAsync(msg.Item1);
+				msg.Item2.Invoke();
+			}
+		}
+
+		async Task SendAsync(string data)
 		{
 			var sendBuffer = CreateSendBuffer(data);
 
