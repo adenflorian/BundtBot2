@@ -14,7 +14,7 @@ gulp.task('deploy', ['build'], shell.task(
 	'scripts\\deploy.sh',
 	{verbose: true}))
 
-gulp.task('runlocal', ['build'], shell.task(
+gulp.task('run', ['build'], shell.task(
 	'cd src\\BundtBot && dotnet run && cd ..\\..',
 	{verbose: true}))
 
