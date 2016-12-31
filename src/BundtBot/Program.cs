@@ -12,7 +12,7 @@ namespace BundtBot
 	{
 		// TODO https://docs.asp.net/en/latest/fundamentals/configuration.html
 		const string Version = "0.0.1";
-		const string Name = "bundtbot";
+		public const string Name = "bundtbot";
 		const string BotToken = "MjA5NDU2NjYyOTI1NDEwMzA1.CsjHmg.pyJbVPWaP4Pkdv8zQ55qLFUxFdM";
 
 		static DiscordGatewayClient _gatewayClient;
@@ -47,6 +47,8 @@ namespace BundtBot
 
 			_gatewayClient.DispatchReceived += DispatchOperation.Instance.Execute;
 			_gatewayClient.HeartbackAckReceived += HeartbackAckOperation.Instance.Execute;
+
+			new WebServer().Start();
 
 			await _gatewayClient.ConnectAsync(gatewayUrl);
 			_gatewayClient.StartReceiveLoop();

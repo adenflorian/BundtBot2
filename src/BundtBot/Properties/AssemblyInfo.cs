@@ -8,6 +8,8 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("BundtBot")]
 [assembly: AssemblyTrademark("")]
+[assembly: AssemblyVersion("0.1.*")] //wildcard generates build and revision numbers!
+
 
 // Setting ComVisible to false makes the types in this assembly not visible
 // to COM components.  If you need to access a type in this assembly from
