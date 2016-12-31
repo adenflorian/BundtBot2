@@ -27,5 +27,17 @@ installDotNet='apt-get install -y dotnet-dev-1.0.0-preview2.1-003177'
 echo "${green}${installDotNet}${reset}"
 ssh $user@$host $installDotNet
 
+installNginx='apt-get install -y nginx'
+echo "${green}${installNginx}${reset}"
+ssh $user@$host $installNginx
+
+curlBundtBotSite='curl -o /etc/nginx/sites-available/bundtbot https://raw.githubusercontent.com/AdenFlorian/BundtBotBeta/master/nginx/sites/bundtbot'
+echo "${green}${curlBundtBotSite}${reset}"
+ssh $user@$host $curlBundtBotSite
+
+startNginx='service nginx start'
+echo "${green}${startNginx}${reset}"
+ssh $user@$host $startNginx
+
 echo "${green}Done${reset}!"
 read -n 1 -p "Press any key to exit..."
