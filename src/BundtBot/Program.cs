@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -37,17 +38,17 @@ namespace BundtBot
 		{
 			new WebServer().Start();
 
-			var discordClient = new DiscordClient();
+			var client = new DiscordClient();
 
-			await discordClient.Connect();
+			await client.Connect();
 
-			discordClient.GuildCreated += async (guild) => {
-				await guild.Channels[0].SendMessage(discordClient, "yo");
+			client.GuildCreated += async (guild) => {
+				await guild.Channels[0].SendMessage("yo");
 			};
 
-			discordClient.MessageCreated += async (message) => {
+			client.MessageCreated += async (message) => {
 				if (message.Author.IsBot == false) {
-					await discordClient.DiscordRestApiClient.CreateMessageAsync(message.ChannelId, new CreateMessage { Content = "yoyo" });
+					await message.Channel.SendMessage("hiya");
 				}
 			};
 		}

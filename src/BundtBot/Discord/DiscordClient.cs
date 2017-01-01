@@ -5,6 +5,7 @@ using BundtBot.Discord.Gateway;
 using BundtBot.Discord.Gateway.Models;
 using BundtBot.Discord.Gateway.Models.Events;
 using BundtBot.Discord.Gateway.Operation;
+using BundtBot.Discord.Models;
 using Newtonsoft.Json;
 
 namespace BundtBot.Discord
@@ -27,6 +28,7 @@ namespace BundtBot.Discord
 		internal readonly DiscordRestClient DiscordRestApiClient;
 
 		public List<Guild> Guilds = new List<Guild>();
+		public Dictionary<ulong, Channel> Channels = new Dictionary<ulong, Channel>();
 
 		public DiscordClient()
 		{
@@ -45,13 +47,28 @@ namespace BundtBot.Discord
 				switch (eventName) {
 					case "MESSAGE_CREATE":
 						var message = JsonConvert.DeserializeObject<Message>(eventJsonData);
+						message.client = this;
 						_logger.LogInfo("Received Event: MESSAGE_CREATE " + message.Content);
 						MessageCreated?.Invoke(message);
 						break;
+					// This event can be sent in three different scenarios:
+					//   1. When a user is initially connecting, to lazily load and backfill
+					//      information for all unavailable guilds sent in the ready event.
+					//   2. When a Guild becomes available again to the client.
+					//   3. When the current user joins a new Guild.
+					// The inner payload is a guild object, with all the extra fields specified.
 					case "GUILD_CREATE":
 						var guild = JsonConvert.DeserializeObject<Guild>(eventJsonData);
 						_logger.LogInfo("Received Event: GUILD_CREATE " + guild.Name);
 						Guilds.Add(guild);
+						foreach (var channel in guild.Channels) {
+							if (Channels.ContainsKey(channel.ID)) {
+								Channels[channel.ID] = channel;
+							} else {
+								Channels.Add(channel.ID, channel);
+							}
+							channel.client = this;
+						}
 						GuildCreated?.Invoke(guild);
 						break;
 					case "READY":

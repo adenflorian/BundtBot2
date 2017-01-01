@@ -1,15 +1,20 @@
 ﻿using System;
+using BundtBot.Discord.Models;
 using Newtonsoft.Json;
 
 namespace BundtBot.Discord.Gateway.Models
 {
     public class Message
-    {
+	{
+		internal DiscordClient client;
+
 		[JsonProperty("id")]
 		public ulong ID;
 		
 		[JsonProperty("channel_id")]
 		public ulong ChannelId;
+
+	    public Channel Channel => client.Channels[ChannelId];
 
 		/// <summary>
 		/// The author of this message (the author of a message is not guaranteed to be a user*).

@@ -6,6 +6,8 @@ namespace BundtBot.Discord.Models
 {
     public class Channel
     {
+	    internal DiscordClient client;
+
 		/// <summary>
 		/// The id of this channel (will be equal to the guild if it's the "general" channel).
 		/// Present: Always.
@@ -80,7 +82,7 @@ namespace BundtBot.Discord.Models
 		[JsonProperty("user_limit")]
 		public int? UserLimit;
 
-	    public async Task SendMessage(DiscordClient client, string message)
+	    public async Task SendMessage(string message)
 	    {
 			await client.DiscordRestApiClient.CreateMessageAsync(ID, new CreateMessage {
 				Content = message
