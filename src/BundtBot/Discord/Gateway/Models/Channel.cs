@@ -1,4 +1,6 @@
-﻿using Newtonsoft.Json;
+﻿using System.Threading.Tasks;
+using BundtBot.Discord.Gateway.Models;
+using Newtonsoft.Json;
 
 namespace BundtBot.Discord.Models
 {
@@ -77,5 +79,12 @@ namespace BundtBot.Discord.Models
 		/// </summary>
 		[JsonProperty("user_limit")]
 		public int? UserLimit;
+
+	    public async Task SendMessage(DiscordClient client, string message)
+	    {
+			await client.DiscordRestApiClient.CreateMessageAsync(ID, new CreateMessage {
+				Content = message
+			});
+	    }
 	}
 }

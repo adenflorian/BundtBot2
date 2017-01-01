@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
@@ -11,14 +9,14 @@ namespace BundtBot
 {
 	public class WebServer
 	{
-		public async Task Start()
+		public void Start()
 		{
 			var host = new WebHostBuilder()
 				.UseKestrel()
 				.UseStartup<Startup>()
 				.Build();
 
-			await Task.Run(() => host.Run());
+			Task.Run(() => host.Run());
 		}
 	}
 

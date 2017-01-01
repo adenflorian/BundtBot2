@@ -3,29 +3,25 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using BundtBot.Discord;
-using BundtBot.Discord.Gateway;
-using BundtBot.Discord.Gateway.Operation;
+using BundtBot.Discord.Gateway.Models;
 
 namespace BundtBot
 {
 	public class Program
 	{
 		// TODO https://docs.asp.net/en/latest/fundamentals/configuration.html
-		const string Version = "0.0.1";
 		public const string Name = "bundtbot";
-		const string BotToken = "MjA5NDU2NjYyOTI1NDEwMzA1.CsjHmg.pyJbVPWaP4Pkdv8zQ55qLFUxFdM";
-
-		static DiscordGatewayClient _gatewayClient;
 
 		public static void Main(string[] args)
 		{
 			SetupConsole();
 
-			RunAsync().Wait();
-			
-			var myLogger = new MyLogger(nameof(Program));
+			Task.Run(async () => {
+				await Start();
+			}).Wait();
+
 			while (true) {
-				Thread.Sleep(TimeSpan.FromSeconds(10));
+				Thread.Sleep(TimeSpan.FromMilliseconds(100));
 			}
 		}
 
@@ -37,21 +33,23 @@ namespace BundtBot
 			}
 		}
 
-		static async Task RunAsync()
+		public static async Task Start()
 		{
-			var discordRestApiClient = new DiscordRestClient(BotToken, Name, Version);
-
-			var gatewayUrl = await discordRestApiClient.GetGatewayUrlAsync();
-
-			_gatewayClient = new DiscordGatewayClient(BotToken);
-
-			_gatewayClient.DispatchReceived += DispatchOperation.Instance.Execute;
-			_gatewayClient.HeartbackAckReceived += HeartbackAckOperation.Instance.Execute;
-
 			new WebServer().Start();
 
-			await _gatewayClient.ConnectAsync(gatewayUrl);
-			_gatewayClient.StartReceiveLoop();
+			var discordClient = new DiscordClient();
+
+			await discordClient.Connect();
+
+			discordClient.GuildCreated += async (guild) => {
+				await guild.Channels[0].SendMessage(discordClient, "yo");
+			};
+
+			discordClient.MessageCreated += async (message) => {
+				if (message.Author.IsBot == false) {
+					await discordClient.DiscordRestApiClient.CreateMessageAsync(message.ChannelId, new CreateMessage { Content = "yoyo" });
+				}
+			};
 		}
 	}
 }

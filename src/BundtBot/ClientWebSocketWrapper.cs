@@ -23,40 +23,36 @@ namespace BundtBot
 		{
 			await _clientWebSocket.ConnectAsync(serverUri, CancellationToken.None);
 			_logger.LogInfo($"Connected to {serverUri} (ClientWebSocket State: {_clientWebSocket.State})",
-				ConsoleColor.Green);
-			StartSending();
+							ConsoleColor.Green);
+			StartReceiveLoop();
+			StartSendLoop();
 		}
 
-		public async Task SendQueuedAsync(string data)
+		public async Task SendMessageUsingQueueAsync(string data)
 		{
-			await Task.Run(() => {
+			await Task.Run(async () => {
 				var isDone = false;
 				_outgoingQueue.Enqueue(Tuple.Create<string, Action>(data, () => {
 					isDone = true;
 				}));
 				while (isDone == false) {
-					Thread.Sleep(10);
+					await Task.Delay(10);
 				}
 			});
 		}
 
-		void StartSending()
+		void StartSendLoop()
 		{
 			Task.Run(async () => {
-				await SendLoop();
-			});
-		}
-
-		async Task SendLoop()
-		{
-			while (_clientWebSocket.State == WebSocketState.Open) {
-				while (_outgoingQueue.Count == 0) {
-					Thread.Sleep(50);
+				while (_clientWebSocket.State == WebSocketState.Open) {
+					while (_outgoingQueue.Count == 0) {
+						await Task.Delay(100);
+					}
+					var message = _outgoingQueue.Dequeue();
+					await SendAsync(message.Item1);
+					message.Item2.Invoke();
 				}
-				var msg = _outgoingQueue.Dequeue();
-				await SendAsync(msg.Item1);
-				msg.Item2.Invoke();
-			}
+			});
 		}
 
 		async Task SendAsync(string data)
@@ -75,28 +71,23 @@ namespace BundtBot
 			return sendBuffer;
 		}
 
-		public void StartReceiving()
+		void StartReceiveLoop()
 		{
 			Task.Run(async () => {
-				await ReceiveLoop();
+				var message = "";
+				while (_clientWebSocket.State == WebSocketState.Open) {
+					var result = await ReceiveAsync();
+
+					_logger.LogDebug(JsonConvert.SerializeObject(result.Item1, Formatting.Indented));
+
+					message += result.Item2;
+
+					if (result.Item1.EndOfMessage == false) continue;
+
+					OnMessageReceived(message);
+					message = "";
+				}
 			});
-		}
-
-		async Task ReceiveLoop()
-		{
-			var message = "";
-			while (_clientWebSocket.State == WebSocketState.Open) {
-				var result = await ReceiveAsync();
-				
-				_logger.LogDebug(JsonConvert.SerializeObject(result.Item1, Formatting.Indented));
-
-				message += result.Item2;
-
-				if (result.Item1.EndOfMessage == false) continue;
-
-				OnMessageReceived(message);
-				message = "";
-			}
 		}
 
 		async Task<Tuple<WebSocketReceiveResult, string>> ReceiveAsync()
@@ -120,7 +111,9 @@ namespace BundtBot
 
 		void OnMessageReceived(string message)
 		{
-			MessageReceived?.Invoke(message);
+			Task.Run(() => {
+				MessageReceived?.Invoke(message);
+			});
 		}
 	}
 }
