@@ -1,0 +1,37 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+	<style>
+		 body {
+			 background-color: #333;
+			 font-family: sans-serif;
+			 color: #EEE;
+		 }
+	</style>
+</head>
+<body>
+<h1>@ViewData["Title"]</h1>
+<h3>Bundt's watch says that it is @ViewData["ServerTime"]</h3>
+<h3>Assembly: @ViewData["AssemblyVersion"]</h3>
+<h3>Guilds:</h3>
+<ul>
+	@foreach (var guild in Model) {
+		<li>@guild.Name</li>
+		<ul>
+			<li>Channels</li>
+			<ul>
+				@foreach (var channel in guild.Channels) {
+					<li>@channel.Name</li>
+				}
+			</ul>
+			<li>Members</li>
+			<ul>
+				@foreach (var members in guild.Members) {
+					<li>@members.User.Username</li>
+				}
+			</ul>
+		</ul>
+	}
+</ul>
+</body>
+</html>

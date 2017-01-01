@@ -8,9 +8,7 @@ gulp.task('default', function() {
 })
 
 gulp.task('build', shell.task([
-	'cd src\\BundtBot',
-	'dotnet publish -f netcoreapp1.0 -c release',
-	'cd ..\\..'
+	'cd src\\BundtBot && dotnet publish -f netcoreapp1.0 -c release && cd ..\\..'
 	],
 	{verbose: true}))
 
@@ -19,9 +17,7 @@ gulp.task('deploy', ['build'], shell.task(
 	{verbose: true}))
 
 gulp.task('run', ['build'], shell.task([
-	'cd src\\BundtBot\\bin\\release\\netcoreapp1.0\\publish',
-	'dotnet BundtBot.dll',
-	'cd ..\\..\\..\\..\\..\\..'
+	'cd src\\BundtBot\\bin\\release\\netcoreapp1.0\\publish && dotnet BundtBot.dll && cd ..\\..\\..\\..\\..\\..'
 	],
 	{verbose: true}))
 
