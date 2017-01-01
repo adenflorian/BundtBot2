@@ -54,7 +54,5 @@ namespace BundtBot.Discord.Gateway.Models
 		/// </summary>
 		[JsonProperty("email")]
 		public string Email;
-
-
 	}
 }

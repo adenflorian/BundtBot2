@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using BundtBot.Discord;
-using BundtBot.Discord.Gateway.Models;
 
 namespace BundtBot
 {
@@ -12,10 +9,12 @@ namespace BundtBot
 	{
 		// TODO https://docs.asp.net/en/latest/fundamentals/configuration.html
 		public const string Name = "bundtbot";
+		public static BundtBot BundtBot;
 
 		public static void Main(string[] args)
 		{
 			SetupConsole();
+
 
 			Task.Run(async () => {
 				await Start();
@@ -38,19 +37,9 @@ namespace BundtBot
 		{
 			new WebServer().Start();
 
-			var client = new DiscordClient();
+			BundtBot = new BundtBot();
 
-			await client.Connect();
-
-			client.GuildCreated += async (guild) => {
-				await guild.Channels[0].SendMessage("yo");
-			};
-
-			client.MessageCreated += async (message) => {
-				if (message.Author.IsBot == false) {
-					await message.Channel.SendMessage("hiya");
-				}
-			};
+			await BundtBot.Start();
 		}
 	}
 }

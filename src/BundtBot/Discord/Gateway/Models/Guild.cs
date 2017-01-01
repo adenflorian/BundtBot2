@@ -93,7 +93,7 @@ namespace BundtBot.Discord.Gateway.Models {
 		/// Only sent within the GUILD_CREATE event.
 		/// </summary>
 		[JsonProperty("members")]
-		public object[] Members;
+		public GuildMember[] Members;
 
 		/// <summary>
 		/// Only sent within the GUILD_CREATE event.

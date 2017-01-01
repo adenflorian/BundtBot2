@@ -4,6 +4,7 @@
 		"emitEntryPoint": true
 	},
 	"dependencies": {
+		"Handlebars.Net": "1.8.0",
 		"Microsoft.AspNetCore.Server.Kestrel": "1.1.0",
 		"Microsoft.NETCore.App": {
 		  "type": "platform",

@@ -1,0 +1,37 @@
+﻿<!DOCTYPE html>
+<html>
+	<head>
+		<style>
+			body {
+				background-color: #333;
+				font-family: sans-serif;
+				color: #EEE;
+			}
+		</style>
+	</head>
+	<body>
+		<h1>{{title}}</h1>
+		<h3>Bundt's watch says that it is {{serverTime}}</h3>
+		<h3>Assembly Version: {{assemblyVersion}}</h3>
+		<h3>Guilds:</h3>
+		<ul>
+			{{#each guilds}}
+				<li>{{this.Name}}</li>
+					<ul>
+						<li>Channels</li>
+						<ul>
+							{{#each this.Channels}}
+								<li>{{this.Name}}</li>
+							{{/each}}
+						</ul>
+						<li>Members</li>
+						<ul>
+							{{#each this.Members}}
+								<li>{{this.User.Username}}</li>
+							{{/each}}
+						</ul>
+					</ul>
+			{{/each}}
+		</ul>
+	</body>
+</html>
