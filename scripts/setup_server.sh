@@ -1,9 +1,10 @@
-user=root
+# For Ubuntu 16.04
+
+user=$1
+host=$2
 red=`tput setaf 1`
 green=`tput setaf 2`
 reset=`tput sgr0`
-
-read -p "Enter host: " host
 
 echo "${green}Logging in to $host as $user${reset}"
 

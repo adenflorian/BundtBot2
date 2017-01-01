@@ -11,6 +11,8 @@ namespace BundtBot
 {
 	public class WebServer
 	{
+		static readonly MyLogger _logger = new MyLogger(nameof(WebServer));
+
 		public void Start()
 		{
 			var host = new WebHostBuilder()
@@ -18,25 +20,43 @@ namespace BundtBot
 				.UseStartup<Startup>()
 				.Build();
 
-			Task.Run(() => host.Run());
+			Task.Run(() => {
+				try {
+					host.Run();
+				} catch (Exception ex) {
+					_logger.LogError(ex);
+					throw;
+				}
+			});
 		}
 	}
 
 	public class Startup
 	{
+		static readonly MyLogger _logger = new MyLogger(nameof(Startup));
+
 		public void Configure(IApplicationBuilder app)
 		{
 			app.Run(async (context) => {
-				var template = Handlebars.Compile(File.ReadAllText("WebServer/Templates/main.html"));
+				try {
+					_logger.LogInfo("Received request to web server from " + context.Request.Host);
 
-				var data = new {
-					title = Program.Name,
-					serverTime = DateTime.Now.ToString("HH:mm:ss tt zz"),
-					assemblyVersion = Assembly.GetEntryAssembly().GetName().Version,
-					guilds = Program.BundtBot.Client.Guilds
-				};
+					var template = Handlebars.Compile(File.ReadAllText("WebServer/Templates/main.html"));
 
-				await context.Response.WriteAsync(template(data));
+					var data = new {
+						title = Program.Name,
+						serverTime = DateTime.Now.ToString("HH:mm:ss tt zz"),
+						assemblyVersion = Assembly.GetEntryAssembly().GetName().Name + " " + Assembly.GetEntryAssembly().GetName().Version,
+						guilds = Program.BundtBot.Client.Guilds
+					};
+
+					var output = template(data);
+
+					await context.Response.WriteAsync(output);
+				} catch (Exception ex) {
+					_logger.LogError(ex);
+					throw;
+				}
 			});
 		}
 	}

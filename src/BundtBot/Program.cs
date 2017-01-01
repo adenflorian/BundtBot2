@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,14 +12,17 @@ namespace BundtBot
 		public const string Name = "bundtbot";
 		public static BundtBot BundtBot;
 
+		static readonly MyLogger _logger = new MyLogger(nameof(Program));
+
 		public static void Main(string[] args)
 		{
 			SetupConsole();
+			_logger.LogInfo("Current working directory: " + Directory.GetCurrentDirectory());
 
 
 			Task.Run(async () => {
 				await Start();
-			}).Wait();
+			});
 
 			while (true) {
 				Thread.Sleep(TimeSpan.FromMilliseconds(100));
