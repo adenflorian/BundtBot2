@@ -1,7 +1,7 @@
 ﻿using System;
 using Newtonsoft.Json;
 
-namespace BundtBot.Discord.Gateway.Models
+namespace BundtBot.Discord.Models.Gateway
 {
 	[JsonObject]
 	public class GatewayHello

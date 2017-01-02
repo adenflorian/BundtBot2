@@ -1,15 +1,15 @@
 ﻿using Newtonsoft.Json;
 
-namespace BundtBot.Discord.Gateway.Models
+namespace BundtBot.Discord.Models.Embed
 {
-    public class EmbedImage
+    public class EmbedThumbnail
 	{
 		/// <summary>
-		/// Source url of image (only supports http(s) and attachments).
+		/// Source url of thumbnail (only supports http(s) and attachments).
 		/// </summary>
 		[JsonProperty("url")]
 		public string SourceUrl;
-		
+
 		[JsonProperty("proxy_icon_url")]
 		public string ProxySourceUrl;
 

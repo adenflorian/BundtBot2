@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace BundtBot.Discord.Gateway.Models
+namespace BundtBot.Discord.Models
 {
     public class CreateMessage
 	{
@@ -32,6 +32,6 @@ namespace BundtBot.Discord.Gateway.Models
 
 		/// <summary>Optional.</summary>
 		[JsonProperty("embed")]
-		public Embed EmbeddedContent;
+		public Embed.Embed EmbeddedContent;
 	}
 }

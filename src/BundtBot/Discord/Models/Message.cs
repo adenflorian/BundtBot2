@@ -1,12 +1,12 @@
 ﻿using System;
-using BundtBot.Discord.Models;
+using System.Collections.Generic;
 using Newtonsoft.Json;
 
-namespace BundtBot.Discord.Gateway.Models
+namespace BundtBot.Discord.Models
 {
     public class Message
 	{
-		internal DiscordClient client;
+		internal DiscordClient Client;
 
 		[JsonProperty("id")]
 		public ulong ID;
@@ -14,7 +14,7 @@ namespace BundtBot.Discord.Gateway.Models
 		[JsonProperty("channel_id")]
 		public ulong ChannelId;
 
-	    public Channel Channel => client.Channels[ChannelId];
+	    public TextChannel TextChannel => Client.GuildChannels[ChannelId];
 
 		/// <summary>
 		/// The author of this message (the author of a message is not guaranteed to be a user*).
@@ -38,19 +38,19 @@ namespace BundtBot.Discord.Gateway.Models
 		public bool MentionsEveryone;
 		
 		[JsonProperty("mentions")]
-		public User[] MentionedUsers;
+		public List<User> MentionedUsers;
 		
 		[JsonProperty("mention_roles")]
-		public ulong[] MentionedRoles;
+		public List<ulong> MentionedRoles;
 		
 		[JsonProperty("attachments")]
-		public Attachment[] AttachedFiles;
+		public List<Attachment> AttachedFiles;
 		
 		[JsonProperty("embeds")]
-		public Embed[] EmbeddedContent;
+		public List<Embed.Embed> EmbeddedContent;
 		
 		[JsonProperty("reactions")]
-		public Reaction[] Reactions;
+		public List<Reaction> Reactions;
 
 		/// <summary>
 		/// Used for validating a message was sent.

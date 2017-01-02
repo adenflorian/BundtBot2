@@ -1,10 +1,12 @@
 ﻿using System;
 using Newtonsoft.Json;
 
-namespace BundtBot.Discord.Gateway.Models
+namespace BundtBot.Discord.Models
 {
     public class GuildMember
 	{
+		internal DiscordClient Client;
+
 		[JsonProperty("user")]
 		public User User;
 

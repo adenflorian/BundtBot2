@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace BundtBot.Discord.Gateway.Models
+namespace BundtBot.Discord.Models
 {
     public class Emoji
 	{

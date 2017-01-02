@@ -1,9 +1,13 @@
 ﻿using System;
-using BundtBot.Discord.Models;
+using System.Collections.Generic;
 using Newtonsoft.Json;
 
-namespace BundtBot.Discord.Gateway.Models {
-	public class Guild {
+namespace BundtBot.Discord.Models
+{
+	public class Guild
+	{
+		internal DiscordClient Client;
+
 		[JsonProperty("id")]
 		public ulong Id;
 
@@ -48,13 +52,13 @@ namespace BundtBot.Discord.Gateway.Models {
 		public int DefaultMessageNotificationsLevel;
 
 		[JsonProperty("roles")]
-		public object[] Roles;
+		public List<object> Roles;
 
 		[JsonProperty("emojis")]
-		public Emoji[] Emojis;
+		public List<Emoji> Emojis;
 
 		[JsonProperty("features")]
-		public object[] Features;
+		public List<object> Features;
 
 		[JsonProperty("mfa_level")]
 		public int MultiFactorAuthenticationLevel;
@@ -86,20 +90,20 @@ namespace BundtBot.Discord.Gateway.Models {
 		/// Only sent within the GUILD_CREATE event.
 		/// </summary>
 		[JsonProperty("voice_states")]
-		public object[] VoiceStates;
+		public List<object> VoiceStates;
 
 		/// <summary>
 		/// Array of guild member objects.
 		/// Only sent within the GUILD_CREATE event.
 		/// </summary>
 		[JsonProperty("members")]
-		public GuildMember[] Members;
+		public List<GuildMember> Members;
 
 		/// <summary>
 		/// Only sent within the GUILD_CREATE event.
 		/// </summary>
 		[JsonProperty("channels")]
-		public Channel[] Channels;
+		public List<TextChannel> Channels;
 
 		/// <summary>
 		/// Array of simple presence objects,
@@ -107,6 +111,6 @@ namespace BundtBot.Discord.Gateway.Models {
 		/// Only sent within the GUILD_CREATE event.
 		/// </summary>
 		[JsonProperty("presences")]
-		public object[] Presences;
+		public List<object> Presences;
 	}
 }

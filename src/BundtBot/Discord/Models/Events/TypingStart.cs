@@ -1,7 +1,7 @@
 ﻿using System;
 using Newtonsoft.Json;
 
-namespace BundtBot.Discord.Gateway.Models.Events
+namespace BundtBot.Discord.Models.Events
 {
     public class TypingStart
 	{

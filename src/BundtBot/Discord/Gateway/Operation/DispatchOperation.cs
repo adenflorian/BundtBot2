@@ -1,6 +1,6 @@
 ﻿using System;
-using BundtBot.Discord.Gateway.Models;
-using BundtBot.Discord.Gateway.Models.Events;
+using BundtBot.Discord.Models;
+using BundtBot.Discord.Models.Events;
 using Newtonsoft.Json;
 
 namespace BundtBot.Discord.Gateway.Operation

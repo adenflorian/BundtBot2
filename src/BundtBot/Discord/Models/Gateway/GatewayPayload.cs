@@ -1,7 +1,7 @@
 ﻿using BundtBot.Discord.Gateway.Operation;
 using Newtonsoft.Json;
 
-namespace BundtBot.Discord.Gateway.Models {
+namespace BundtBot.Discord.Models.Gateway {
 	[JsonObject]
 	public class GatewayPayload {
 		[JsonRequired]

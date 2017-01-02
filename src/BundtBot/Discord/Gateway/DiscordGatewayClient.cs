@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using BundtBot.Discord.Gateway.Models;
 using BundtBot.Discord.Gateway.Operation;
+using BundtBot.Discord.Models;
+using BundtBot.Discord.Models.Gateway;
 using BundtBot.Extensions;
 using Newtonsoft.Json;
 
