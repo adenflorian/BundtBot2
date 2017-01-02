@@ -14,7 +14,7 @@ namespace BundtBot.WebApi.Controllers
 				_logger.LogInfo("Received request to web server");
 
 				ViewData["Title"] = Program.Name;
-				ViewData["ServerTime"] = DateTime.Now.ToString("HH:mm:ss tt zz");
+				ViewData["ServerTime"] = DateTime.Now.ToString("HH:mm:ss zz");
 				ViewData["AssemblyVersion"] = Assembly.GetEntryAssembly().GetName().Name + " " + Assembly.GetEntryAssembly().GetName().Version;
 
 				return View(Program.BundtBot.Client.Guilds);
