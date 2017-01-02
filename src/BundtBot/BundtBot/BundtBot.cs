@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 using System.Threading.Tasks;
 using BundtBot.Discord;
 
@@ -27,8 +28,7 @@ namespace BundtBot
 			Client.Ready += (ready) => {
 				_logger.LogInfo("Client is Ready/Connected! ໒( ͡ᵔ ▾ ͡ᵔ )७", ConsoleColor.Green);
 				_logger.LogInfo("Setting game...");
-				// TODO
-				//Client.SetGame("gniyalP");
+				Client.SetGame(Assembly.GetEntryAssembly().GetName().Version.ToString());
 			};
 
 			// TODO

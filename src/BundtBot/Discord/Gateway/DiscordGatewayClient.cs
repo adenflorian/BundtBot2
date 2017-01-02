@@ -78,6 +78,15 @@ namespace BundtBot.Discord.Gateway
 			});
 		}
 
+		public async Task SendStatusUpdate(StatusUpdate statusUpdate)
+		{
+			_logger.LogInfo("Sending StatusUpdate to Gateway" +
+			                $"(idle since: {statusUpdate.IdleSince}, " +
+			                $"game: {statusUpdate.Game.Name}",
+							ConsoleColor.Green);
+			await SendOpCodeAsync(OpCode.StatusUpdate, statusUpdate);
+		}
+
 		async Task SendOpCodeAsync(OpCode opCode, object eventData)
 		{
 			var gatewayPayload = new GatewayPayload(opCode, eventData);

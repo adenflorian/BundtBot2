@@ -5,6 +5,7 @@ using BundtBot.Discord.Gateway;
 using BundtBot.Discord.Gateway.Operation;
 using BundtBot.Discord.Models;
 using BundtBot.Discord.Models.Events;
+using BundtBot.Discord.Models.Gateway;
 using Newtonsoft.Json;
 
 namespace BundtBot.Discord
@@ -85,6 +86,11 @@ namespace BundtBot.Discord
 			};
 
 			await _gatewayClient.ConnectAsync(gatewayUrl);
+		}
+
+		public async void SetGame(string gameName)
+		{
+			await _gatewayClient.SendStatusUpdate(new StatusUpdate(null, gameName));
 		}
 
 		void OnMessageCreated(Message message)
