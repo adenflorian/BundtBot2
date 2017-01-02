@@ -14,7 +14,7 @@ namespace BundtBot.Discord.Models
 		[JsonProperty("channel_id")]
 		public ulong ChannelId;
 
-	    public TextChannel TextChannel => Client.GuildChannels[ChannelId];
+	    public TextChannel TextChannel => Client.TextChannels[ChannelId];
 
 		/// <summary>
 		/// The author of this message (the author of a message is not guaranteed to be a user*).

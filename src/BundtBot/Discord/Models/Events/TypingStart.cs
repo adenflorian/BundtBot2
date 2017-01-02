@@ -1,5 +1,6 @@
 ﻿using System;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace BundtBot.Discord.Models.Events
 {
@@ -12,6 +13,7 @@ namespace BundtBot.Discord.Models.Events
 		public ulong UserId;
 		
 		[JsonProperty("timestamp")]
+		[JsonConverter(typeof(MyDateTimeConverter))]
 		public DateTime Timestamp;
 	}
 }

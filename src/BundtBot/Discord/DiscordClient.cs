@@ -30,9 +30,17 @@ namespace BundtBot.Discord
 		public event MessageCreatedHandler MessageCreated;
 		public delegate void ReadyHandler(Ready readyInfo);
 		public event ReadyHandler Ready;
+		public delegate void TextChannelCreatedHandler(TextChannel newTextChannel);
+		public event TextChannelCreatedHandler TextChannelCreated;
+		public delegate void VoiceChannelCreatedHandler(VoiceChannel newVoiceChannel);
+		public event VoiceChannelCreatedHandler VoiceChannelCreated;
+		public delegate void DmChannelCreatedHandler(DmChannel newDmChannel);
+		public event DmChannelCreatedHandler DmChannelCreated;
 
 		public Dictionary<ulong, Guild> Guilds = new Dictionary<ulong, Guild>();
-		public Dictionary<ulong, TextChannel> GuildChannels = new Dictionary<ulong, TextChannel>();
+		public Dictionary<ulong, TextChannel> TextChannels = new Dictionary<ulong, TextChannel>();
+		public Dictionary<ulong, VoiceChannel> VoiceChannels = new Dictionary<ulong, VoiceChannel>();
+		public Dictionary<ulong, DmChannel> DmChannels = new Dictionary<ulong, DmChannel>();
 
 		internal readonly DiscordRestClient DiscordRestApiClient;
 
@@ -44,8 +52,6 @@ namespace BundtBot.Discord
 		{
 			DiscordRestApiClient = new DiscordRestClient(BotToken, Name, Version);
 			_gatewayClient = new DiscordGatewayClient(BotToken);
-			MessageCreated += OnMessageCreated;
-			GuildCreated += OnGuildCreated;
 		}
 
 		public async Task Connect()
@@ -57,17 +63,19 @@ namespace BundtBot.Discord
 				_logger.LogInfo("Processing Gateway Event " + eventName);
 				switch (eventName) {
 					case "CHANNEL_CREATE":
-						var channel = JsonConvert.DeserializeObject<TextChannel>(eventJsonData);
+						var channel = JsonConvert.DeserializeObject<Channel>(eventJsonData);
+						_logger.LogInfo("Received Event: CHANNEL_CREATE " + channel.Id, ConsoleColor.Green);
+						OnChannelCreated(channel, eventJsonData);
 						break;
 					case "MESSAGE_CREATE":
 						var message = JsonConvert.DeserializeObject<Message>(eventJsonData);
 						_logger.LogInfo("Received Event: MESSAGE_CREATE " + message.Content, ConsoleColor.Green);
-						MessageCreated?.Invoke(message);
+						OnMessageCreated(message);
 						break;
 					case "GUILD_CREATE":
 						var guild = JsonConvert.DeserializeObject<Guild>(eventJsonData);
 						_logger.LogInfo("Received Event: GUILD_CREATE " + guild.Name, ConsoleColor.Green);
-						GuildCreated?.Invoke(guild);
+						OnGuildCreated(guild);
 						break;
 					case "READY":
 						var ready = JsonConvert.DeserializeObject<Ready>(eventJsonData);
@@ -93,22 +101,46 @@ namespace BundtBot.Discord
 			await _gatewayClient.SendStatusUpdate(new StatusUpdate(null, gameName));
 		}
 
+		void OnChannelCreated(Channel channel, string eventJsonData)
+		{
+			if (channel.IsPrivate) {
+				var dmChannel = JsonConvert.DeserializeObject<DmChannel>(eventJsonData);
+				dmChannel.Client = this;
+				DmChannels[dmChannel.Id] = dmChannel;
+				DmChannelCreated?.Invoke(dmChannel);
+			}
+
+			var guildChannel = JsonConvert.DeserializeObject<GuildChannel>(eventJsonData);
+			guildChannel.Client = this;
+
+			if (guildChannel.Type == GuildChannelType.Text) {
+				var textChannel = new TextChannel(guildChannel);
+				TextChannels[textChannel.Id] = textChannel;
+				TextChannelCreated?.Invoke(textChannel);
+			} else {
+				var voiceChannel = new VoiceChannel(guildChannel);
+				VoiceChannels[voiceChannel.Id] = voiceChannel;
+				VoiceChannelCreated?.Invoke(new VoiceChannel(guildChannel));
+			}
+		}
+
 		void OnMessageCreated(Message message)
 		{
 			message.Client = this;
+			MessageCreated?.Invoke(message);
 		}
 
 		void OnGuildCreated(Guild guild)
 		{
 			guild.Client = this;
-			guild.Channels.ForEach(x => x.Client = this);
+			guild.AllChannels.ForEach(x => x.Client = this);
 			guild.Members.ForEach(x => x.Client = this);
 
 			Guilds[guild.Id] = guild;
-			foreach (var channel in guild.Channels) {
-				GuildChannels[channel.Id] = channel;
-				channel.Client = this;
-			}
+			guild.TextChannels.ForEach(x => TextChannels[x.Id] = x);
+			guild.VoiceChannels.ForEach(x => VoiceChannels[x.Id] = x);
+
+			GuildCreated?.Invoke(guild);
 		}
     }
 }

@@ -1,26 +1,32 @@
 ﻿using System.Threading.Tasks;
-using Newtonsoft.Json;
 
 namespace BundtBot.Discord.Models
 {
-    public class TextChannel : GuildChannel
+    public class TextChannel
     {
-	    /// <summary>
-		/// 0-1024 characters.
-		/// Present: Text only.
-		/// </summary>
-		[JsonProperty("topic")]
-		public string Topic;
+	    readonly GuildChannel _guildChannel;
 
-		/// <summary>
-		/// Present: Text only.
-		/// </summary>
-		[JsonProperty("last_message_id")]
-		public ulong? LastMessageId;
-		
-	    public async Task SendMessage(string message)
+	    internal DiscordClient Client {
+		    get { return _guildChannel.Client; }
+		    set { _guildChannel.Client = value; }
+	    }
+		public ulong Id => _guildChannel.Id;
+		public ulong GuildID => _guildChannel.GuildID;
+		public Guild Guild => _guildChannel.Guild;
+		public string Name => _guildChannel.Name;
+		public int Position => _guildChannel.Position;
+		public Overwrite[] PermissionOverwrites => _guildChannel.PermissionOverwrites;
+		public string Topic => _guildChannel.Topic;
+		public ulong? LastMessageId => _guildChannel.LastMessageId;
+
+		public TextChannel(GuildChannel guildChannel)
+		{
+			_guildChannel = guildChannel;
+		}
+
+		public async Task SendMessage(string message)
 	    {
-			await Client.DiscordRestApiClient.CreateMessageAsync(Id, new CreateMessage {
+			await _guildChannel.Client.DiscordRestApiClient.CreateMessageAsync(_guildChannel.Id, new CreateMessage {
 				Content = message
 			});
 	    }

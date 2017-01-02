@@ -1,21 +1,25 @@
-﻿using Newtonsoft.Json;
-
-namespace BundtBot.Discord.Models
+﻿namespace BundtBot.Discord.Models
 {
-    public class VoiceChannel : GuildChannel
-	{
-		/// <summary>
-		/// The bitrate (in bits) of the voice channel.
-		/// Present: Voice only.
-		/// </summary>
-		[JsonProperty("bitrate")]
-		public int? Bitrate;
+    public class VoiceChannel
+    {
+	    readonly GuildChannel _guildChannel;
 
-		/// <summary>
-		/// the user limit of the voice channel.
-		/// Present: Voice only.
-		/// </summary>
-		[JsonProperty("user_limit")]
-		public int? UserLimit;
+		internal DiscordClient Client {
+			get { return _guildChannel.Client; }
+			set { _guildChannel.Client = value; }
+		}
+		public ulong Id => _guildChannel.Id;
+		public ulong GuildID => _guildChannel.GuildID;
+		public Guild Guild => _guildChannel.Guild;
+		public string Name => _guildChannel.Name;
+		public int Position => _guildChannel.Position;
+		public Overwrite[] PermissionOverwrites => _guildChannel.PermissionOverwrites;
+		public int? Bitrate => _guildChannel.Bitrate;
+		public int? UserLimit => _guildChannel.UserLimit;
+
+		public VoiceChannel(GuildChannel guildChannel)
+		{
+			_guildChannel = guildChannel;
+		}
 	}
 }

@@ -20,9 +20,13 @@ namespace BundtBot
 			SetupConsole();
 			_logger.LogInfo("Current working directory: " + Directory.GetCurrentDirectory());
 
-
 			Task.Run(async () => {
-				await Start();
+				try {
+					await Start();
+				} catch (Exception ex) {
+					_logger.LogError(ex);
+					throw;
+				}
 			});
 
 			while (true) {

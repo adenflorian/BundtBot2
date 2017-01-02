@@ -2,7 +2,7 @@
 
 namespace BundtBot.Discord.Models
 {
-    public abstract class Channel
+    public class Channel
 	{
 		internal DiscordClient Client;
 

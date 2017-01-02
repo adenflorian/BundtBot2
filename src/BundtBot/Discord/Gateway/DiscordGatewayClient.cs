@@ -140,9 +140,16 @@ namespace BundtBot.Discord.Gateway
 			}
 		}
 
-		static void InvokeEvent(OperationHandler handler, GatewayPayload payload)
+		void InvokeEvent(OperationHandler handler, GatewayPayload payload)
 		{
-			Task.Run(() => handler?.Invoke(payload.EventName, payload.EventData.ToString()));
+			Task.Run(() => {
+				try {
+					handler?.Invoke(payload.EventName, payload.EventData?.ToString());
+				} catch (Exception ex) {
+					_logger.LogError(ex);
+					throw;
+				}
+			});
 		}
 	}
 }
