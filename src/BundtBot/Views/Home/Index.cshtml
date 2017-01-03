@@ -18,9 +18,15 @@
 	@foreach (var guild in Model) {
 		<li>@guild.Name</li>
 		<ul>
-			<li>Channels</li>
+			<li>Text Channels</li>
 			<ul>
-				@foreach (var channel in guild.Channels) {
+				@foreach (var channel in guild.TextChannels) {
+					<li>@channel.Name</li>
+				}
+			</ul>
+			<li>Voice Channels</li>
+			<ul>
+				@foreach (var channel in guild.VoiceChannels) {
 					<li>@channel.Name</li>
 				}
 			</ul>
