@@ -18,7 +18,9 @@ gulp.task('clean', function () {
 	fs.unlink(bundtbotTar)
 })
 
-gulp.task('build', shell.task('dotnet publish src/BundtBot/BundtBot.csproj', { verbose: true }))
+gulp.task('restore', shell.task('dotnet restore src/BundtBot/BundtBot.csproj', { verbose: true }))
+
+gulp.task('build', ['restore'], shell.task('dotnet publish src/BundtBot/BundtBot.csproj', { verbose: true }))
 
 gulp.task('tar', ['build'], function (cb) {
 	var pack = tar.pack('./src/BundtBot/bin/debug/netcoreapp1.0/publish/')
@@ -44,6 +46,9 @@ gulp.task('deploy', ['build', 'tar', 'sftpdeploy', 'sshdeploy'])
 gulp.task('run', ['build'], shell.task([
 	'dotnet src/BundtBot/bin/debug/netcoreapp1.0/publish/BundtBot.dll'
 	],
+	{ verbose: true }))
+
+gulp.task('test', shell.task('dotnet test test/BundtBotTests/BundtBotTests.csproj',
 	{ verbose: true }))
 
 gulp.task('rlogs', shell.task(

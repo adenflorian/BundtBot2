@@ -11,15 +11,18 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.NETCore.App" Version="1.1.0" />
-    <PackageReference Include="xunit" Version="2.2.0-beta3-build3402" />
-    <PackageReference Include="System.Runtime.Serialization.Primitives" Version="4.3.0" />
-    <PackageReference Include="dotnet-test-xunit" Version="2.2.0-preview2-build1029" />
-    <PackageReference Include="Moq" Version="4.6.38-alpha" />
+    <ProjectReference Include="..\..\src\BundtBot\BundtBot.csproj" />
+    <ProjectReference Include="..\..\src\BundtCord\BundtCord.csproj" />
+    <ProjectReference Include="..\..\src\BundtCommon\BundtCommon.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\BundtBot\BundtBot.csproj" />
+    <PackageReference Include="Microsoft.NETCore.App" Version="1.1.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.0.0-preview-20161123-03" />
+    <PackageReference Include="xunit" Version="2.2.0-beta4-build3444" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.2.0-beta4-build1194" />
+    <PackageReference Include="System.Runtime.Serialization.Primitives" Version="4.3.0" />
+    <PackageReference Include="Moq" Version="4.6.38-alpha" />
   </ItemGroup>
 
 </Project>

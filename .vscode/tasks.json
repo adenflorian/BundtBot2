@@ -13,12 +13,15 @@
         },
         {
             "taskName": "deploy",
-            "isBuildCommand": false,
             "showOutput": "always"
         },
         {
             "taskName": "run",
-            "isBuildCommand": false,
+            "showOutput": "always"
+        },
+        {
+            "taskName": "test",
+            "isTestCommand": true,
             "showOutput": "always"
         }
     ]

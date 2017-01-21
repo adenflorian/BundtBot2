@@ -2,7 +2,7 @@
 
 namespace BundtBot
 {
-	class MyLogger
+	public class MyLogger
 	{
 		public const ConsoleColor DefaultColor = ConsoleColor.Gray;
 
