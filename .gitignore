@@ -4,5 +4,6 @@ node_modules/
 obj/
 
 *.gz
+*.tar
 *.lock.json
 secret.json

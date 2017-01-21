@@ -5,5 +5,21 @@
     "command": "gulp",
     "isShellCommand": true,
     "args": [],
-    "showOutput": "always"
+    "tasks": [
+        {
+            "taskName": "build",
+            "isBuildCommand": true,
+            "showOutput": "always"
+        },
+        {
+            "taskName": "deploy",
+            "isBuildCommand": false,
+            "showOutput": "always"
+        },
+        {
+            "taskName": "run",
+            "isBuildCommand": false,
+            "showOutput": "always"
+        }
+    ]
 }

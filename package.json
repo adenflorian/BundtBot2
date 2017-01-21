@@ -6,6 +6,7 @@
     "gulp": "^3.9.1",
     "gulp-grunt": "^0.5.5",
     "gulp-shell": "^0.5.2",
+    "inquirer": "^2.0.0",
     "tar-fs": "~1.15.0",
     "wait-until": "0.0.2"
   },
