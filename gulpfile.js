@@ -1,38 +1,50 @@
 var gulp = require('gulp')
+var fs = require('fs')
 var shell = require('gulp-shell')
-var user = "remote username"
-var host = "remote ip"
+var tar = require('tar-fs')
+var waitUntil = require('wait-until')
 
-gulp.task('default', function() {
- 	// place code for your default task here
+require('gulp-grunt')(gulp); // add all the gruntfile tasks to gulp
+
+var secret = JSON.parse(fs.readFileSync('./secret.json'))
+
+gulp.task('init', function () {
+	// TODO
+	// Create secret.json from user input
 })
 
-gulp.task('build', shell.task([
-	'cd src\\BundtBot && dotnet publish -f netcoreapp1.0 -c release && cd ..\\..'
-	],
-	{verbose: true}))
+gulp.task('build', shell.task('dotnet publish src/BundtBot/BundtBot.csproj', { verbose: true }))
 
-gulp.task('deploy', ['build'], shell.task(
-	`bash scripts\\deploy.sh ${user} ${host}`,
-	{verbose: true}))
+gulp.task('tar', ['build'], function (cb) {
+	var pack = tar.pack('./src/BundtBot/bin/debug/netcoreapp1.0/publish/')
+		.pipe(fs.createWriteStream("bundtbot.tar"))
+	waitUntil()
+		.interval(1000)
+		.times(50)
+		.condition(function () {
+			console.log('bytes written: ' + pack.bytesWritten)
+			return pack._writableState.ended
+		})
+		.done(function (result) {
+			cb()
+		})
+})
+
+gulp.task('sftpdeploy', ['tar'], shell.task('grunt sftp:deploy', { verbose: true, }))
+
+gulp.task('sshdeploy', ['sftpdeploy'], shell.task('grunt sshexec:deploy', { verbose: true, }))
+
+gulp.task('deploy', ['build', 'tar', 'sftpdeploy', 'sshdeploy'])
 
 gulp.task('run', ['build'], shell.task([
-	'cd src\\BundtBot\\bin\\release\\netcoreapp1.0\\publish && dotnet BundtBot.dll && cd ..\\..\\..\\..\\..\\..'
-	],
-	{verbose: true}))
+	'dotnet src/BundtBot/bin/debug/netcoreapp1.0/publish/BundtBot.dll'
+],
+	{ verbose: true }))
 
 gulp.task('rlogs', shell.task(
-	`ssh ${user}@${host} "journalctl -fu bundtbot.service;"`,
-	{verbose: true}))
+	`ssh ${secret.username}@${secret.host} "journalctl -fu bundtbot.service;"`,
+	{ verbose: true }))
 
 gulp.task('setup-server', shell.task(
-	`bash scripts\\setup_server.sh ${user} ${host}`,
-	{verbose: true}))
-
-gulp.task('watch', function() {
-	var watcher = gulp.watch('**/*.cs', ['default'])
-	watcher.on('change', function(event) {
-	  console.log('File ' + event.path + ' was ' + event.type + ', running tasks...')
-	})
-})
-
+	`bash scripts/setup_server.sh ${secret.username} ${secret.host}`,
+	{ verbose: true }))
