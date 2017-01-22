@@ -5,7 +5,7 @@ namespace BundtBot.Discord.Models
     public class DmChannel : Channel
     {
 		[JsonProperty("recipient")]
-		public User Recipient;
+		public DiscordUser Recipient;
 
 		/// <summary>
 		/// The id of the last message sent in this DM.

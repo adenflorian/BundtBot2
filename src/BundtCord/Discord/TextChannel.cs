@@ -1,4 +1,3 @@
-using System;
 using System.Threading.Tasks;
 using BundtBot.Discord.Models;
 
@@ -22,7 +21,7 @@ namespace BundtBot.Discord
         {
             var createMessage = new CreateMessage{Content = content};
             var discordMessage = await _client.DiscordRestApiClient.CreateMessageAsync(Id, createMessage);
-            var message = new Message(discordMessage, this);
+            var message = new Message(discordMessage, _client);
             return message;
         }
     }

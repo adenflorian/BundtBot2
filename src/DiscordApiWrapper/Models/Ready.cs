@@ -8,7 +8,7 @@ namespace BundtBot.Discord.Models {
 
 		/// <summary>User object (with email information).</summary>
 		[JsonProperty("user")]
-		public User User;
+		public DiscordUser User;
 
 		/// <summary>Array of DM channel objects.</summary>
 		[JsonProperty("private_channels")]

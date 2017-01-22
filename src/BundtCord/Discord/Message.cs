@@ -1,18 +1,19 @@
-using System;
 using BundtBot.Discord.Models;
 
 namespace BundtBot.Discord
 {
     public class Message : IMessage
     {
-        public string Content;
+        public IUser Author { get; }
+        public string Content { get; }
 
         public ITextChannel TextChannel { get; }
 
-        public Message(DiscordMessage discordMessage, ITextChannel textChannel)
+        public Message(DiscordMessage discordMessage, DiscordClient client)
         {
             Content = discordMessage.Content;
-            TextChannel = textChannel;
+            TextChannel = client.TextChannels[discordMessage.ChannelId];
+            Author = client.Users[discordMessage.Author.Id];
         }
     }
 }

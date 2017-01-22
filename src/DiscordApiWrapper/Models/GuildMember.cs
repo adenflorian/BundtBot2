@@ -6,7 +6,7 @@ namespace BundtBot.Discord.Models
     public class GuildMember
 	{
 		[JsonProperty("user")]
-		public User User;
+		public DiscordUser User;
 
 		/// <summary>
 		/// This users guild nickname (if one is set).

@@ -2,7 +2,7 @@
 
 namespace BundtBot.Discord.Models
 {
-    public class User
+    public class DiscordUser
     {
 		/// <summary>
 		/// Required OAuth2 Scope: identify.

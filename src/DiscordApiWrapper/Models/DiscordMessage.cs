@@ -17,7 +17,7 @@ namespace BundtBot.Discord.Models
 		/// </summary>
 		// TODO the author of a message is not guaranteed to be a user
 		[JsonProperty("author")]
-		public User Author;
+		public DiscordUser Author;
 		
 		[JsonProperty("content")]
 		public string Content;
@@ -35,7 +35,7 @@ namespace BundtBot.Discord.Models
 		public bool MentionsEveryone;
 		
 		[JsonProperty("mentions")]
-		public List<User> MentionedUsers;
+		public List<DiscordUser> MentionedUsers;
 		
 		[JsonProperty("mention_roles")]
 		public List<ulong> MentionedRoles;

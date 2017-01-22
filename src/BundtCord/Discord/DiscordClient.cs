@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using BundtBot.Discord.Gateway;
@@ -14,6 +13,8 @@ namespace BundtBot.Discord
 		const string Version = "0.0.1";
 		readonly string BotToken;
 
+		public IUser Me { get; internal set; }
+
 		public delegate void MessageCreatedHandler(IMessage message);
 		public event MessageCreatedHandler MessageCreated;
 
@@ -23,7 +24,8 @@ namespace BundtBot.Discord
 
 		readonly DiscordGatewayClient _gatewayClient;
 
-		Dictionary<ulong, ITextChannel> TextChannels = new Dictionary<ulong, ITextChannel>();
+		internal Dictionary<ulong, ITextChannel> TextChannels = new Dictionary<ulong, ITextChannel>();
+		internal Dictionary<ulong, IUser> Users = new Dictionary<ulong, IUser>();
 
 		public DiscordClient(string botToken)
 		{
@@ -42,13 +44,20 @@ namespace BundtBot.Discord
 				discordGuild.AllChannels
 					.Where(x => x.Type == GuildChannelType.Text)
 					.Select(x => new TextChannel(x, this))
-					.ToList().ForEach(x => TextChannels.Add(x.Id, x));
+					.ToList().ForEach(x => {TextChannels[x.Id] = x;});
+				discordGuild.Members
+					.Select(x => new User(x.User))
+					.ToList().ForEach(x => {Users[x.Id] = x;});
 			};
 
 			_gatewayClient.MessageCreated += (discordMessage) => {
 				var textChannel = TextChannels[discordMessage.ChannelId];
-				var message = new Message(discordMessage, textChannel);
+				var message = new Message(discordMessage, this);
 				MessageCreated?.Invoke(message);
+			};
+
+			_gatewayClient.Ready += (readyInfo) => {
+				Me = new User(readyInfo.User);
 			};
 		}
 
