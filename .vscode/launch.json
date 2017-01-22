@@ -7,7 +7,7 @@
             "preLaunchTask": "build",
             "program": "${workspaceRoot}\\src\\BundtBot\\bin\\Debug\\netcoreapp1.0\\BundtBot.dll",
             "args": [],
-            "cwd": "${workspaceRoot}\\src\\BundtBot",
+            "cwd": "${workspaceRoot}\\src\\BundtBot\\bin\\Debug\\netcoreapp1.0",
             "externalConsole": false,
             "stopAtEntry": false,
             "internalConsoleOptions": "openOnSessionStart"

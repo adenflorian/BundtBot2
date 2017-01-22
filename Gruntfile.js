@@ -14,8 +14,8 @@ module.exports = function (grunt) {
                     "./": bundtbotfile
                 },
                 options: {
-                    host: secret.host,
-                    username: secret.username,
+                    host: secret.testhost,
+                    username: secret.testusername,
                     privateKey: grunt.file.read(secret.sshkeypath),
                     showProgress: true
                 }
@@ -37,8 +37,8 @@ module.exports = function (grunt) {
                     "service bundtbot start"
                 ],
                 options: {
-                    host: secret.host,
-                    username: secret.username,
+                    host: secret.testhost,
+                    username: secret.testusername,
                     privateKey: grunt.file.read(secret.sshkeypath)
                 }
             }

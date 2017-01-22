@@ -2,6 +2,7 @@
   "name": "bundtbotbeta",
   "version": "0.0.1",
   "devDependencies": {
+    "copy-dir": "^0.3.0",
     "grunt": "~0.4.5",
     "gulp": "^3.9.1",
     "gulp-grunt": "^0.5.5",

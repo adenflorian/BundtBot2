@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Threading.Tasks;
 using BundtBot.Discord.Gateway;
 using BundtBot.Discord.Gateway.Operation;
@@ -13,7 +14,7 @@ namespace BundtBot.Discord
 	{
 		public const string Name = "bundtbot";
 		const string Version = "0.0.1";
-		const string BotToken = "MjA5NDU2NjYyOTI1NDEwMzA1.CsjHmg.pyJbVPWaP4Pkdv8zQ55qLFUxFdM";
+		readonly string BotToken;
 
 		public delegate void GuildCreatedHandler(Guild guild);
 		/// <summary>
@@ -35,6 +36,7 @@ namespace BundtBot.Discord
 
 		public DiscordClient()
 		{
+			BotToken = File.ReadAllText("bottoken");
 			DiscordRestApiClient = new DiscordRestClient(BotToken, Name, Version);
 			_gatewayClient = new DiscordGatewayClient(BotToken);
 		}
