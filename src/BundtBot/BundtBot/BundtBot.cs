@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.IO;
+using System.Threading.Tasks;
 using BundtBot.Discord;
 
 namespace BundtBot
@@ -13,16 +14,20 @@ namespace BundtBot
 
 		public async Task Start()
 	    {
-			Client = new DiscordClient();
+			Client = new DiscordClient(File.ReadAllText("bottoken"));
 
-			/*Client.GuildCreated += async (guild) => {
-				await guild.TextChannels.First().SendMessage("yo");
+			Client.MessageCreated += (message) => {
+				message.TextChannel.SendMessageAsync("um hello?");
 			};
 
-			Client.MessageCreated += async (message) => {
+			/*Client.MessageCreated += async (message) => {
 				if (message.Author.IsBot == false) {
 					await message.TextChannel.SendMessage("hiya");
 				}
+			};*/
+
+			/*Client.GuildCreated += async (guild) => {
+				await guild.TextChannels.First().SendMessage("yo");
 			};
 
 			Client.Ready += (ready) => {

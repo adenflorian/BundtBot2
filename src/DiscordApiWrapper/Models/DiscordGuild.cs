@@ -4,7 +4,7 @@ using Newtonsoft.Json;
 
 namespace BundtBot.Discord.Models
 {
-    public class Guild
+    public class DiscordGuild
 	{
 		[JsonProperty("id")]
 		public ulong Id;

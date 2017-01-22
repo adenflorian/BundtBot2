@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using BundtBot.Discord.Gateway.Operation;
 using BundtBot.Discord.Models;
+using BundtBot.Discord.Models.Events;
 using BundtBot.Discord.Models.Gateway;
 using BundtBot.Extensions;
 using Newtonsoft.Json;
@@ -10,10 +11,24 @@ namespace BundtBot.Discord.Gateway
 {
 	public class DiscordGatewayClient
 	{
-		public delegate void OperationHandler(string eventName, string eventData);
+		public delegate void OperationHandler(string eventName, string eventJsonData);
 		public event OperationHandler DispatchReceived;
 		public event OperationHandler HeartbackAckReceived;
 		public event OperationHandler HelloReceived;
+		public delegate void ReadyHandler(Ready readyInfo);
+		public event ReadyHandler Ready;
+		public delegate void MessageCreatedHandler(DiscordMessage discordMessage);
+		public event MessageCreatedHandler MessageCreated;
+		public delegate void GuildCreatedHandler(DiscordGuild discordGuild);
+		/// <summary>
+		/// This event can be sent in three different scenarios:
+		///   1. When a user is initially connecting, to lazily load and backfill
+		///      information for all unavailable guilds sent in the ready event.
+		///   2. When a Guild becomes available again to the client.
+		///   3. When the current user joins a new Guild.
+		/// The inner payload is a guild object, with all the extra fields specified.
+		/// </summary>
+		public event GuildCreatedHandler GuildCreated;
 
 		readonly ClientWebSocketWrapper _clientWebSocketWrapper = new ClientWebSocketWrapper();
 		readonly MyLogger _logger = new MyLogger(nameof(DiscordGatewayClient));
@@ -25,6 +40,8 @@ namespace BundtBot.Discord.Gateway
 		{
 			_authToken = authToken;
 			HelloReceived += OnHelloReceived;
+			HeartbackAckReceived += HeartbackAckOperation.Instance.Execute;
+			DispatchReceived += OnDispatchReceived;
 			_clientWebSocketWrapper.MessageReceived += OnMessageReceived;
 		}
 
@@ -35,7 +52,7 @@ namespace BundtBot.Discord.Gateway
 			_logger.LogInfo($"Connected to Gateway", ConsoleColor.Green);
 		}
 		
-		async void OnHelloReceived(string eventName, object eventData)
+		async void OnHelloReceived(string eventName, string eventData)
 		{
 			_logger.LogInfo("Received Hello from Gateway", ConsoleColor.Green);
 			var hello = JsonConvert.DeserializeObject<GatewayHello>(eventData.ToString());
@@ -149,6 +166,40 @@ namespace BundtBot.Discord.Gateway
 					throw;
 				}
 			});
+		}
+
+		void OnDispatchReceived(string eventName, string eventJsonData)
+		{
+			_logger.LogInfo("Processing Gateway Event " + eventName);
+				switch (eventName) {
+					case "CHANNEL_CREATE":
+						var channel = JsonConvert.DeserializeObject<Channel>(eventJsonData);
+						_logger.LogInfo("Received Event: CHANNEL_CREATE " + channel.Id, ConsoleColor.Green);
+						break;
+					case "MESSAGE_CREATE":
+						var discordMessage = JsonConvert.DeserializeObject<DiscordMessage>(eventJsonData);
+						_logger.LogInfo("Received Event: MESSAGE_CREATE " + discordMessage.Content, ConsoleColor.Green);
+						MessageCreated?.Invoke(discordMessage);
+						break;
+					case "GUILD_CREATE":
+						var discordGuild = JsonConvert.DeserializeObject<DiscordGuild>(eventJsonData);
+						_logger.LogInfo("Received Event: GUILD_CREATE " + discordGuild.Name, ConsoleColor.Green);
+						GuildCreated?.Invoke(discordGuild);
+						break;
+					case "READY":
+						var ready = JsonConvert.DeserializeObject<Ready>(eventJsonData);
+						_logger.LogInfo("Received Event: READY Our username is " + ready.User.Username, ConsoleColor.Green);
+						Ready?.Invoke(ready);
+						break;
+					case "TYPING_START":
+						var typingStart = JsonConvert.DeserializeObject<TypingStart>(eventJsonData);
+						_logger.LogInfo("Received Event: TYPING_START " + typingStart.UserId, ConsoleColor.Green);
+						break;
+					default:
+						var ex = new ArgumentOutOfRangeException(nameof(eventName), eventName, "Unexpected Event Name");
+						_logger.LogError(ex);
+						throw ex;
+				}
 		}
 	}
 }

@@ -4,7 +4,7 @@ using Newtonsoft.Json;
 
 namespace BundtBot.Discord.Models
 {
-    public class Message
+    public class DiscordMessage
 	{
 		[JsonProperty("id")]
 		public ulong ID;
@@ -15,6 +15,7 @@ namespace BundtBot.Discord.Models
 		/// <summary>
 		/// The author of this message (the author of a message is not guaranteed to be a user*).
 		/// </summary>
+		// TODO the author of a message is not guaranteed to be a user
 		[JsonProperty("author")]
 		public User Author;
 		

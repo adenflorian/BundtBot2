@@ -63,13 +63,13 @@ namespace BundtBot.Discord
 		/// TODO Requires the 'SEND_MESSAGES' permission to be present on the current user.
 		/// </summary>
 		/// <exception cref="DiscordRestException" />
-		public async Task<Message> CreateMessageAsync(ulong channelId, CreateMessage createMessage)
+		public async Task<DiscordMessage> CreateMessageAsync(ulong channelId, CreateMessage createMessage)
 		{
 			var body = JsonConvert.SerializeObject(createMessage);
 			var content = new StringContent(body);
 			content.Headers.ContentType = MediaTypeHeaderValue.Parse("application/json");
 			var response = await PostAsync($"channels/{channelId}/messages", content);
-			var message = await DeserializeResponse<Message>(response);
+			var message = await DeserializeResponse<DiscordMessage>(response);
 			return message;
 		}
 
