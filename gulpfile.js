@@ -25,6 +25,9 @@ if (fs.existsSync(secretFilePath)) {
 	gulp.stop("***Run 'node setup.js' before using gulp!***")
 }
 
+gulp.task('default', function () {
+})
+
 gulp.task('clean', function () {
 	fs.unlink(tarFileName)
 })
@@ -48,7 +51,7 @@ gulp.task('run', ['build', 'copyviews', 'copytokendev'], shell.task(`dotnet ${bu
 gulp.task('publish', ['restore'], shell.task(`dotnet publish ${projectFilePath}`,
 	{ verbose: true }))
 
-gulp.task('copytokentest', ['build'], function (cb) {
+gulp.task('copytokentest', ['publish'], function () {
 	fs.writeFileSync(`${publishFolder}/bottoken`, `Bot ${secret.testbottoken}`)
 })
 
