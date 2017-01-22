@@ -38,25 +38,25 @@ gulp.task('clean', function () {
 
 gulp.task('restore', shell.task(`dotnet restore ${projectFilePath}`, { verbose: true }))
 
-gulp.task('dotnet-build', ['restore'], shell.task(`dotnet build ${projectFilePath}`, { verbose: true }))
+gulp.task('dotnet-build', shell.task(`dotnet build ${projectFilePath}`, { verbose: true }))
 
 gulp.task('copyviews', ['dotnet-build'], function () {
 	copydir.sync(viewsFolder, `${buildOutputFolder}/${viewsFolderName}`);
 })
 
 gulp.task('copytokendev', ['dotnet-build'], function () {
-	fs.writeFileSync(`${buildOutputFolder}/bottoken`, `Bot ${secret.devbottoken}`)
+	fs.writeFileSync(`${buildOutputFolder}/bottoken`, secret.devbottoken)
 })
 
 gulp.task('build', ['dotnet-build', 'copyviews', 'copytokendev'])
 
 gulp.task('run', ['build', 'copyviews', 'copytokendev'], shell.task(`dotnet ${buildOutputFolder}/BundtBot.dll`, { verbose: true }))
 
-gulp.task('publish', ['restore'], shell.task(`dotnet publish ${projectFilePath}`,
+gulp.task('publish', shell.task(`dotnet publish ${projectFilePath}`,
 	{ verbose: true }))
 
 gulp.task('copytokentest', ['publish'], function () {
-	fs.writeFileSync(`${publishFolder}/bottoken`, `Bot ${secret.testbottoken}`)
+	fs.writeFileSync(`${publishFolder}/bottoken`, secret.testbottoken)
 })
 
 gulp.task('tar', ['publish', 'copytokentest'], function (cb) {
