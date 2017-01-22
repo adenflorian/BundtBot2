@@ -4,6 +4,11 @@ module.exports = function (grunt) {
     var bundtbotfile = "bundtbot.tar"
     var destinationFolder = "bundtbot"
     var executable = "BundtBot.dll"
+    var sshOptions = {
+        host: secret.testhost,
+        username: secret.testusername,
+        privateKey: grunt.file.read(secret.sshkeypath)
+    }
 
     // Project configuration.
     grunt.initConfig({
@@ -36,11 +41,20 @@ module.exports = function (grunt) {
                     "echo 'starting bundtbot service'",
                     "service bundtbot start"
                 ],
-                options: {
-                    host: secret.testhost,
-                    username: secret.testusername,
-                    privateKey: grunt.file.read(secret.sshkeypath)
-                }
+                options: sshOptions
+            },
+            setup: {
+                command: [
+                    "apt-get update; apt-get upgrade -y",
+                    'echo "deb [arch=amd64] https://apt-mo.trafficmanager.net/repos/dotnet-release/ xenial main" > /etc/apt/sources.list.d/dotnetdev.list',
+                    'apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 417A0893',
+                    'apt-get update',
+                    'apt-get install -y dotnet-dev-1.0.0-preview2.1-003177',
+                    'apt-get install -y nginx',
+                    'curl -o /etc/nginx/sites-available/bundtbot https://raw.githubusercontent.com/AdenFlorian/BundtBotBeta/master/nginx/sites/bundtbot',
+                    'service nginx start'
+                ],
+                options: sshOptions
             }
         }
     });

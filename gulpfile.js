@@ -6,21 +6,25 @@ const tar = require('tar-fs')
 const waitUntil = require('wait-until')
 
 const secretFilePath = './secret.json'
+
 const projectName = 'BundtBot'
 const projectFolder = `src/${projectName}`
 const projectFileName = `${projectName}.csproj`
 const projectFilePath = `${projectFolder}/${projectFileName}`
+
+const buildOutputFolder = `${projectFolder}/bin/debug/netcoreapp1.0`
+const publishFolder = `${buildOutputFolder}/publish`
+
 const tarFileName = `${projectName}.tar`
 const viewsFolderName = `Views`
 const viewsFolder = `${projectFolder}/${viewsFolderName}`
-const buildOutputFolder = `${projectFolder}/bin/debug/netcoreapp1.0`
-const publishFolder = `${buildOutputFolder}/publish`
 
 var secret;
 
 if (fs.existsSync(secretFilePath)) {
 	secret = JSON.parse(fs.readFileSync(secretFilePath))
-	require('gulp-grunt')(gulp); // add all the gruntfile tasks to gulp
+	// Add all the gruntfile tasks to gulp
+	require('gulp-grunt')(gulp);
 } else {
 	gulp.stop("***Run 'node setup.js' before using gulp!***")
 }
@@ -83,6 +87,4 @@ gulp.task('rlogs', shell.task(
 	`ssh ${secret.testusername}@${secret.testhost} "journalctl -fu bundtbot.service;"`,
 	{ verbose: true }))
 
-gulp.task('setup-server', shell.task(
-	`bash scripts/setup_server.sh ${secret.testusername} ${secret.testhost}`,
-	{ verbose: true }))
+gulp.task('setup-server', shell.task('grunt sshexec:setup', { verbose: true, }))
