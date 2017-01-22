@@ -4,8 +4,6 @@ namespace BundtBot.Discord.Models
 {
     public class Channel
 	{
-		internal DiscordClient Client;
-
 		/// <summary>
 		/// The id of this channel (will be equal to the guild if it's the "general" channel).
 		/// The id of this private message.

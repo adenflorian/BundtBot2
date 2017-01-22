@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using BundtBot.Discord;
-using BundtBot.Discord.Models;
 
 namespace BundtBot
 {
@@ -14,13 +9,13 @@ namespace BundtBot
 
 		static readonly MyLogger _logger = new MyLogger(nameof(BundtBot));
 
-		internal static Dictionary<Guild, TextChannel> TextChannelOverrides = new Dictionary<Guild, TextChannel>();
+		//internal static Dictionary<Guild, TextChannel> TextChannelOverrides = new Dictionary<Guild, TextChannel>();
 
 		public async Task Start()
 	    {
 			Client = new DiscordClient();
 
-			Client.GuildCreated += async (guild) => {
+			/*Client.GuildCreated += async (guild) => {
 				await guild.TextChannels.First().SendMessage("yo");
 			};
 
@@ -44,7 +39,7 @@ namespace BundtBot
 				} catch (Exception ex) {
 					_logger.LogError(ex);
 				}
-			};
+			};*/
 
 			await Client.Connect();
 		}

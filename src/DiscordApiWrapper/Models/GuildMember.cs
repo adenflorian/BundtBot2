@@ -5,8 +5,6 @@ namespace BundtBot.Discord.Models
 {
     public class GuildMember
 	{
-		internal DiscordClient Client;
-
 		[JsonProperty("user")]
 		public User User;
 

@@ -1,25 +1,22 @@
 {
-    // Use IntelliSense to learn about possible Node.js debug attributes.
-    // Hover to view descriptions of existing attributes.
-    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
-    "configurations": [
-        {
-            "type": "node",
+    "configurations": [{
+            "name": ".NET Core Launch (console)",
+            "type": "coreclr",
             "request": "launch",
-            "name": "Launch Program",
-            "program": "${workspaceRoot}\\app.ts",
-            "cwd": "${workspaceRoot}",
-            "outFiles": [],
-            "sourceMaps": true
+            "preLaunchTask": "build",
+            "program": "${workspaceRoot}\\src\\BundtBot\\bin\\Debug\\netcoreapp1.0\\BundtBot.dll",
+            "args": [],
+            "cwd": "${workspaceRoot}\\src\\BundtBot",
+            "externalConsole": false,
+            "stopAtEntry": false,
+            "internalConsoleOptions": "openOnSessionStart"
         },
         {
-            "type": "node",
+            "name": ".NET Core Attach",
+            "type": "coreclr",
             "request": "attach",
-            "name": "Attach to Process",
-            "port": 5858,
-            "outFiles": [],
-            "sourceMaps": true
+            "processId": "${command.pickProcess}"
         }
     ]
 }

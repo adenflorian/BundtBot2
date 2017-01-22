@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Threading;
 using System.Threading.Tasks;
 using BundtBot.Discord.Gateway.Operation;
 using BundtBot.Discord.Models;
@@ -49,7 +48,7 @@ namespace BundtBot.Discord.Gateway
 			Task.Run(async () => {
 				while (true) {
 					await SendHeartBeatAsync();
-					Thread.Sleep(heartbeatInterval);
+					await Task.Delay(heartbeatInterval);
 				}
 			});
 			_logger.LogInfo("Heartbeat loop started", ConsoleColor.Green);

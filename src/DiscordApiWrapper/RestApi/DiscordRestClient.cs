@@ -111,9 +111,10 @@ namespace BundtBot.Discord
 				throw new DiscordRestException("Error while deserializing json", ex);
 			}
 			if (deserializedObject == null) {
-				var ex = new DiscordRestException("Failed to deserialize object from json" +
-											   ", deserialized object was null" +
-				                                  ", json content: " + contentString);
+				var ex = new DiscordRestException(
+					"Failed to deserialize object from json" +
+					", deserialized object was null" +
+					", json content: " + contentString);
 				_logger.LogError(ex);
 				throw ex;
 			}

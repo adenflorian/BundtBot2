@@ -6,15 +6,11 @@ namespace BundtBot.Discord.Models
 {
     public class Message
 	{
-		internal DiscordClient Client;
-
 		[JsonProperty("id")]
 		public ulong ID;
 		
 		[JsonProperty("channel_id")]
 		public ulong ChannelId;
-
-	    public TextChannel TextChannel => Client.TextChannels[ChannelId];
 
 		/// <summary>
 		/// The author of this message (the author of a message is not guaranteed to be a user*).

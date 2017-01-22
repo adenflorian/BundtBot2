@@ -1,14 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using Newtonsoft.Json;
 
 namespace BundtBot.Discord.Models
 {
-	public class Guild
+    public class Guild
 	{
-		internal DiscordClient Client;
-
 		[JsonProperty("id")]
 		public ulong Id;
 
@@ -105,14 +102,6 @@ namespace BundtBot.Discord.Models
 		/// </summary>
 		[JsonProperty("channels")]
 		public List<GuildChannel> AllChannels;
-
-		public List<TextChannel> TextChannels {
-			get { return AllChannels.Where(x => x.Type == GuildChannelType.Text).Select(x => new TextChannel(x)).ToList(); }
-		}
-
-		public List<VoiceChannel> VoiceChannels {
-			get { return AllChannels.Where(x => x.Type == GuildChannelType.Voice).Select(x => new VoiceChannel(x)).ToList(); }
-		}
 
 		/// <summary>
 		/// Array of simple presence objects,

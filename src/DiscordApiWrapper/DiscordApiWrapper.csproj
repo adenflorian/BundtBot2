@@ -11,12 +11,13 @@
 
   <ItemGroup>
     <ProjectReference Include="..\BundtCommon\BundtCommon.csproj" />
-    <ProjectReference Include="..\DiscordApiWrapper\DiscordApiWrapper.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="NETStandard.Library" Version="1.6" />
     <PackageReference Include="Newtonsoft.Json" Version="9.0.1" />
+    <PackageReference Include="System.Net.WebSockets.Client" Version="4.3.0" />
+    <PackageReference Include="System.Threading.Thread" Version="4.3.0" />
   </ItemGroup>
 
 </Project>

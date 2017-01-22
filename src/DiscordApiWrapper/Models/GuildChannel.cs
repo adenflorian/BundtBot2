@@ -13,8 +13,6 @@ namespace BundtBot.Discord.Models
 		[JsonProperty("guild_id")]
 		public ulong GuildID;
 
-	    public Guild Guild => Client.Guilds[GuildID];
-
 		/// <summary>
 		/// 2-100 characters.
 		/// </summary>

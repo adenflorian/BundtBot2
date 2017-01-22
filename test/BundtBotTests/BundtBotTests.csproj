@@ -14,6 +14,7 @@
     <ProjectReference Include="..\..\src\BundtBot\BundtBot.csproj" />
     <ProjectReference Include="..\..\src\BundtCord\BundtCord.csproj" />
     <ProjectReference Include="..\..\src\BundtCommon\BundtCommon.csproj" />
+    <ProjectReference Include="..\..\src\DiscordApiWrapper\DiscordApiWrapper.csproj" />
   </ItemGroup>
 
   <ItemGroup>
