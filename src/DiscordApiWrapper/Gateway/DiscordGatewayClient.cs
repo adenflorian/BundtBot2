@@ -158,14 +158,7 @@ namespace BundtBot.Discord.Gateway
 
 		void InvokeEvent(OperationHandler handler, GatewayPayload payload)
 		{
-			Task.Run(() => {
-				try {
-					handler?.Invoke(payload.EventName, payload.EventData?.ToString());
-				} catch (Exception ex) {
-					_logger.LogError(ex);
-					throw;
-				}
-			});
+			handler?.Invoke(payload.EventName, payload.EventData?.ToString());
 		}
 
 		void OnDispatchReceived(string eventName, string eventJsonData)

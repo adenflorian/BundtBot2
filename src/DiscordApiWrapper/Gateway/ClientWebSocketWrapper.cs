@@ -111,9 +111,7 @@ namespace BundtBot
 
 		void OnMessageReceived(string message)
 		{
-			Task.Run(() => {
-				MessageReceived?.Invoke(message);
-			});
+			MessageReceived?.Invoke(message);
 		}
 	}
 }

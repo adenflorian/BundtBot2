@@ -16,18 +16,12 @@ namespace BundtBot
 	    {
 			Client = new DiscordClient(File.ReadAllText("bottoken"));
 
-			Client.MessageCreated += (message) => {
-				if (message.Author.Id != Client.Me.Id)
-				{
-					message.TextChannel.SendMessageAsync("um hello?");
-				}
-			};
-
-			/*Client.MessageCreated += async (message) => {
-				if (message.Author.IsBot == false) {
-					await message.TextChannel.SendMessage("hiya");
-				}
-			};*/
+			Client.MessageCreated += async (message) =>
+            {
+                if (message.Author.Id == Client.Me.Id) return;
+                if (message.Content.StartsWith("echo ") == false) return;
+                await message.TextChannel.SendMessageAsync(message.Content.Substring(5));
+            };
 
 			/*Client.GuildCreated += async (guild) => {
 				await guild.TextChannels.First().SendMessage("yo");
