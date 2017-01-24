@@ -83,6 +83,9 @@ gulp.task('deploy', ['publish', 'tar', 'sftpdeploy', 'sshdeploy'])
 gulp.task('test', shell.task('dotnet test test/BundtBotTests/BundtBotTests.csproj',
 	{ verbose: true }))
 
+gulp.task('integration-tests', shell.task('dotnet test test/IntegrationTests/IntegrationTests.csproj',
+	{ verbose: true }))
+
 gulp.task('rlogs', shell.task(
 	`ssh ${secret.testusername}@${secret.testhost} "journalctl -fu bundtbot.service;"`,
 	{ verbose: true }))
