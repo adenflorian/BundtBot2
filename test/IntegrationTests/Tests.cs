@@ -15,6 +15,8 @@ namespace Tests
         public Tests(ITestOutputHelper output)
         {
             _output = output;
+
+            _output.WriteLine($"Started ctor");
             var fakeDiscord = new FakeDiscord();
             Task.Run(() => fakeDiscord.Start());
         }
@@ -27,6 +29,7 @@ namespace Tests
         [Fact]
         public void Test1()
         {
+            _output.WriteLine($"Started Test1");
             int[] myArr = new int[99];
             List<Task> tasks = new List<Task>();
 

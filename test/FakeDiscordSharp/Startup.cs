@@ -48,19 +48,25 @@ namespace FakeDiscordSharp
 
             app.Run(async (context) =>
             {
-                var warning = "";
-                if (remaining <= 0)
-                {
-                    warning = "RATE LIMIT EXCEEDED! ";
-                }
                 remaining--;
 
                 context.Response.Headers.Clear();
                 context.Response.Headers["X-RateLimit-Limit"] = limit.ToString();
                 context.Response.Headers["X-RateLimit-Remaining"] = remaining.ToString();
                 context.Response.Headers["X-RateLimit-Reset"] = reset.ToString();
-                await context.Response
-                    .WriteAsync($"{warning}Now: {UnixTime.GetTimestamp()} Limit: {limit} | Remaining: {remaining} | Reset: {reset}");
+                // await context.Response
+                    // .WriteAsync($"{warning}Now: {UnixTime.GetTimestamp()} Limit: {limit} | Remaining: {remaining} | Reset: {reset}");
+                if (remaining < 0)
+                {
+                    await context.Response
+                        .WriteAsync("RATE LIMIT EXCEEDED! ");
+                }
+                else
+                {
+                    await context.Response
+                        .WriteAsync("{\"id\": \"162701077035089920\",\"channel_id\": \"131391742183342080\",\"author\": {},\"content\": \"Hey guys!\",\"timestamp\": \"2016-03-24T23:15:59.605000+00:00\",\"edited_timestamp\": null,\"tts\": false,\"mention_everyone\": false,\"mentions\": [],\"mention_roles\": [],\"attachments\": [],\"embeds\": [],\"reactions\": []}");
+                }
+                
             });
         }
     }

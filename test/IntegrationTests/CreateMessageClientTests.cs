@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using BundtBot.Discord;
 using BundtBot.Discord.Models;
@@ -17,8 +18,13 @@ namespace Tests
         public CreateMessageClientTests(ITestOutputHelper output)
         {
             _output = output;
+            //Thread.Sleep(10000);
             var fakeDiscord = new FakeDiscord();
             Task.Run(() => fakeDiscord.Start());
+            Task.Run(async () => {
+                await Task.Delay(1);
+                //Assert.True(1 == 2);
+            });
         }
 
         public void Dispose()
@@ -29,19 +35,18 @@ namespace Tests
         [Fact]
         public void Test1()
         {
-            return;
             int[] myArr = new int[99];
             List<Task> tasks = new List<Task>();
 
             int x = 1;
             
             tasks.Add(StartThread(x++, myArr));
-            // tasks.Add(StartThread(x++, myArr));
-            // tasks.Add(StartThread(x++, myArr));
-            // tasks.Add(StartThread(x++, myArr));
-            // tasks.Add(StartThread(x++, myArr));
-            // tasks.Add(StartThread(x++, myArr));
-            // tasks.Add(StartThread(x++, myArr));
+            tasks.Add(StartThread(x++, myArr));
+            tasks.Add(StartThread(x++, myArr));
+            tasks.Add(StartThread(x++, myArr));
+            tasks.Add(StartThread(x++, myArr));
+            tasks.Add(StartThread(x++, myArr));
+            tasks.Add(StartThread(x++, myArr));
 
             log($"Now waiting for {tasks.Count} to complete");
 
@@ -70,7 +75,10 @@ namespace Tests
                 var restClient = new DiscordRestClient("token", "name", "version", apiUri);
                 var client = new CreateMessageClient(restClient);
 
-                await client.CreateAsync((ulong)i, new CreateMessage{Content = "hello world " + i});
+                var message = await client.CreateAsync((ulong)i, new CreateMessage{Content = "hello world " + i});
+                
+                log(i + " received message?!");
+                Assert.NotNull(message);
 
                 myArr[i - 1] = i;
                 log(i + " Done!");
