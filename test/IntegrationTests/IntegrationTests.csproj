@@ -13,6 +13,7 @@
   <ItemGroup>
     <ProjectReference Include="..\FakeDiscordSharp\FakeDiscordSharp.csproj" />
     <ProjectReference Include="..\..\src\DiscordApiWrapper\DiscordApiWrapper.csproj" />
+    <ProjectReference Include="..\..\src\BundtCommon\BundtCommon.csproj" />
   </ItemGroup>
 
   <ItemGroup>

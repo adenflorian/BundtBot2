@@ -1,4 +1,5 @@
-﻿using System.Net.Http;
+﻿using System;
+using System.Net.Http;
 using BundtBot.Discord;
 
 namespace BundtBot.Tests.Discord
@@ -9,9 +10,9 @@ namespace BundtBot.Tests.Discord
 			string version = "version", HttpClient httpClient = null)
 		{
 			if (httpClient == null) {
-				return new DiscordRestClient(token, name, version);
+				return new DiscordRestClient(token, name, version, new Uri("https://discordapp.com/api/"));
 			} else {
-				return new DiscordRestClient(token, name, version, httpClient);
+				return new DiscordRestClient(token, name, version, new Uri("https://discordapp.com/api/"), httpClient);
 			}
 		}
 	}

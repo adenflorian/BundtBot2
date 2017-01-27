@@ -10,6 +10,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\BundtCommon\BundtCommon.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="NETStandard.Library" Version="1.6.1" />
     <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="1.1.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="1.1.0" />

@@ -1,9 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using BundtBot.Discord.Gateway;
 using BundtBot.Discord.Models;
 using BundtBot.Discord.Models.Gateway;
+using DiscordApiWrapper.RestApi;
 
 namespace BundtBot.Discord
 {
@@ -18,7 +20,8 @@ namespace BundtBot.Discord
 		public delegate void MessageCreatedHandler(IMessage message);
 		public event MessageCreatedHandler MessageCreated;
 
-		internal readonly DiscordRestClient DiscordRestApiClient;
+		internal readonly DiscordRestClient DiscordRestClient;
+		internal readonly CreateMessageClient CreateMsgClient;
 
 		static readonly MyLogger _logger = new MyLogger(nameof(DiscordClient));
 
@@ -30,13 +33,14 @@ namespace BundtBot.Discord
 		public DiscordClient(string botToken)
 		{
 			BotToken = botToken;
-			DiscordRestApiClient = new DiscordRestClient(BotToken, Name, Version);
+			DiscordRestClient = new DiscordRestClient(BotToken, Name, Version, new Uri("https://discordapp.com/api/"));
+			CreateMsgClient = new CreateMessageClient(DiscordRestClient);
 			_gatewayClient = new DiscordGatewayClient(BotToken);
 		}
 
 		public async Task Connect()
 	    {
-			var gatewayUrl = await DiscordRestApiClient.GetGatewayUrlAsync();
+			var gatewayUrl = await DiscordRestClient.GetGatewayUrlAsync();
 
 			await _gatewayClient.ConnectAsync(gatewayUrl);
 

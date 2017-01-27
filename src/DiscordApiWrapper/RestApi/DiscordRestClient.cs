@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
 using BundtBot.Discord.Models;
 using BundtBot.Extensions;
+using DiscordApiWrapper.RestApi;
 using Newtonsoft.Json;
 
 namespace BundtBot.Discord
@@ -15,23 +17,23 @@ namespace BundtBot.Discord
 
 		static readonly MyLogger _logger = new MyLogger(nameof(DiscordRestClient));
 
-		public DiscordRestClient(string botToken, string name, string version)
-			: this(botToken, name, version, new HttpClient(new DiscordRestClientLogger(new HttpClientHandler())))
+		public DiscordRestClient(string botToken, string name, string version, Uri baseAddress)
+			: this(botToken, name, version, baseAddress, new HttpClient(new DiscordRestClientLogger(new HttpClientHandler())))
 		{
 		}
 
-		public DiscordRestClient(string botToken, string name, string version, HttpClient httpClient)
+		public DiscordRestClient(string botToken, string name, string version, Uri baseAddress, HttpClient httpClient)
 		{
 			ValidateArguments(botToken, name, version);
 
 			HttpClient = httpClient;
 
-			InitializeHttpClient(botToken, name, version);
+			InitializeHttpClient(botToken, name, version, baseAddress);
 		}
 
-		void InitializeHttpClient(string botToken, string name, string version)
+		void InitializeHttpClient(string botToken, string name, string version, Uri baseAddress)
 		{
-			HttpClient.BaseAddress = new Uri("https://discordapp.com/api/");
+			HttpClient.BaseAddress = baseAddress;
 			HttpClient.Timeout = TimeSpan.FromSeconds(1);
 			HttpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 			HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bot", botToken);
@@ -63,14 +65,20 @@ namespace BundtBot.Discord
 		/// TODO Requires the 'SEND_MESSAGES' permission to be present on the current user.
 		/// </summary>
 		/// <exception cref="DiscordRestException" />
-		public async Task<DiscordMessage> CreateMessageAsync(ulong channelId, CreateMessage createMessage)
+		public async Task<Tuple<DiscordMessage, RateLimit>> CreateMessageAsync(ulong channelId, CreateMessage createMessage)
 		{
 			var body = JsonConvert.SerializeObject(createMessage);
 			var content = new StringContent(body);
 			content.Headers.ContentType = MediaTypeHeaderValue.Parse("application/json");
 			var response = await PostAsync($"channels/{channelId}/messages", content);
+
+			var rateLimit = new RateLimit(
+				int.Parse(response.Headers.GetValues("X-RateLimit-Limit").First()),
+				int.Parse(response.Headers.GetValues("X-RateLimit-Remaining").First()),
+				int.Parse(response.Headers.GetValues("X-RateLimit-Reset").First()));
+
 			var message = await DeserializeResponse<DiscordMessage>(response);
-			return message;
+			return Tuple.Create(message, rateLimit);
 		}
 
 		/// <exception cref="DiscordRestException" />
