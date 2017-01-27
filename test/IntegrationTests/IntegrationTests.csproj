@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\FakeDiscordSharp\FakeDiscordSharp.csproj" />
+    <ProjectReference Include="..\..\src\DiscordApiWrapper\DiscordApiWrapper.csproj" />
   </ItemGroup>
 
   <ItemGroup>
