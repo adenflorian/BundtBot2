@@ -50,7 +50,7 @@ gulp.task('copytokendev', ['dotnet-build'], function () {
 
 gulp.task('build', ['dotnet-build', 'copyviews', 'copytokendev'])
 
-gulp.task('run', ['build', 'copyviews', 'copytokendev'], shell.task(`dotnet ${buildOutputFolder}/BundtBot.dll`, { verbose: true }))
+gulp.task('run', ['build', 'copyviews', 'copytokendev'], shell.task(`dotnet BundtBot.dll`, { verbose: true,  cwd: buildOutputFolder}))
 
 gulp.task('publish', shell.task(`dotnet publish ${projectFilePath}`,
 	{ verbose: true }))
