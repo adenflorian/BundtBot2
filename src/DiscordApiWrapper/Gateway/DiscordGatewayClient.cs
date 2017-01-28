@@ -145,7 +145,7 @@ namespace BundtBot.Discord.Gateway
 
 		void LogMessageReceived(string message, GatewayPayload payload)
 		{
-			_logger.LogInfo($"Message received from gateway (opcode: {payload.GatewayOpCode})");
+			_logger.LogDebug($"Message received from gateway (opcode: {payload.GatewayOpCode})");
 			_logger.LogDebug(message.Prettify());
 		}
 
@@ -163,7 +163,7 @@ namespace BundtBot.Discord.Gateway
 
 		void OnDispatchReceived(string eventName, string eventJsonData)
 		{
-			_logger.LogInfo("Processing Gateway Event " + eventName);
+			_logger.LogDebug("Processing Gateway Event " + eventName);
 				switch (eventName) {
 					case "CHANNEL_CREATE":
 						var channel = JsonConvert.DeserializeObject<Channel>(eventJsonData);
