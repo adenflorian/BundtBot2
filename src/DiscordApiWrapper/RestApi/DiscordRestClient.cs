@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
@@ -63,69 +64,101 @@ namespace BundtBot.Discord
 
 		/// <summary>
 		/// TODO Requires the 'SEND_MESSAGES' permission to be present on the current user.
+		/// TODO Handle HTTP 429
 		/// </summary>
 		/// <exception cref="DiscordRestException" />
-		public async Task<Tuple<DiscordMessage, RateLimit>> CreateMessageAsync(ulong channelId, CreateMessage createMessage)
+		/// <exception cref="RateLimitExceededException" />
+		internal async Task<Tuple<DiscordMessage, RateLimit>> CreateMessageAsync(ulong channelId, CreateMessage createMessage)
 		{
 			var body = JsonConvert.SerializeObject(createMessage);
 			var content = new StringContent(body);
 			content.Headers.ContentType = MediaTypeHeaderValue.Parse("application/json");
+
 			var response = await PostAsync($"channels/{channelId}/messages", content);
-
-			var rateLimit = new RateLimit(
-				int.Parse(response.Headers.GetValues("X-RateLimit-Limit").First()),
-				int.Parse(response.Headers.GetValues("X-RateLimit-Remaining").First()),
-				int.Parse(response.Headers.GetValues("X-RateLimit-Reset").First()));
-
+			
 			var message = await DeserializeResponse<DiscordMessage>(response);
+			var rateLimit = ParseRateLimitFromHeaders(response);
 			return Tuple.Create(message, rateLimit);
 		}
 
-		/// <exception cref="DiscordRestException" />
 		async Task<HttpResponseMessage> GetAsync(string requestUri)
 		{
 			var response = await HttpClient.GetAsync(requestUri);
 			if (response.IsSuccessStatusCode == false) {
-				var ex = new DiscordRestException("Response did not contain a success status code" +
-				                                  ", but instead contained status code " + response.StatusCode);
-				_logger.LogError(ex);
-				throw ex;
+				await HandleErrorResponseAsync(response);
 			}
 			return response;
 		}
 
-		/// <exception cref="DiscordRestException" />
 		async Task<HttpResponseMessage> PostAsync(string requestUri, HttpContent content)
 		{
 			var response = await HttpClient.PostAsync(requestUri, content);
 			if (response.IsSuccessStatusCode == false) {
-				var ex = new DiscordRestException("Response did not contain a success status code" +
-												  ", but instead contained status code " + response.StatusCode);
-				_logger.LogError(ex);
-				throw ex;
+				await HandleErrorResponseAsync(response);
 			}
 			return response;
 		}
 
-		/// <exception cref="DiscordRestException" />
+        async Task HandleErrorResponseAsync(HttpResponseMessage response)
+        {
+			Exception ex;
+            if (response.StatusCode == (HttpStatusCode)429)
+            {
+                var rateLimitExceeded = await ParseRateLimitExceededFromResponseAsync(response);
+				ex = new RateLimitExceededException(rateLimitExceeded);
+            }
+			else
+			{
+            	ex = new DiscordRestException("Received Error Status Code: " + response.StatusCode);
+			}
+            _logger.LogError(ex);
+            throw ex;
+        }
+
+        static async Task<RateLimitExceeded> ParseRateLimitExceededFromResponseAsync(HttpResponseMessage response)
+        {
+            var rateLimitExceeded = await DeserializeResponse<RateLimitExceeded>(response);
+            rateLimitExceeded.RateLimit = ParseRateLimitFromHeaders(response);
+            rateLimitExceeded.reason = response.ReasonPhrase;
+			return rateLimitExceeded;
+        }
+
+        static RateLimit ParseRateLimitFromHeaders(HttpResponseMessage response)
+		{
+			return new RateLimit(
+				GetHeaderIntValue("X-RateLimit-Limit", response.Headers),
+				GetHeaderIntValue("X-RateLimit-Remaining", response.Headers),
+				GetHeaderIntValue("X-RateLimit-Reset", response.Headers));
+		}
+
+		static int GetHeaderIntValue(string headerName, HttpResponseHeaders headers)
+		{
+			return int.Parse(headers.GetValues(headerName).First());
+		}
+
 		static async Task<T> DeserializeResponse<T>(HttpResponseMessage response)
 		{
 			var contentString = await response.Content.ReadAsStringAsync();
+			return Deserialize<T>(contentString);
+		}
+
+		static T Deserialize<T>(string content)
+		{
 			T deserializedObject;
+
 			try {
-				deserializedObject = JsonConvert.DeserializeObject<T>(contentString);
+				deserializedObject = JsonConvert.DeserializeObject<T>(content);
 			} catch (Exception ex) {
 				_logger.LogError(ex);
 				throw new DiscordRestException("Error while deserializing json", ex);
 			}
+			
 			if (deserializedObject == null) {
-				var ex = new DiscordRestException(
-					"Failed to deserialize object from json" +
-					", deserialized object was null" +
-					", json content: " + contentString);
+				var ex = new DiscordRestException($"Deserialized object was null. Json: {content}");
 				_logger.LogError(ex);
 				throw ex;
 			}
+
 			return deserializedObject;
 		}
 

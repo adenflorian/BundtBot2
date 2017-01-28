@@ -13,29 +13,27 @@ namespace BundtBot.Discord
 	{
 		public const string Name = "bundtbot";
 		const string Version = "0.0.1";
-		readonly string BotToken;
 
+		static readonly MyLogger _logger = new MyLogger(nameof(DiscordClient));
+		
 		public IUser Me { get; internal set; }
 
 		public delegate void MessageCreatedHandler(IMessage message);
 		public event MessageCreatedHandler MessageCreated;
 
-		internal readonly DiscordRestClient DiscordRestClient;
-		internal readonly CreateMessageClient CreateMsgClient;
-
-		static readonly MyLogger _logger = new MyLogger(nameof(DiscordClient));
-
-		readonly DiscordGatewayClient _gatewayClient;
+		internal IDiscordRestClient DiscordRestClient;
 
 		internal Dictionary<ulong, ITextChannel> TextChannels = new Dictionary<ulong, ITextChannel>();
 		internal Dictionary<ulong, IUser> Users = new Dictionary<ulong, IUser>();
 
+		readonly DiscordGatewayClient _gatewayClient;
+		readonly string _botToken;
+
 		public DiscordClient(string botToken)
 		{
-			BotToken = botToken;
-			DiscordRestClient = new DiscordRestClient(BotToken, Name, Version, new Uri("https://discordapp.com/api/"));
-			CreateMsgClient = new CreateMessageClient(DiscordRestClient);
-			_gatewayClient = new DiscordGatewayClient(BotToken);
+			_botToken = botToken;
+			DiscordRestClient = new DiscordRestClientProxy(_botToken, Name, Version, new Uri("https://discordapp.com/api/"));
+			_gatewayClient = new DiscordGatewayClient(_botToken);
 		}
 
 		public async Task Connect()

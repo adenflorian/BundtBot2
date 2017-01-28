@@ -12,58 +12,70 @@ namespace DiscordApiWrapper.RestApi
     public class CreateMessageClient
     {
 		static readonly MyLogger _logger = new MyLogger(nameof(CreateMessageClient));
-        ConcurrentQueue<Tuple<ulong, CreateMessage, Action<DiscordMessage>>> _queue = new ConcurrentQueue<Tuple<ulong, CreateMessage, Action<DiscordMessage>>>();
-        DiscordRestClient _restClient;
-        RateLimit rateLimit = new RateLimit(1, 1, 1);
+
+        readonly ConcurrentQueue<Tuple<ulong, CreateMessage, Action<DiscordMessage>>> _queue = new ConcurrentQueue<Tuple<ulong, CreateMessage, Action<DiscordMessage>>>();
+        readonly DiscordRestClient _restClient;
+
+        // Will be overriden each response
+        RateLimit _rateLimit = new RateLimit(1, 1, UnixTime.GetTimestamp());
 
         public CreateMessageClient(DiscordRestClient restClient)
         {
             _restClient = restClient;
 
-            Task.Run(async () => {
-                while (true)
+            Task.Run(async () => await LoopAsync());
+        }
+
+        async Task LoopAsync()
+        {
+            while (true)
+            {
+                Tuple<ulong, CreateMessage, Action<DiscordMessage>> result;
+                if (_queue.TryDequeue(out result))
                 {
-                    Tuple<ulong, CreateMessage, Action<DiscordMessage>> result;
-                    if (_queue.TryDequeue(out result))
+                    _logger.LogInfo($"Dequeued create message for channel {result.Item1}");
+                    Debug.Assert(_rateLimit.Remaining >= 0);
+                    if (_rateLimit.Remaining == 0)
                     {
-                        _logger.LogInfo($"Dequeued create message for channel {result.Item1}");
-                        Debug.Assert(rateLimit.Remaining >= 0);
-                        if (rateLimit.Remaining == 0)
-                        {
-                            _logger.LogInfo($"Out of requests");
-                            await WaitUntilReset();
-                        }
-                        else
-                        {
-                            rateLimit.Remaining--;
-                        }
-                        try
-                        {
-                            var response = await _restClient.CreateMessageAsync(result.Item1, result.Item2);
-                            rateLimit = response.Item2;
-                            result.Item3.Invoke(response.Item1);
-                            await Task.Delay(1000);
-                        }
-                        catch (System.Exception)
-                        {
-                            result.Item3.Invoke(null);
-                            throw;
-                        }
+                        _logger.LogInfo($"Out of requests", ConsoleColor.Yellow);
+                        await WaitUntilReset();
                     }
                     else
                     {
-                        await Task.Delay(100);
+                        _logger.LogInfo($"{_rateLimit.Remaining} request(s) available, using one...");
+                        _rateLimit.Remaining--;
+                    }
+                    try
+                    {
+                        var response = await _restClient.CreateMessageAsync(result.Item1, result.Item2);
+                        _rateLimit = response.Item2;
+                        _logger.LogInfo($"{_rateLimit.Remaining} request(s) remaining");
+                        result.Item3.Invoke(response.Item1);
+                    }
+                    catch (System.Exception)
+                    {
+                        result.Item3.Invoke(null);
+                        throw;
                     }
                 }
-            });
+                else
+                {
+                    await Task.Delay(100);
+                }
+            }
         }
 
         async Task WaitUntilReset()
         {
-            var waitAmount = TimeSpan.FromSeconds(Math.Max(0, (rateLimit.Reset - UnixTime.GetTimestamp() + 1)));
-            _logger.LogInfo($"Waiting for {waitAmount.Seconds} seconds");
+            var currentTime = UnixTime.GetTimestamp();
+            _logger.LogInfo($"WaitUntilReset: currentTime: {currentTime} resetTime: {_rateLimit.Reset}", ConsoleColor.Yellow);
+
+            // Adding 2.5 seconds to wait time based off of real world testing
+            var waitAmount = TimeSpan.FromSeconds(Math.Max(0, (_rateLimit.Reset - currentTime)) + 2.5f);
+
+            _logger.LogInfo($"WaitUntilReset: Waiting for {waitAmount.Seconds} seconds", ConsoleColor.Yellow);
             await Task.Delay(waitAmount);
-            _logger.LogInfo($"Done waiting for {waitAmount.Seconds} seconds");
+            _logger.LogInfo($"WaitUntilReset: Done waiting for {waitAmount.Seconds} seconds", ConsoleColor.Yellow);
         }
 
         public async Task<DiscordMessage> CreateAsync(ulong channelId, CreateMessage createMessage)
@@ -79,10 +91,7 @@ namespace DiscordApiWrapper.RestApi
 
             _logger.LogInfo($"CreateAsync: Enqueued create message for channel {channelId}");
 
-            while (notDone)
-            {
-                await Task.Delay(100);
-            }
+            while (notDone) await Task.Delay(100);
 
             return message;
         }

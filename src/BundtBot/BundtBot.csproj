@@ -5,6 +5,7 @@
     <PreserveCompilationContext>true</PreserveCompilationContext>
     <OutputType>Exe</OutputType>
     <DebugType>portable</DebugType>
+    <Version>0.1.2</Version>
   </PropertyGroup>
 
   <ItemGroup>
