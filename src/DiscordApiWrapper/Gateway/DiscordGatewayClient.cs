@@ -73,7 +73,10 @@ namespace BundtBot.Discord.Gateway
 
 		public async Task SendHeartBeatAsync()
 		{
-			_logger.LogInfo("Sending Heartbeat ♥ →");
+			_logger.LogInfo(
+				new LogMessage("Sending Heartbeat "),
+				new LogMessage("♥", ConsoleColor.Red),
+				new LogMessage(" →"));
 			await SendOpCodeAsync(OpCode.Heartbeat, _lastSequenceReceived);
 		}
 
@@ -167,26 +170,42 @@ namespace BundtBot.Discord.Gateway
 				switch (eventName) {
 					case "CHANNEL_CREATE":
 						var channel = JsonConvert.DeserializeObject<Channel>(eventJsonData);
-						_logger.LogInfo("Received Event: CHANNEL_CREATE " + channel.Id, ConsoleColor.Green);
+						_logger.LogInfo(
+							new LogMessage("Received Event: "),
+							new LogMessage("CHANNEL_CREATE ", ConsoleColor.Cyan),
+							new LogMessage(channel.Id.ToString(), ConsoleColor.DarkCyan));
 						break;
 					case "MESSAGE_CREATE":
 						var discordMessage = JsonConvert.DeserializeObject<DiscordMessage>(eventJsonData);
-						_logger.LogInfo("Received Event: MESSAGE_CREATE " + discordMessage.Content, ConsoleColor.Green);
+						_logger.LogInfo(
+							new LogMessage("Received Event: "),
+							new LogMessage("MESSAGE_CREATE ", ConsoleColor.Cyan),
+							new LogMessage(discordMessage.Content, ConsoleColor.DarkCyan));
 						MessageCreated?.Invoke(discordMessage);
 						break;
 					case "GUILD_CREATE":
 						var discordGuild = JsonConvert.DeserializeObject<DiscordGuild>(eventJsonData);
-						_logger.LogInfo("Received Event: GUILD_CREATE " + discordGuild.Name, ConsoleColor.Green);
+						_logger.LogInfo(
+							new LogMessage("Received Event: "),
+							new LogMessage("GUILD_CREATE ", ConsoleColor.Cyan),
+							new LogMessage(discordGuild.Name, ConsoleColor.DarkCyan));
 						GuildCreated?.Invoke(discordGuild);
 						break;
 					case "READY":
 						var ready = JsonConvert.DeserializeObject<Ready>(eventJsonData);
-						_logger.LogInfo("Received Event: READY Our username is " + ready.User.Username, ConsoleColor.Green);
+						_logger.LogInfo(
+							new LogMessage("Received Event: "),
+							new LogMessage("READY ", ConsoleColor.Cyan),
+							new LogMessage("Our username is  "),
+							new LogMessage(ready.User.Username, ConsoleColor.DarkCyan));
 						Ready?.Invoke(ready);
 						break;
 					case "TYPING_START":
 						var typingStart = JsonConvert.DeserializeObject<TypingStart>(eventJsonData);
-						_logger.LogInfo("Received Event: TYPING_START " + typingStart.UserId, ConsoleColor.Green);
+						_logger.LogInfo(
+							new LogMessage("Received Event: "),
+							new LogMessage("TYPING_START ", ConsoleColor.Cyan),
+							new LogMessage(typingStart.UserId.ToString(), ConsoleColor.DarkCyan));
 						break;
 					default:
 						_logger.LogWarning($"Received an Event with no handler: {eventName}");

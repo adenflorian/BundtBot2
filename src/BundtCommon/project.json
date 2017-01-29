@@ -1,5 +1,9 @@
 ﻿{
   "version": "1.0.0-*",
+  "buildOptions": {
+    "debugType": "portable",
+    "warningsAsErrors": true
+  },
   "dependencies": {
     "Newtonsoft.Json": "9.0.1"
   },

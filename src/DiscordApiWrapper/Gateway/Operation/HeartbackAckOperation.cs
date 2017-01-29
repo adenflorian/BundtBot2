@@ -1,4 +1,6 @@
-﻿namespace BundtBot.Discord.Gateway.Operation
+﻿using System;
+
+namespace BundtBot.Discord.Gateway.Operation
 {
 	public class HeartbackAckOperation : IGatewayCommand
 	{
@@ -8,7 +10,9 @@
 
 		public void Execute(string eventName, object eventData)
 		{
-			_logger.LogInfo("HeartbackAck Received ← ♥");
+			_logger.LogInfo(
+				new LogMessage("HeartbackAck Received ← "),
+				new LogMessage("♥", ConsoleColor.Red));
 		}
 	}
 }

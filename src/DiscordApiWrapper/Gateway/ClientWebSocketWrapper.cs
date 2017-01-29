@@ -22,8 +22,12 @@ namespace BundtBot
 		public async Task ConnectAsync(Uri serverUri)
 		{
 			await _clientWebSocket.ConnectAsync(serverUri, CancellationToken.None);
-			_logger.LogInfo($"Connected to {serverUri} (ClientWebSocket State: {_clientWebSocket.State})",
-							ConsoleColor.Green);
+			_logger.LogInfo(
+				new LogMessage($"Connected to "),
+				new LogMessage($"{serverUri}", ConsoleColor.Cyan),
+				new LogMessage($" (ClientWebSocket State: "),
+				new LogMessage($"{_clientWebSocket.State}", ConsoleColor.Green),
+				new LogMessage($")"));
 			StartReceiveLoop();
 			StartSendLoop();
 		}

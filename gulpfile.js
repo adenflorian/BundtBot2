@@ -87,7 +87,7 @@ gulp.task('integration-tests', shell.task('dotnet test test/IntegrationTests/pro
 	{ verbose: true }))
 
 gulp.task('rlogs', shell.task(
-	`ssh ${secret.testusername}@${secret.testhost} "journalctl -fu bundtbot.service;"`,
+	`ssh ${secret.testusername}@${secret.testhost} "journalctl -f -o cat -u bundtbot.service"`,
 	{ verbose: true }))
 
 gulp.task('setup-server', shell.task('grunt sshexec:setup', { verbose: true, }))
