@@ -6,7 +6,8 @@
   "frameworks": {
     "netstandard1.6": {
       "dependencies": {
-        "NETStandard.Library": "1.6.1"
+        "NETStandard.Library": "1.6.1",
+        "Microsoft.Extensions.Logging.Abstractions": "1.1.0"
       }
     }
   }

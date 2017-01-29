@@ -6,24 +6,30 @@ namespace BundtBot
 {
     public class BundtBot
     {
-	    public DiscordClient Client;
+        public DiscordClient Client;
 
-		static readonly MyLogger _logger = new MyLogger(nameof(BundtBot));
+        static readonly MyLogger _logger = new MyLogger(nameof(BundtBot));
 
-		//internal static Dictionary<Guild, TextChannel> TextChannelOverrides = new Dictionary<Guild, TextChannel>();
+        //internal static Dictionary<Guild, TextChannel> TextChannelOverrides = new Dictionary<Guild, TextChannel>();
 
-		public async Task Start()
-	    {
-			Client = new DiscordClient(File.ReadAllText("bottoken"));
+        public async Task Start()
+        {
+            Client = new DiscordClient(File.ReadAllText("bottoken"));
 
-			Client.MessageCreated += async (message) =>
-            {
+			RegisterEventHandlers();
+
+            await Client.Connect();
+        }
+
+        void RegisterEventHandlers()
+        {
+            Client.MessageCreated += async (message) => {
                 if (message.Author.Id == Client.Me.Id) return;
                 if (message.Content.StartsWith("echo ") == false) return;
                 await message.TextChannel.SendMessageAsync(message.Content.Substring(5));
             };
 
-			/*Client.GuildCreated += async (guild) => {
+            /*Client.GuildCreated += async (guild) => {
 				await guild.TextChannels.First().SendMessage("yo");
 			};
 
@@ -42,8 +48,6 @@ namespace BundtBot
 					_logger.LogError(ex);
 				}
 			};*/
-
-			await Client.Connect();
-		}
+        }
     }
 }

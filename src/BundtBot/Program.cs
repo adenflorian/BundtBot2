@@ -11,7 +11,6 @@ namespace BundtBot
 	{
 		// TODO https://docs.asp.net/en/latest/fundamentals/configuration.html
 		public const string Name = "bundtbot";
-		public static BundtBot BundtBot;
 
 		static readonly MyLogger _logger = new MyLogger(nameof(Program));
 
@@ -27,9 +26,21 @@ namespace BundtBot
 				throw;
 			}
 
-			while (true) {
-				Thread.Sleep(TimeSpan.FromMilliseconds(100));
+			var exit = false;
+			Console.CancelKeyPress += (s, e) => {
+				exit = true;
+			};
+
+			while (exit == false)
+			{
+				// To not suck up CPU
+				Thread.Sleep(TimeSpan.FromMilliseconds(200));
 			}
+
+			_logger.LogWarning("Exiting because of Cancel Key Press Event, goodbye!");
+
+			// Giving WebServer a chancve to cleanup
+			Thread.Sleep(TimeSpan.FromMilliseconds(200));
 		}
 
 		static void SetupConsole()
@@ -44,9 +55,7 @@ namespace BundtBot
 		{
 			new WebServer().Start();
 
-			BundtBot = new BundtBot();
-
-			await BundtBot.Start();
+			await new BundtBot().Start();
 		}
 	}
 }
