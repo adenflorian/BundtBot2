@@ -3,10 +3,14 @@
   "buildOptions": {
     "debugType": "portable",
     "warningsAsErrors": true,
-    "copyToOutput":[
+    "copyToOutput": [
       "Views/**/*"
     ],
-    "preserveCompilationContext": true
+    "preserveCompilationContext": true,
+    "emitEntryPoint": true
+  },
+  "publishOptions":{
+    "include": "Views/**/*"
   },
   "dependencies": {
     "Newtonsoft.Json": "9.0.1",
@@ -31,5 +35,9 @@
         "dotnet-test-xunit": "2.2.0-preview2-build1029"
       }
     }
+  },
+  "runtimes": {
+    "win7-x64": {},
+    "ubuntu.16.04-x64": {}
   }
 }

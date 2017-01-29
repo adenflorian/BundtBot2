@@ -12,7 +12,7 @@ const projectFolder = `src/${projectName}`
 const projectFileName = `project.json`
 const projectFilePath = `${projectFolder}/${projectFileName}`
 
-const buildOutputFolder = `${projectFolder}/bin/debug/netcoreapp1.0`
+const buildOutputFolder = `${projectFolder}/bin/debug/netcoreapp1.1`
 const publishFolder = `${buildOutputFolder}/publish`
 
 const tarFileName = `${projectName}.tar`

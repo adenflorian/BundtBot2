@@ -5,9 +5,9 @@
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
-            "program": "${workspaceRoot}\\src\\BundtBot\\bin\\Debug\\netcoreapp1.0\\BundtBot.dll",
+            "program": "${workspaceRoot}\\src\\BundtBot\\bin\\Debug\\netcoreapp1.1\\BundtBot.dll",
             "args": [],
-            "cwd": "${workspaceRoot}\\src\\BundtBot\\bin\\Debug\\netcoreapp1.0",
+            "cwd": "${workspaceRoot}\\src\\BundtBot\\bin\\Debug\\netcoreapp1.1",
             "externalConsole": false,
             "stopAtEntry": false,
             "internalConsoleOptions": "openOnSessionStart"
