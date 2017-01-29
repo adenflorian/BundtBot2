@@ -4,6 +4,7 @@
     "debugType": "portable",
     "warningsAsErrors": true
   },
+  "testRunner": "xunit",
   "dependencies": {
     "Microsoft.NET.Test.Sdk": "15.0.0-preview-20161123-03",
     "xunit": "2.1.0",

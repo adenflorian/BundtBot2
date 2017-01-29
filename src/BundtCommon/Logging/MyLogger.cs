@@ -34,11 +34,16 @@ namespace BundtBot
 			Log(message, ConsoleColor.Yellow);
 		}
 
-		public void LogError(Exception exception)
+		public void LogError(Exception ex)
 		{
 			if (LogLevel.Error > MaxLogLevel) return;
-			Log(exception, ConsoleColor.Red);
-			Log(exception.StackTrace ?? "No stack trace available", ConsoleColor.Red);
+			Log("**ERROR** " + ex.GetType(), ConsoleColor.Red);
+			Log(ex.Message, ConsoleColor.Red);
+			Log(ex.StackTrace ?? "No stack trace available", ConsoleColor.Red);
+			if (ex.InnerException != null)
+			{
+				Log($"InnerException: ${ex.InnerException}", ConsoleColor.Red);
+			}
 		}
 
 		void Log(object messageObject, ConsoleColor color)
@@ -56,6 +61,7 @@ namespace BundtBot
 
 			message = $"{_prefix}: {message}";
 
+			// TODO format datetime with timezone
 			if (EnableTimestamps) {
 				message = $"{DateTime.Now} | {message}";
 			}

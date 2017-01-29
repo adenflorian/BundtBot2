@@ -18,15 +18,12 @@ class RateLimitTester
     {
         Console.WriteLine("Hello World!");
 
-        //Thread.Sleep(10000);
         var fakeDiscord = new FakeDiscord();
         Task.Run(() => fakeDiscord.Start());
         Task.Run(async () => {
             await Task.Delay(1);
-            //Assert.True(1 == 2);
         });
 
-        
         var apiUri = new Uri("http://localhost:5000/");
         var restClient = new DiscordRestClient(new RestClientConfig("token", "name", "version", apiUri));
         _msgClient = new CreateMessageClient(restClient);
@@ -53,8 +50,6 @@ class RateLimitTester
         log($"{tasks.Count} tasks complete!");
 
         var myArr = new int[queue.Count];
-
-
 
         for (int i = 0; i < tasks.Count; i++)
         {
@@ -94,8 +89,6 @@ class RateLimitTester
 
     static void log(string msg)
     {
-        //System.Console.WriteLine(msg);
         _logger.LogInfo(msg);
-        //_output?.WriteLine(msg);
     }
 }

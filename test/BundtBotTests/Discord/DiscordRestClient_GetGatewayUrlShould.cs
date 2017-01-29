@@ -13,17 +13,17 @@ namespace BundtBot.Tests.Discord
 		readonly TestHelper _helper = new TestHelper();
 
 		[Fact]
-		public async Task ThrowHttpRequestExceptionWhenGetIsUnsuccessfull()
+		public async Task ThrowDiscordRestExceptionWhenGetIsUnsuccessfull()
 		{
 			var stubHandler = new StubHtpMessageHandler("", HttpStatusCode.InternalServerError);
 			var stubHttpClient = new HttpClient(stubHandler);
 			var client = _helper.CreateDiscordRestClient("token", "name", "version", stubHttpClient);
 			var ex = await Assert.ThrowsAsync<DiscordRestException>(() => client.GetGatewayUrlAsync());
-			Assert.Contains("code", ex.Message);
+			Assert.Contains("InternalServerError", ex.Message);
 		}
 
 		[Fact]
-		public async Task ThrowExceptionWhenItReceivesEmptyJson()
+		public async Task ThrowDiscordRestExceptionWhenItReceivesEmptyJson()
 		{
 			var stubHandler = new StubHtpMessageHandler("", HttpStatusCode.OK);
 			var stubHttpClient = new HttpClient(stubHandler);
@@ -33,7 +33,7 @@ namespace BundtBot.Tests.Discord
 		}
 
 		[Fact]
-		public async Task ThrowExceptionWhenItReceivesBadJson()
+		public async Task ThrowDiscordRestExceptionWhenItReceivesBadJson()
 		{
 			var stubHandler = new StubHtpMessageHandler("bad json", HttpStatusCode.OK);
 			var stubHttpClient = new HttpClient(stubHandler);
@@ -66,13 +66,14 @@ namespace BundtBot.Tests.Discord
 				_returnCode = returnStatusCode;
 			}
 
-			protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,
+			protected async override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,
 				CancellationToken cancellationToken)
 			{
 				var response = new HttpResponseMessage(_returnCode) {
 					Content = new StringContent(_responseContent)
 				};
-				return Task.Factory.StartNew(() => response, cancellationToken);
+				await Task.Delay(1);
+				return response;
 			}
 		}
 	}

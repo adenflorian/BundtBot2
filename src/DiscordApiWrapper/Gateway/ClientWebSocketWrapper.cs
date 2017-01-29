@@ -76,18 +76,38 @@ namespace BundtBot
 			Task.Run(async () => {
 				var message = "";
 				while (_clientWebSocket.State == WebSocketState.Open) {
-					var result = await ReceiveAsync();
+					try
+					{
+						var result = await ReceiveAsync();
 
-					_logger.LogDebug(JsonConvert.SerializeObject(result.Item1, Formatting.Indented));
+						_logger.LogDebug(JsonConvert.SerializeObject(result.Item1, Formatting.Indented));
 
-					message += result.Item2;
+						message += result.Item2;
 
-					if (result.Item1.EndOfMessage == false) continue;
+						if (result.Item1.EndOfMessage == false) continue;
 
-					OnMessageReceived(message);
-					message = "";
+						OnMessageReceived(message);
+						message = "";
+					}
+					catch (Exception ex)
+					{
+						_logger.LogWarning("Exception caught in ClientWebSocketWrapper ReceiveLoop.");
+						_logger.LogError(ex);
+						_logger.LogWarning("Restarting ClientWebSocketWrapper ReceiveLoop.");
+						message = "";
+					}
 				}
 			});
+		}
+
+		void ReceiveLoop()
+		{
+
+		}
+
+		void WaitForSocketToOpen()
+		{
+
 		}
 
 		async Task<Tuple<WebSocketReceiveResult, string>> ReceiveAsync()

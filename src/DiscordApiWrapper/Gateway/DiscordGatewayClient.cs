@@ -189,9 +189,8 @@ namespace BundtBot.Discord.Gateway
 						_logger.LogInfo("Received Event: TYPING_START " + typingStart.UserId, ConsoleColor.Green);
 						break;
 					default:
-						var ex = new ArgumentOutOfRangeException(nameof(eventName), eventName, "Unexpected Event Name");
-						_logger.LogError(ex);
-						throw ex;
+						_logger.LogWarning($"Received an Event with no handler: {eventName}");
+						break;
 				}
 		}
 	}

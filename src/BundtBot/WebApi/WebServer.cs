@@ -21,11 +21,15 @@ namespace BundtBot.WebApi
 				.Build();
 
 			Task.Run(() => {
-				try {
-					host.Run();
-				} catch (Exception ex) {
-					_logger.LogError(ex);
-					throw;
+				while (true)
+				{
+					try {
+						host.Run();
+					} catch (Exception ex) {
+						_logger.LogWarning("WebServer threw an exception...");
+						_logger.LogError(ex);
+						_logger.LogWarning("Restarting WebServer...");
+					}
 				}
 			});
 		}

@@ -9,11 +9,6 @@ namespace BundtBot.Tests.Discord
 	{
 		readonly TestHelper _helper = new TestHelper();
 
-		public HttpClientWrapper_ConstructorShould()
-		{
-			Thread.Sleep(5000);
-		}
-
 		[Theory]
 		[InlineData(null, "name", "version")]
 		[InlineData(" ", "name", "version")]
