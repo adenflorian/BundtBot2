@@ -71,7 +71,7 @@ namespace Tests
                 log(i + " Start!");
 
                 var apiUri = new Uri("http://localhost:5000/");
-                var restClient = new DiscordRestClient("token", "name", "version", apiUri);
+                var restClient = new DiscordRestClient(new RestClientConfig("token", "name", "version", apiUri));
                 var client = new CreateMessageClient(restClient);
 
                 var message = await client.CreateAsync((ulong)i, new CreateMessage{Content = "hello world " + i});

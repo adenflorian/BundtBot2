@@ -28,7 +28,7 @@ class RateLimitTester
 
         
         var apiUri = new Uri("http://localhost:5000/");
-        var restClient = new DiscordRestClient("token", "name", "version", apiUri);
+        var restClient = new DiscordRestClient(new RestClientConfig("token", "name", "version", apiUri));
         _msgClient = new CreateMessageClient(restClient);
 
         Test1();

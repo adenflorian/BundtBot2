@@ -32,7 +32,14 @@ namespace BundtBot.Discord
 		public DiscordClient(string botToken)
 		{
 			_botToken = botToken;
-			DiscordRestClient = new DiscordRestClientProxy(_botToken, Name, Version, new Uri("https://discordapp.com/api/"));
+			var config = new RestClientConfig
+			{
+				BotToken = _botToken,
+				Name = Name,
+				Version = Version,
+				BaseAddress = new Uri("https://discordapp.com/api/")
+			};
+			DiscordRestClient = new DiscordRestClientProxy(config);
 			_gatewayClient = new DiscordGatewayClient(_botToken);
 		}
 

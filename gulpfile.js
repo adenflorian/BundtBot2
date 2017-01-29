@@ -9,7 +9,7 @@ const secretFilePath = './secret.json'
 
 const projectName = 'BundtBot'
 const projectFolder = `src/${projectName}`
-const projectFileName = `${projectName}.csproj`
+const projectFileName = `project.json`
 const projectFilePath = `${projectFolder}/${projectFileName}`
 
 const buildOutputFolder = `${projectFolder}/bin/debug/netcoreapp1.0`
@@ -80,10 +80,10 @@ gulp.task('sshdeploy', ['sftpdeploy'], shell.task('grunt sshexec:deploy', { verb
 
 gulp.task('deploy', ['publish', 'tar', 'sftpdeploy', 'sshdeploy'])
 
-gulp.task('test', shell.task('dotnet test test/BundtBotTests/BundtBotTests.csproj',
+gulp.task('test', shell.task('dotnet test test/BundtBotTests/project.json',
 	{ verbose: true }))
 
-gulp.task('integration-tests', shell.task('dotnet test test/IntegrationTests/IntegrationTests.csproj',
+gulp.task('integration-tests', shell.task('dotnet test test/IntegrationTests/project.json',
 	{ verbose: true }))
 
 gulp.task('rlogs', shell.task(

@@ -10,9 +10,9 @@ namespace DiscordApiWrapper.RestApi
         readonly CreateMessageClient _createMsgClient;
 		readonly DiscordRestClient _discordRestClient;
 
-        public DiscordRestClientProxy(string botToken, string name, string version, Uri baseAddress)
+        public DiscordRestClientProxy(RestClientConfig config)
         {
-			_discordRestClient = new DiscordRestClient(botToken, name, version, baseAddress);
+			_discordRestClient = new DiscordRestClient(config);
             _createMsgClient = new CreateMessageClient(_discordRestClient);
         }
 

@@ -10,7 +10,7 @@ namespace BundtBot.Tests.Discord
 {
 	public class DiscordRestClient_GetGatewayUrlShould
 	{
-		readonly DiscordRestClientTestHelper _helper = new DiscordRestClientTestHelper();
+		readonly TestHelper _helper = new TestHelper();
 
 		[Fact]
 		public async Task ThrowHttpRequestExceptionWhenGetIsUnsuccessfull()
@@ -49,7 +49,9 @@ namespace BundtBot.Tests.Discord
 				HttpStatusCode.OK);
 			var stubHttpClient = new HttpClient(stubHandler);
 			var client = _helper.CreateDiscordRestClient("token", "name", "version", stubHttpClient);
+
 			var gatewayUrl = await client.GetGatewayUrlAsync();
+			
 			Assert.Equal(new Uri("wss://gateway.discord.gg/"), gatewayUrl);
 		}
 
