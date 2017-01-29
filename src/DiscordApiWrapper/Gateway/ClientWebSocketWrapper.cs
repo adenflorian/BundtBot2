@@ -61,7 +61,7 @@ namespace BundtBot
 
 			await _clientWebSocket.SendAsync(sendBuffer, WebSocketMessageType.Text, true, CancellationToken.None);
 
-			_logger.LogInfo($"Sent {sendBuffer.Count} bytes (ClientWebSocket State: {_clientWebSocket.State})");
+			_logger.LogDebug($"Sent {sendBuffer.Count} bytes (ClientWebSocket State: {_clientWebSocket.State})");
 		}
 
 		ArraySegment<byte> CreateSendBuffer(string data)
@@ -95,7 +95,7 @@ namespace BundtBot
 			var receiveBuffer = CreateReceiveBuffer();
 			var receiveResult = await _clientWebSocket.ReceiveAsync(receiveBuffer, CancellationToken.None);
 
-			_logger.LogInfo($"Received {receiveResult.Count} bytes on ClientWebSocket" +
+			_logger.LogDebug($"Received {receiveResult.Count} bytes on ClientWebSocket" +
 			                $"(EndOfMessage: {receiveResult.EndOfMessage})");
 
 			var receivedString = _utf8Encoding.GetString(receiveBuffer.Array, 0, receiveResult.Count);

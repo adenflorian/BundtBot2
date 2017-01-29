@@ -108,12 +108,12 @@ namespace BundtBot.Discord.Gateway
 			var gatewayPayload = new GatewayPayload(opCode, eventData);
 			var jsonGatewayPayload = gatewayPayload.Serialize();
 
-			_logger.LogInfo($"Sending opcode {gatewayPayload.GatewayOpCode} to gateway...");
+			_logger.LogDebug($"Sending opcode {gatewayPayload.GatewayOpCode} to gateway...");
 			_logger.LogDebug("" + jsonGatewayPayload);
 
 			await _clientWebSocketWrapper.SendMessageUsingQueueAsync(jsonGatewayPayload);
 
-			_logger.LogInfo($"Sent {gatewayPayload.GatewayOpCode}");
+			_logger.LogDebug($"Sent {gatewayPayload.GatewayOpCode}");
 		}
 
 		void OnMessageReceived(string message)
