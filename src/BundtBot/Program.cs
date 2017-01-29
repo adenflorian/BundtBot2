@@ -17,30 +17,15 @@ namespace BundtBot
 		public static void Main(string[] args)
 		{
 			SetupConsole();
-			_logger.LogInfo("Current working directory: " + Directory.GetCurrentDirectory());
 
-			try {
-				Start().Wait();
-			} catch (Exception ex) {
-				_logger.LogError(ex);
-				throw;
-			}
+			Start();
 
-			var exit = false;
-			Console.CancelKeyPress += (s, e) => {
-				exit = true;
-			};
+			var notCanceled = true;
+			Console.CancelKeyPress += (s, e) => notCanceled = false;
 
-			while (exit == false)
-			{
-				// To not suck up CPU
-				Thread.Sleep(TimeSpan.FromMilliseconds(200));
-			}
+			while (notCanceled) Thread.Sleep(TimeSpan.FromMilliseconds(200));
 
-			_logger.LogWarning("Exiting because of Cancel Key Press Event, goodbye!");
-
-			// Giving WebServer a chancve to cleanup
-			Thread.Sleep(TimeSpan.FromMilliseconds(200));
+			_logger.LogInfo("Goodbye!");
 		}
 
 		static void SetupConsole()
@@ -51,10 +36,21 @@ namespace BundtBot
 			}
 		}
 
-		public static async Task Start()
+		static void Start()
+		{
+			_logger.LogInfo("Current working directory: " + Directory.GetCurrentDirectory());
+
+			try {
+				StartAsync().Wait();
+			} catch (Exception ex) {
+				_logger.LogError(ex);
+				throw;
+			}
+		}
+
+		static async Task StartAsync()
 		{
 			new WebServer().Start();
-
 			await new BundtBot().Start();
 		}
 	}
