@@ -25,7 +25,7 @@ namespace BundtBot
 		public void LogTrace(object message, ConsoleColor color = DefaultColor)
 		{
 			if (LogLevel.Trace < CurrentLogLevel) return;
-			Log("Trace: " + message, color);
+			Log("Trace", message, color);
 		}
 
 		/// <summary>
@@ -35,7 +35,7 @@ namespace BundtBot
 		public void LogDebug(object message, ConsoleColor color = DefaultColor)
 		{
 			if (LogLevel.Debug < CurrentLogLevel) return;
-			Log("Debug: " + message, color);
+			Log("Debug", message, color);
 		}
 
 		/// <summary>
@@ -45,7 +45,7 @@ namespace BundtBot
 		public void LogInfo(object message, ConsoleColor color = DefaultColor)
 		{
 			if (LogLevel.Information < CurrentLogLevel) return;
-			Log("Info: " + message, color);
+			Log("Info", message, color);
 		}
 
 		/// <summary>
@@ -55,7 +55,7 @@ namespace BundtBot
 		public void LogWarning(object message)
 		{
 			if (LogLevel.Warning < CurrentLogLevel) return;
-			Log("Warning: " + message, ConsoleColor.Yellow);
+			Log("Warning", message, ConsoleColor.Yellow);
 		}
 
 		/// <summary>
@@ -65,12 +65,12 @@ namespace BundtBot
 		public void LogError(Exception ex)
 		{
 			if (LogLevel.Error < CurrentLogLevel) return;
-			Log("**ERROR** " + ex.GetType(), ConsoleColor.Red);
-			Log(ex.Message, ConsoleColor.Red);
-			Log(ex.StackTrace ?? "No stack trace available", ConsoleColor.Red);
+			Log("**ERROR**", ex.GetType(), ConsoleColor.Red);
+			Log("**ERROR**", ex.Message, ConsoleColor.Red);
+			Log("**ERROR**", ex.StackTrace ?? "No stack trace available", ConsoleColor.Red);
 			if (ex.InnerException != null)
 			{
-				Log($"InnerException: ${ex.InnerException}", ConsoleColor.Red);
+				Log("**ERROR**", $"InnerException: ${ex.InnerException}", ConsoleColor.Red);
 			}
 		}
 
@@ -81,7 +81,7 @@ namespace BundtBot
 		public void LogError(string message)
 		{
 			if (LogLevel.Error < CurrentLogLevel) return;
-			Log("**ERROR** " + message, ConsoleColor.Red);
+			Log("**ERROR**", message, ConsoleColor.Red);
 		}
 
 		/// <summary>
@@ -91,14 +91,12 @@ namespace BundtBot
 		public void LogCritical(Exception ex)
 		{
 			if (LogLevel.Critical < CurrentLogLevel) return;
-			Log("************** ", ConsoleColor.Red);
-			Log("***CRITICAL*** " + ex.GetType(), ConsoleColor.Red);
-			Log("************** ", ConsoleColor.Red);
-			Log(ex.Message, ConsoleColor.Red);
-			Log(ex.StackTrace ?? "No stack trace available", ConsoleColor.Red);
+			Log("***CRITICAL*** ", ex.GetType(), ConsoleColor.Red);
+			Log("***CRITICAL*** ", ex.Message, ConsoleColor.Red);
+			Log("***CRITICAL*** ", ex.StackTrace ?? "No stack trace available", ConsoleColor.Red);
 			if (ex.InnerException != null)
 			{
-				Log($"InnerException: ${ex.InnerException}", ConsoleColor.Red);
+				Log("***CRITICAL*** ", $"InnerException: ${ex.InnerException}", ConsoleColor.Red);
 			}
 		}
 
@@ -109,25 +107,23 @@ namespace BundtBot
 		public void LogCritical(string message)
 		{
 			if (LogLevel.Critical < CurrentLogLevel) return;
-			Log("************** ", ConsoleColor.Red);
-			Log("***CRITICAL*** " + message, ConsoleColor.Red);
-			Log("************** ", ConsoleColor.Red);
+			Log("***CRITICAL*** ", message, ConsoleColor.Red);
 		}
 
-		void Log(object messageObject, ConsoleColor color)
+		void Log(string logLevel, object messageObject, ConsoleColor color)
 		{
-			var message = PrepareMessage(messageObject);
+			var message = PrepareMessage(logLevel, messageObject);
 
 			Console.ForegroundColor = color;
 			Console.WriteLine(message);
 			Console.ForegroundColor = DefaultColor;
 		}
 
-		string PrepareMessage(object messageObject)
+		string PrepareMessage(string logLevel, object messageObject)
 		{
 			var message = messageObject.ToString();
 
-			message = $"{_prefix}: {message}";
+			message = $"[{logLevel}] {_prefix}: {message}";
 
 			// TODO format datetime with timezone
 			if (EnableTimestamps) {
