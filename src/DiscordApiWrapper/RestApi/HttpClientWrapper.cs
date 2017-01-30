@@ -18,30 +18,33 @@ namespace DiscordApiWrapper.RestApi
 
         internal HttpClientWrapper(RestClientConfig config, HttpClient httpClient = null)
         {
-			if (httpClient == null)
-			{
-				httpClient = new HttpClient(new DiscordRestClientLogger(new HttpClientHandler()));
-			}
+            if (httpClient == null)
+            {
+                httpClient = new HttpClient(new DiscordRestClientLogger(new HttpClientHandler()));
+            }
 
             HttpClient = httpClient;
-            
-			ValidateArguments(config);
+
+            ValidateArguments(config);
 
             InitializeHttpClient(config);
         }
 
-		static void ValidateArguments(RestClientConfig config)
-		{
-			if (config.BotToken.IsNullOrWhiteSpace()) {
-				throw new ArgumentException(nameof(config.BotToken));
-			}
-			if (config.Name.IsNullOrWhiteSpace()) {
-				throw new ArgumentException(nameof(config.Name));
-			}
-			if (config.Version.IsNullOrWhiteSpace()) {
-				throw new ArgumentException(nameof(config.Version));
-			}
-		}
+        static void ValidateArguments(RestClientConfig config)
+        {
+            if (config.BotToken.IsNullOrWhiteSpace())
+            {
+                throw new ArgumentException(nameof(config.BotToken));
+            }
+            if (config.Name.IsNullOrWhiteSpace())
+            {
+                throw new ArgumentException(nameof(config.Name));
+            }
+            if (config.Version.IsNullOrWhiteSpace())
+            {
+                throw new ArgumentException(nameof(config.Version));
+            }
+        }
 
         void InitializeHttpClient(RestClientConfig config)
         {
@@ -100,7 +103,9 @@ namespace DiscordApiWrapper.RestApi
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,
             CancellationToken cancellationToken)
         {
-            _logger.LogInfo("Request: " + request.RequestUri);
+            _logger.LogInfo(
+                new LogMessage("Request: "),
+                new LogMessage(request.RequestUri.ToString(), ConsoleColor.Magenta));
             _logger.LogTrace(request);
             if (request.Content != null)
             {
@@ -112,7 +117,7 @@ namespace DiscordApiWrapper.RestApi
             var logResponseMessage = "Response: " + response.StatusCode;
             if (response.IsSuccessStatusCode)
             {
-                _logger.LogInfo(logResponseMessage);
+                _logger.LogInfo(logResponseMessage, ConsoleColor.DarkMagenta);
             }
             else
             {

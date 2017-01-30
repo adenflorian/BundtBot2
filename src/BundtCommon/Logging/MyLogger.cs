@@ -21,7 +21,7 @@ namespace BundtBot
 		{
 			_prefix = prefix;
 			supportsAnsiColors = Console.LargestWindowHeight <= 0;
-			LogInfo(nameof(supportsAnsiColors) + ": " + supportsAnsiColors);
+			LogDebug(nameof(supportsAnsiColors) + ": " + supportsAnsiColors);
 		}
 
 		public void PrintTestLogColors()
