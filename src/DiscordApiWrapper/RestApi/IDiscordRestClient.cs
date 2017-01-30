@@ -7,6 +7,6 @@ namespace DiscordApiWrapper.RestApi
     public interface IDiscordRestClient
     {
          Task<Uri> GetGatewayUrlAsync();
-         Task<DiscordMessage> CreateMessageAsync(ulong channelId, CreateMessage createMessage);
+         Task<DiscordMessage> CreateMessageAsync(CreateMessage createMessage);
     }
 }

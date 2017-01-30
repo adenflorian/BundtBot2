@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Threading.Tasks;
 using BundtBot.Discord;
 
@@ -16,17 +17,26 @@ namespace BundtBot
         {
             Client = new DiscordClient(File.ReadAllText("bottoken"));
 
-			RegisterEventHandlers();
+            RegisterEventHandlers();
 
             await Client.Connect();
         }
 
         void RegisterEventHandlers()
         {
-            Client.MessageCreated += async (message) => {
-                if (message.Author.Id == Client.Me.Id) return;
-                if (message.Content.StartsWith("echo ") == false) return;
-                await message.TextChannel.SendMessageAsync(message.Content.Substring(5));
+            Client.MessageCreated += async (message) =>
+            {
+                try
+                {
+                    if (message.Author.Id == Client.Me.Id) return;
+                    if (message.Content.StartsWith("echo ") == false) return;
+                    await message.TextChannel.SendMessageAsync(message.Content.Substring(5));
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError("Exception thrown while handling event " + nameof(Client.MessageCreated));
+                    _logger.LogError(ex);
+                }
             };
 
             /*Client.GuildCreated += async (guild) => {

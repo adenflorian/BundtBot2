@@ -84,7 +84,7 @@ namespace BundtBot
 					{
 						var result = await ReceiveAsync();
 
-						_logger.LogDebug(JsonConvert.SerializeObject(result.Item1, Formatting.Indented));
+						_logger.LogTrace(JsonConvert.SerializeObject(result.Item1, Formatting.Indented));
 
 						message += result.Item2;
 

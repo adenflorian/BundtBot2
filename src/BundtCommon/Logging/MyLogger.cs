@@ -9,7 +9,7 @@ namespace BundtBot
 		public const ConsoleColor DefaultColor = ConsoleColor.Gray;
 
 		public bool EnableTimestamps = true;
-		public LogLevel CurrentLogLevel = LogLevel.Information;
+		public LogLevel CurrentLogLevel = LogLevel.Debug;
 
 		const string defaultFgColorEscSeq = "\x1b[39m";
 		const string defaultBgColorEscSeq = "\x1b[49m";
@@ -52,7 +52,7 @@ namespace BundtBot
 		public void LogTrace(object message, ConsoleColor? color = null)
 		{
 			if (LogLevel.Trace < CurrentLogLevel) return;
-			Log("Trace", message, ConsoleColor.DarkBlue, color);
+			Log("Trace", message, ConsoleColor.DarkMagenta, color);
 		}
 
 		/// <summary>

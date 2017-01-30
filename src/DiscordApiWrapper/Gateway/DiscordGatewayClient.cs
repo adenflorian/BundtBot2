@@ -112,7 +112,7 @@ namespace BundtBot.Discord.Gateway
 			var jsonGatewayPayload = gatewayPayload.Serialize();
 
 			_logger.LogDebug($"Sending opcode {gatewayPayload.GatewayOpCode} to gateway...");
-			_logger.LogDebug("" + jsonGatewayPayload);
+			_logger.LogTrace("" + jsonGatewayPayload);
 
 			await _clientWebSocketWrapper.SendMessageUsingQueueAsync(jsonGatewayPayload);
 
@@ -149,7 +149,7 @@ namespace BundtBot.Discord.Gateway
 		void LogMessageReceived(string message, GatewayPayload payload)
 		{
 			_logger.LogDebug($"Message received from gateway (opcode: {payload.GatewayOpCode})");
-			_logger.LogDebug(message.Prettify());
+			_logger.LogTrace(message.Prettify());
 		}
 
 		void StoreSequenceNumberForHeartbeat(GatewayPayload receivedGatewayDispatch)

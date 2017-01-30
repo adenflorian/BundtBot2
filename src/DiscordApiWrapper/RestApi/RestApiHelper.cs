@@ -40,7 +40,7 @@ namespace DiscordApiWrapper.RestApi
 			return Deserialize<T>(contentString);
 		}
 
-		static T Deserialize<T>(string content)
+		internal static T Deserialize<T>(string content)
 		{
 			T deserializedObject;
 

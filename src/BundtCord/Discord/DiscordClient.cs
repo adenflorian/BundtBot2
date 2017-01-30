@@ -60,7 +60,6 @@ namespace BundtBot.Discord
 			};
 
 			_gatewayClient.MessageCreated += (discordMessage) => {
-				var textChannel = TextChannels[discordMessage.ChannelId];
 				var message = new Message(discordMessage, this);
 				MessageCreated?.Invoke(message);
 			};

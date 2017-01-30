@@ -19,8 +19,8 @@ namespace BundtBot.Discord
 
         public async Task<IMessage> SendMessageAsync(string content)
         {
-            var createMessage = new CreateMessage{Content = content};
-            var discordMessage = await _client.DiscordRestClient.CreateMessageAsync(Id, createMessage);
+            var createMessage = new CreateMessage(Id){Content = content};
+            var discordMessage = await _client.DiscordRestClient.CreateMessageAsync(createMessage);
             var message = new Message(discordMessage, _client);
             return message;
         }

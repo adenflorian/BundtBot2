@@ -1,3 +1,4 @@
+using System;
 using Newtonsoft.Json;
 
 namespace DiscordApiWrapper.RestApi
@@ -12,7 +13,12 @@ namespace DiscordApiWrapper.RestApi
         public string message;
 
         [JsonProperty("retry_after")]
-        public int retryAfter;
+        int _retryAfterInMilliseconds;
+        public TimeSpan RetryAfter
+        {
+            get {return TimeSpan.FromMilliseconds(_retryAfterInMilliseconds);}
+            set {_retryAfterInMilliseconds = (int)value.TotalMilliseconds;}
+        }
 
         [JsonProperty("global")]
         public bool global;

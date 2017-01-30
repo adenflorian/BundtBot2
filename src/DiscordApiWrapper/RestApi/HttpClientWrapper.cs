@@ -101,10 +101,10 @@ namespace DiscordApiWrapper.RestApi
             CancellationToken cancellationToken)
         {
             _logger.LogInfo("Request: " + request.RequestUri);
-            _logger.LogDebug(request);
+            _logger.LogTrace(request);
             if (request.Content != null)
             {
-                _logger.LogDebug(await request.Content.ReadAsStringAsync());
+                _logger.LogTrace(await request.Content.ReadAsStringAsync());
             }
 
             var response = await base.SendAsync(request, cancellationToken);
@@ -118,10 +118,10 @@ namespace DiscordApiWrapper.RestApi
             {
                 _logger.LogWarning(logResponseMessage);
             }
-            _logger.LogDebug(response);
+            _logger.LogTrace(response);
             if (response.Content != null)
             {
-                _logger.LogDebug(await response.Content.ReadAsStringAsync());
+                _logger.LogTrace(await response.Content.ReadAsStringAsync());
             }
 
             return response;

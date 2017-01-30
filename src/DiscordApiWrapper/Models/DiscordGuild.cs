@@ -31,10 +31,10 @@ namespace BundtBot.Discord.Models
 		public ulong? AfkChannelId;
 
 		[JsonProperty("afk_timeout")]
-		int _afkTimeout;
+		int _afkTimeoutInSeconds;
 		public TimeSpan AfkTimeout {
-			get { return TimeSpan.FromSeconds(_afkTimeout); }
-			set { _afkTimeout = value.Seconds; }
+			get { return TimeSpan.FromSeconds(_afkTimeoutInSeconds); }
+			set { _afkTimeoutInSeconds = (int)value.TotalSeconds; }
 		}
 
 		[JsonProperty("embed_enabled")]
