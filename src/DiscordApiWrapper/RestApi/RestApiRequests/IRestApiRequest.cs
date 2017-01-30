@@ -1,12 +1,12 @@
-namespace BundtBot.Discord.Models
+namespace DiscordApiWrapper.RestApi.RestApiRequests
 {
     public interface IRestApiRequest
     {
         /// <summary>
         /// Example: channels/123/messages
         /// </summary>
-        string requestUri { get; }
-        RestRequestType requestType { get; }
+        string RequestUri { get; }
+        RestRequestType RequestType { get; }
     }
 
     public enum RestRequestType

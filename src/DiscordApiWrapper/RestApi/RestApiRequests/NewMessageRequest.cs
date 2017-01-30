@@ -1,14 +1,18 @@
-﻿using Newtonsoft.Json;
+﻿using BundtBot.Discord.Models.Embed;
+using Newtonsoft.Json;
 
-namespace BundtBot.Discord.Models
+namespace DiscordApiWrapper.RestApi.RestApiRequests
 {
-    public class CreateMessage : IRestApiRequest
+    public class NewMessageRequest : IRestApiRequest
     {
+        [JsonIgnore]
+        public RestRequestType RequestType => RestRequestType.Post;
+
+        [JsonIgnore]
+        public string RequestUri => $"channels/{_channelId}/messages";
+        
+        [JsonIgnore]
 		ulong _channelId;
-
-        public string requestUri => $"channels/{_channelId}/messages";
-
-        public RestRequestType requestType => RestRequestType.Post;
 
         /// <summary>
         /// The message contents (up to 2000 characters).
@@ -38,9 +42,9 @@ namespace BundtBot.Discord.Models
 
         /// <summary>Optional.</summary>
         [JsonProperty("embed")]
-        public Embed.Embed EmbeddedContent;
+        public Embed EmbeddedContent;
 
-		public CreateMessage(ulong channelId)
+		public NewMessageRequest(ulong channelId)
 		{
             _channelId = channelId;
 		}

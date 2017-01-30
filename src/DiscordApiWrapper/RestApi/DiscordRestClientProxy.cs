@@ -2,29 +2,35 @@ using System;
 using System.Threading.Tasks;
 using BundtBot.Discord;
 using BundtBot.Discord.Models;
+using BundtBot.Extensions;
+using DiscordApiWrapper.RestApi.RestApiRequests;
 
 namespace DiscordApiWrapper.RestApi
 {
     public class DiscordRestClientProxy : IDiscordRestClient
     {
-        readonly RateLimitedClient _createMsgClient;
-		readonly DiscordRestClient _discordRestClient;
+        readonly RateLimitedClient _rateLimitedClient;
 
         public DiscordRestClientProxy(RestClientConfig config)
         {
-			_discordRestClient = new DiscordRestClient(config);
-            _createMsgClient = new RateLimitedClient(_discordRestClient);
+            _rateLimitedClient = new RateLimitedClient(new DiscordRestClient(config));
         }
 
-        public async Task<DiscordMessage> CreateMessageAsync(CreateMessage createMessage)
+        public async Task<DiscordMessage> CreateMessageAsync(NewMessageRequest createMessage)
         {
-            var response = await _createMsgClient.CreateAsync(createMessage);
-            return RestApiHelper.Deserialize<DiscordMessage>(response);
+            return await DoRequestAsync<DiscordMessage>(createMessage);
         }
 
         public async Task<Uri> GetGatewayUrlAsync()
         {
-            return await _discordRestClient.GetGatewayUrlAsync();
+            return (await DoRequestAsync<GatewayUrl>(new GetRequest("gateway"))).Url;
+        }
+
+        async Task<T> DoRequestAsync<T>(IRestApiRequest request)
+        {
+            var response = await _rateLimitedClient.ProcessRequestAsync(request);
+            var content = await response.Content.ReadAsStringAsync();
+            return content.Deserialize<T>();
         }
     }
 }

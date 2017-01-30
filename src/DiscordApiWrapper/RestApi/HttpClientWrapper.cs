@@ -60,7 +60,7 @@ namespace DiscordApiWrapper.RestApi
             var response = await HttpClient.GetAsync(requestUri);
             if (response.IsSuccessStatusCode == false)
             {
-                await HandleErrorResponseAsync(response);
+                HandleErrorResponse(response);
             }
             return response;
         }
@@ -70,18 +70,17 @@ namespace DiscordApiWrapper.RestApi
             var response = await HttpClient.PostAsync(requestUri, content);
             if (response.IsSuccessStatusCode == false)
             {
-                await HandleErrorResponseAsync(response);
+                HandleErrorResponse(response);
             }
             return response;
         }
 
-        async Task HandleErrorResponseAsync(HttpResponseMessage response)
+        void HandleErrorResponse(HttpResponseMessage response)
         {
             Exception ex;
             if (response.StatusCode == (HttpStatusCode)429)
             {
-                var rateLimitExceeded = await RestApiHelper.ParseRateLimitExceededFromResponseAsync(response);
-                ex = new RateLimitExceededException(rateLimitExceeded);
+                ex = new RateLimitExceededException(new RateLimitExceeded(response));
             }
             else
             {

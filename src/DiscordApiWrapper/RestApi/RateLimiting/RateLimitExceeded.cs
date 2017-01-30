@@ -1,16 +1,20 @@
 using System;
+using System.Net.Http;
 using Newtonsoft.Json;
+using DiscordApiWrapper.RestApi.Extensions;
 
 namespace DiscordApiWrapper.RestApi
 {
     public class RateLimitExceeded
     {
+        [JsonIgnore]
         public RateLimit RateLimit;
 
-        public string reason;
+        [JsonIgnore]
+        public string Reason;
 
         [JsonProperty("message")]
-        public string message;
+        public string Message;
 
         [JsonProperty("retry_after")]
         int _retryAfterInMilliseconds;
@@ -21,6 +25,16 @@ namespace DiscordApiWrapper.RestApi
         }
 
         [JsonProperty("global")]
-        public bool global;
+        public bool Global;
+
+        public RateLimitExceeded(HttpResponseMessage response)
+        {
+            var rateLimitExceeded = response.DeserializeResponse<RateLimitExceeded>().GetAwaiter().GetResult();
+            Message = rateLimitExceeded.Message;
+            RetryAfter = rateLimitExceeded.RetryAfter;
+            Global = rateLimitExceeded.Global;
+            RateLimit = response.GetRateLimit();
+            Reason = response.ReasonPhrase;
+        }
     }
 }

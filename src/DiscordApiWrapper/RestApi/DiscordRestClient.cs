@@ -2,13 +2,13 @@
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
-using BundtBot.Discord.Models;
 using DiscordApiWrapper.RestApi;
+using DiscordApiWrapper.RestApi.RestApiRequests;
 using Newtonsoft.Json;
 
 namespace BundtBot.Discord
 {
-    public class DiscordRestClient
+    class DiscordRestClient : IRestRequestProcessor
     {
         readonly HttpClientWrapper _httpClientWrapper;
 
@@ -19,29 +19,30 @@ namespace BundtBot.Discord
             _httpClientWrapper = new HttpClientWrapper(config, httpClient);
         }
 
-        /// <exception cref="DiscordRestException" />
-        public async Task<Uri> GetGatewayUrlAsync()
-        {
-            var response = await _httpClientWrapper.GetAsync("gateway");
-            var gateway = await RestApiHelper.DeserializeResponse<GatewayUrl>(response);
-            return gateway.Url;
-        }
-
         /// <summary>
         /// TODO Requires the 'SEND_MESSAGES' permission to be present on the current user.
-        /// TODO Handle HTTP 429
         /// </summary>
         /// <exception cref="DiscordRestException" />
         /// <exception cref="RateLimitExceededException" />
-        internal async Task<Tuple<string, RateLimit>> PostRequestAsync(IRestApiRequest request)
+        public async Task<HttpResponseMessage> ProcessRequestAsync(IRestApiRequest request)
         {
-			var content = BuildContent(request);
+            switch (request.RequestType)
+            {
+                case RestRequestType.Get: return await GetRequestAsync(request);
+                case RestRequestType.Post: return await PostRequestAsync(request);
+                default: throw new ArgumentOutOfRangeException();
+            }
+        }
 
-            var response = await _httpClientWrapper.PostAsync(request.requestUri, content);
+        async Task<HttpResponseMessage> GetRequestAsync(IRestApiRequest request)
+        {
+            return await _httpClientWrapper.GetAsync(request.RequestUri);
+        }
 
-            var message = await response.Content.ReadAsStringAsync();
-            var rateLimit = RestApiHelper.ParseRateLimitFromHeaders(response);
-            return Tuple.Create(message, rateLimit);
+        async Task<HttpResponseMessage> PostRequestAsync(IRestApiRequest request)
+        {
+            var content = BuildContent(request);
+            return await _httpClientWrapper.PostAsync(request.RequestUri, content);
         }
 
         StringContent BuildContent(IRestApiRequest request)
@@ -49,7 +50,7 @@ namespace BundtBot.Discord
             var body = JsonConvert.SerializeObject(request);
             var content = new StringContent(body);
             content.Headers.ContentType = MediaTypeHeaderValue.Parse("application/json");
-			return content;
+            return content;
         }
     }
 }

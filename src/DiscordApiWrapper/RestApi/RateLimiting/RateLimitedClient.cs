@@ -1,21 +1,23 @@
 using System;
 using System.Collections.Concurrent;
+using System.Net.Http;
 using System.Threading.Tasks;
 using BundtBot;
 using BundtBot.Discord;
-using BundtBot.Discord.Models;
 using BundtCommon;
+using DiscordApiWrapper.RestApi.Extensions;
+using DiscordApiWrapper.RestApi.RestApiRequests;
 using Newtonsoft.Json;
 
 namespace DiscordApiWrapper.RestApi
 {
-    public class RateLimitedClient
+    class RateLimitedClient : IRestRequestProcessor
     {
         static readonly MyLogger _logger = new MyLogger(nameof(RateLimitedClient));
         static readonly TimeSpan _waitTimeCushionStart = TimeSpan.FromSeconds(2.5f);
         static readonly TimeSpan _waitTimeCushionIncrement = TimeSpan.FromSeconds(1);
 
-        readonly ConcurrentQueue<Tuple<IRestApiRequest, Action<string>>> _queue = new ConcurrentQueue<Tuple<IRestApiRequest, Action<string>>>();
+        readonly ConcurrentQueue<Tuple<IRestApiRequest, Action<HttpResponseMessage>>> _queue = new ConcurrentQueue<Tuple<IRestApiRequest, Action<HttpResponseMessage>>>();
         readonly DiscordRestClient _restClient;
 
         // Will be overriden each response
@@ -29,18 +31,18 @@ namespace DiscordApiWrapper.RestApi
             StartSendMessageLoop();
         }
 
-        public async Task<string> CreateAsync(IRestApiRequest request)
+        public async Task<HttpResponseMessage> ProcessRequestAsync(IRestApiRequest request)
         {
-            string response = null;
+            HttpResponseMessage response = null;
             var notDone = true;
 
-            _queue.Enqueue(Tuple.Create<IRestApiRequest, Action<string>>(request, (msg) =>
+            _queue.Enqueue(Tuple.Create<IRestApiRequest, Action<HttpResponseMessage>>(request, (msg) =>
             {
                 response = msg;
                 notDone = false;
             }));
 
-            _logger.LogDebug($"Enqueued request {request.requestType} {request.requestUri}");
+            _logger.LogDebug($"Enqueued request {request.RequestType} {request.RequestUri}");
 
             while (notDone) await Task.Delay(100);
 
@@ -62,7 +64,7 @@ namespace DiscordApiWrapper.RestApi
 
         async Task TryToSendNextMessageAsync()
         {
-            Tuple<IRestApiRequest, Action<string>> result;
+            Tuple<IRestApiRequest, Action<HttpResponseMessage>> result;
 
             if (_queue.TryDequeue(out result))
             {
@@ -74,9 +76,9 @@ namespace DiscordApiWrapper.RestApi
             }
         }
 
-        async Task SendMessageAsync(IRestApiRequest request, Action<string> callback)
+        async Task SendMessageAsync(IRestApiRequest request, Action<HttpResponseMessage> callback)
         {
-            _logger.LogDebug($"Dequeued request {request.requestType} {request.requestUri}");
+            _logger.LogDebug($"Dequeued request {request.RequestType} {request.RequestUri}");
 
             if (_rateLimit.Remaining == 0)
             {
@@ -89,19 +91,19 @@ namespace DiscordApiWrapper.RestApi
                 _rateLimit.Remaining--;
             }
 
-            Tuple<string, RateLimit> response = null;
+            HttpResponseMessage response = null;
 
             try
             {
-                response = await _restClient.PostRequestAsync(request);
+                response = await _restClient.ProcessRequestAsync(request);
             }
             catch (RateLimitExceededException ex)
             {
-                await OnRateLimitExceededAsync(ex);
                 try
                 {
+                    await OnRateLimitExceededAsync(ex);
                     _logger.LogError("Retrying request...");
-                    response = await _restClient.PostRequestAsync(request);
+                    response = await _restClient.ProcessRequestAsync(request);
                 }
                 catch (System.Exception ex2)
                 {
@@ -120,8 +122,16 @@ namespace DiscordApiWrapper.RestApi
                 return;
             }
 
-            _rateLimit = response.Item2;
-            callback.Invoke(response.Item1);
+            if (response.Headers.Contains("X-RateLimit-Limit"))
+            {
+                _rateLimit = response.GetRateLimit();
+            }
+            else
+            {
+                _rateLimit = new RateLimit(999, 999, 0);
+            }
+
+            callback.Invoke(response);
         }
 
         async Task OnRateLimitExceededAsync(RateLimitExceededException ex)

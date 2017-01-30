@@ -17,5 +17,10 @@ namespace BundtBot.Extensions {
 	    public static bool IsNullOrWhiteSpace(this string @this) {
 		    return string.IsNullOrWhiteSpace(@this);
 	    }
+
+		public static T Deserialize<T>(this string @this)
+		{
+			return JsonConvert.DeserializeObject<T>(@this);
+		}
 	}
 }
