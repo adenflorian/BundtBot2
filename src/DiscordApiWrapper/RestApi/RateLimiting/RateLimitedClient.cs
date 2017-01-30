@@ -17,16 +17,17 @@ namespace DiscordApiWrapper.RestApi
         static readonly TimeSpan _waitTimeCushionStart = TimeSpan.FromSeconds(2.5f);
         static readonly TimeSpan _waitTimeCushionIncrement = TimeSpan.FromSeconds(1);
 
-        readonly ConcurrentQueue<Tuple<IRestApiRequest, Action<HttpResponseMessage>>> _queue = new ConcurrentQueue<Tuple<IRestApiRequest, Action<HttpResponseMessage>>>();
-        readonly DiscordRestClient _restClient;
+        readonly ConcurrentQueue<Tuple<IRestApiRequest, Action<HttpResponseMessage>>> _queue =
+            new ConcurrentQueue<Tuple<IRestApiRequest, Action<HttpResponseMessage>>>();
+        readonly IRestRequestProcessor _innerProcessor;
 
         // Will be overriden each response
         RateLimit _rateLimit = new RateLimit(1, 1, UnixTime.GetTimestamp());
         TimeSpan _waitTimeCushion = _waitTimeCushionStart;
 
-        public RateLimitedClient(DiscordRestClient restClient)
+        public RateLimitedClient(IRestRequestProcessor innerProcessor)
         {
-            _restClient = restClient;
+            _innerProcessor = innerProcessor;
 
             StartSendMessageLoop();
         }
@@ -36,8 +37,7 @@ namespace DiscordApiWrapper.RestApi
             HttpResponseMessage response = null;
             var notDone = true;
 
-            _queue.Enqueue(Tuple.Create<IRestApiRequest, Action<HttpResponseMessage>>(request, (msg) =>
-            {
+            _queue.Enqueue(Tuple.Create<IRestApiRequest, Action<HttpResponseMessage>>(request, (msg) => {
                 response = msg;
                 notDone = false;
             }));
@@ -95,7 +95,7 @@ namespace DiscordApiWrapper.RestApi
 
             try
             {
-                response = await _restClient.ProcessRequestAsync(request);
+                response = await _innerProcessor.ProcessRequestAsync(request);
             }
             catch (RateLimitExceededException ex)
             {
@@ -103,7 +103,7 @@ namespace DiscordApiWrapper.RestApi
                 {
                     await OnRateLimitExceededAsync(ex);
                     _logger.LogError("Retrying request...");
-                    response = await _restClient.ProcessRequestAsync(request);
+                    response = await _innerProcessor.ProcessRequestAsync(request);
                 }
                 catch (System.Exception ex2)
                 {

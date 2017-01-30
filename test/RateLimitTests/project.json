@@ -5,10 +5,6 @@
     "warningsAsErrors": true
   },
   "dependencies": {
-    "Microsoft.NET.Test.Sdk": "15.0.0-preview-20161123-03",
-    "xunit": "2.1.0",
-    "System.Runtime.Serialization.Primitives": "4.3.0",
-    "Moq": "4.6.38-alpha",
     "BundtCommon": "1.0.0",
     "DiscordApiWrapper": "1.0.0",
     "FakeDiscordSharp": "1.0.0"
@@ -23,9 +19,7 @@
         "Microsoft.NETCore.App": {
           "version": "1.1.0",
           "type": "platform"
-        },
-        "dotnet-test-xunit": "2.2.0-preview2-build1029",
-        "Microsoft.DotNet.InternalAbstractions": "1.0.500-preview2-1-003177"
+        }
       }
     }
   }

@@ -5,16 +5,17 @@ using System.Threading;
 using System.Threading.Tasks;
 using BundtBot;
 using BundtBot.Discord;
-using BundtBot.Discord.Models;
 using DiscordApiWrapper.RestApi;
+using DiscordApiWrapper.RestApi.RestApiRequests;
 using FakeDiscordSharp;
 
-class RateLimitTester
+public class RateLimitTester
 {
     static readonly MyLogger _logger = new MyLogger(nameof(RateLimitTester));
-    static CreateMessageClient _msgClient;
 
-    static void Main(string[] args)
+    static RateLimitedClient _msgClient;
+
+    public static void Main(string[] args)
     {
         Console.WriteLine("Hello World!");
 
@@ -26,7 +27,7 @@ class RateLimitTester
 
         var apiUri = new Uri("http://localhost:5000/");
         var restClient = new DiscordRestClient(new RestClientConfig("token", "name", "version", apiUri));
-        _msgClient = new CreateMessageClient(restClient);
+        _msgClient = new RateLimitedClient(restClient);
 
         Test1();
         _logger.LogInfo("Test1 Complete");
@@ -74,7 +75,7 @@ class RateLimitTester
         {
             log(i + " Start!");
 
-            var message = await _msgClient.CreateAsync((ulong)i, new CreateMessage{Content = "hello world " + i});
+            var message = await _msgClient.ProcessRequestAsync(new NewMessageRequest((ulong)i){Content = "hello world " + i});
             
             if(message == null)
             {
