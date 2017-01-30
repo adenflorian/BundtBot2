@@ -12,7 +12,7 @@ namespace DiscordApiWrapper.RestApi
     public class RateLimitedClient
     {
         static readonly MyLogger _logger = new MyLogger(nameof(RateLimitedClient));
-        static readonly TimeSpan _waitTimeCushionStart = TimeSpan.FromSeconds(0f);
+        static readonly TimeSpan _waitTimeCushionStart = TimeSpan.FromSeconds(2.5f);
         static readonly TimeSpan _waitTimeCushionIncrement = TimeSpan.FromSeconds(1);
 
         readonly ConcurrentQueue<Tuple<IRestApiRequest, Action<string>>> _queue = new ConcurrentQueue<Tuple<IRestApiRequest, Action<string>>>();
@@ -144,8 +144,9 @@ namespace DiscordApiWrapper.RestApi
             var waitAmount = TimeSpan.FromSeconds(Math.Max(0, (_rateLimit.Reset - currentTime)));
 
             _logger.LogInfo($"WaitUntilReset: Waiting for {waitAmount.TotalSeconds} + {_waitTimeCushion.TotalSeconds}(cushion) seconds", ConsoleColor.Magenta);
-            await Task.Delay(waitAmount + _waitTimeCushion);
-            _logger.LogInfo($"WaitUntilReset: Done waiting for {waitAmount.TotalSeconds} seconds", ConsoleColor.Magenta);
+            var finalWaitAmount = waitAmount + _waitTimeCushion;
+            await Task.Delay(finalWaitAmount);
+            _logger.LogInfo($"WaitUntilReset: Done waiting for {finalWaitAmount.TotalSeconds} seconds", ConsoleColor.Magenta);
         }
     }
 }
