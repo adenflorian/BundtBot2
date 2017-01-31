@@ -77,6 +77,7 @@ namespace BundtBot
 
 		void StartReceiveLoop()
 		{
+			var waitTimeMs = 1000;
 			Task.Run(async () => {
 				var message = "";
 				while (_clientWebSocket.State == WebSocketState.Open) {
@@ -98,6 +99,8 @@ namespace BundtBot
 						_logger.LogWarning("Exception caught in ClientWebSocketWrapper ReceiveLoop.");
 						_logger.LogError(ex);
 						_logger.LogWarning("Restarting ClientWebSocketWrapper ReceiveLoop.");
+						await Task.Delay(waitTimeMs);
+						waitTimeMs *= 2;
 						message = "";
 					}
 				}
