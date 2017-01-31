@@ -9,26 +9,29 @@ namespace DiscordApiWrapper.RestApi
 {
     public class DiscordRestClientProxy : IDiscordRestClient
     {
-        readonly RateLimitedClient _rateLimitedClient;
+        readonly RateLimitedClient _createMessageClient;
+        readonly RateLimitedClient _getGatewayUrlCient;
 
         public DiscordRestClientProxy(RestClientConfig config)
         {
-            _rateLimitedClient = new RateLimitedClient(new DiscordRestClient(config));
+            var discordRestClient = new DiscordRestClient(config);
+            _createMessageClient = new RateLimitedClient(discordRestClient);
+            _getGatewayUrlCient = new RateLimitedClient(discordRestClient);
         }
 
         public async Task<DiscordMessage> CreateMessageAsync(NewMessageRequest createMessage)
         {
-            return await DoRequestAsync<DiscordMessage>(createMessage);
+            return await DoRequestAsync<DiscordMessage>(createMessage, _createMessageClient);
         }
 
         public async Task<Uri> GetGatewayUrlAsync()
         {
-            return (await DoRequestAsync<GatewayUrl>(new GetRequest("gateway"))).Url;
+            return (await DoRequestAsync<GatewayUrl>(new GetRequest("gateway"), _getGatewayUrlCient)).Url;
         }
 
-        async Task<T> DoRequestAsync<T>(IRestApiRequest request)
+        async Task<T> DoRequestAsync<T>(IRestApiRequest request, IRestRequestProcessor processor)
         {
-            var response = await _rateLimitedClient.ProcessRequestAsync(request);
+            var response = await processor.ProcessRequestAsync(request);
             var content = await response.Content.ReadAsStringAsync();
             return content.Deserialize<T>();
         }
