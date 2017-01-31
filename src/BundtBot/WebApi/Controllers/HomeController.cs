@@ -6,7 +6,7 @@ namespace BundtBot.WebApi.Controllers
 {
     public class HomeController : Controller
 	{
-		static readonly MyLogger _logger = new MyLogger(nameof(HomeController));
+		static readonly MyLogger _logger = new MyLogger(nameof(HomeController), ConsoleColor.DarkBlue);
 		
 		public IActionResult Index()
 		{

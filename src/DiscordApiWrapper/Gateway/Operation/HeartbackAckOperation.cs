@@ -6,7 +6,7 @@ namespace BundtBot.Discord.Gateway.Operation
 	{
 		public static readonly HeartbackAckOperation Instance = new HeartbackAckOperation();
 
-		readonly MyLogger _logger = new MyLogger(nameof(HeartbackAckOperation));
+		static readonly MyLogger _logger = new MyLogger(nameof(HeartbackAckOperation), ConsoleColor.DarkCyan);
 
 		public void Execute(string eventName, object eventData)
 		{

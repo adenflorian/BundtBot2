@@ -8,7 +8,7 @@ namespace DiscordApiWrapper.RestApi
 {
     class DiscordRestClientLogger : DelegatingHandler
     {
-        readonly MyLogger _logger = new MyLogger(nameof(DiscordRestClientLogger), ConsoleColor.DarkMagenta);
+        static readonly MyLogger _logger = new MyLogger(nameof(DiscordRestClientLogger), ConsoleColor.DarkMagenta);
 
         public DiscordRestClientLogger(HttpMessageHandler innerHandler) : base(innerHandler)
         {

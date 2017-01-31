@@ -31,7 +31,7 @@ namespace BundtBot.Discord.Gateway
 		public event GuildCreatedHandler GuildCreated;
 
 		readonly ClientWebSocketWrapper _clientWebSocketWrapper = new ClientWebSocketWrapper();
-		readonly MyLogger _logger = new MyLogger(nameof(DiscordGatewayClient), ConsoleColor.Cyan);
+		static readonly MyLogger _logger = new MyLogger(nameof(DiscordGatewayClient), ConsoleColor.Cyan);
 		readonly string _authToken;
 
 		int _lastSequenceReceived;
@@ -68,7 +68,7 @@ namespace BundtBot.Discord.Gateway
 					await Task.Delay(heartbeatInterval);
 				}
 			});
-			_logger.LogInfo("Heartbeat loop started", ConsoleColor.Green);
+			_logger.LogInfo($"Heartbeat loop started with interval of {heartbeatInterval.TotalSeconds} seconds", ConsoleColor.Green);
 		}
 
 		public async Task SendHeartBeatAsync()

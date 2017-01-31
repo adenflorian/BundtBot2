@@ -5,7 +5,7 @@ namespace BundtBot.WebApi
 {
     public class MyWebServerLogger : ILogger
     {
-        readonly MyLogger _logger = new MyLogger(nameof(MyWebServerLogger));
+        static readonly MyLogger _logger = new MyLogger(nameof(MyWebServerLogger), ConsoleColor.Blue);
 
         public IDisposable BeginScope<TState>(TState state)
         {

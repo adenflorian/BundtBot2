@@ -4,6 +4,13 @@ using Microsoft.Extensions.Logging;
 
 namespace BundtBot
 {
+    // Coloring Guidelines
+    // ===================
+    // 
+    // # Prefixes
+    // Gateway stuff - Cyan/DarkCyan
+    // Rest Api stuff - Magenta/DarkMagenta
+    // Web Server stuff - Blue/DarkBlue
     public class MyLogger
     {
         public const ConsoleColor DefaultColor = ConsoleColor.Gray;

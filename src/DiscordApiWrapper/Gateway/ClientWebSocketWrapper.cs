@@ -15,7 +15,7 @@ namespace BundtBot
 
 		readonly ClientWebSocket _clientWebSocket = new ClientWebSocket();
 		readonly UTF8Encoding _utf8Encoding = new UTF8Encoding();
-		readonly MyLogger _logger = new MyLogger(nameof(ClientWebSocketWrapper), ConsoleColor.DarkCyan);
+		static readonly MyLogger _logger = new MyLogger(nameof(ClientWebSocketWrapper), ConsoleColor.DarkCyan);
 
 		readonly Queue<Tuple<string, Action>> _outgoingQueue = new Queue<Tuple<string, Action>>();
 
@@ -98,10 +98,16 @@ namespace BundtBot
 					{
 						_logger.LogWarning("Exception caught in ClientWebSocketWrapper ReceiveLoop.");
 						_logger.LogError(ex);
-						_logger.LogWarning("Restarting ClientWebSocketWrapper ReceiveLoop.");
+
+						// TODO Log critical error if wait time gets above a certain value
+
+						_logger.LogWarning($"Waiting for {waitTimeMs / 1000} seconds, then restarting ReceiveLoop");
 						await Task.Delay(waitTimeMs);
 						waitTimeMs *= 2;
+						_logger.LogWarning($"Doubled web socket restart wait time to {waitTimeMs / 1000} seconds");
 						message = "";
+
+						_logger.LogWarning("Restarting ClientWebSocketWrapper ReceiveLoop.");
 					}
 				}
 			});
