@@ -13,7 +13,7 @@ namespace DiscordApiWrapper.RestApi
 {
     class RateLimitedClient : IRestRequestProcessor
     {
-        static readonly MyLogger _logger = new MyLogger(nameof(RateLimitedClient));
+        static readonly MyLogger _logger = new MyLogger(nameof(RateLimitedClient), ConsoleColor.Magenta);
         static readonly TimeSpan _waitTimeCushionStart = TimeSpan.FromSeconds(2.5f);
         static readonly TimeSpan _waitTimeCushionIncrement = TimeSpan.FromSeconds(1);
 

@@ -15,7 +15,7 @@ namespace BundtBot
 
 		readonly ClientWebSocket _clientWebSocket = new ClientWebSocket();
 		readonly UTF8Encoding _utf8Encoding = new UTF8Encoding();
-		readonly MyLogger _logger = new MyLogger(nameof(ClientWebSocketWrapper));
+		readonly MyLogger _logger = new MyLogger(nameof(ClientWebSocketWrapper), ConsoleColor.DarkCyan);
 
 		readonly Queue<Tuple<string, Action>> _outgoingQueue = new Queue<Tuple<string, Action>>();
 

@@ -12,11 +12,13 @@ namespace BundtBot
         public LogLevel CurrentLogLevel = LogLevel.Debug;
 
         readonly string _prefix;
+        readonly ConsoleColor? _prefixColor;
         readonly bool _supportsAnsiColors;
 
-        public MyLogger(string prefix)
+        public MyLogger(string prefix, ConsoleColor? prefixColor = null)
         {
             _prefix = prefix;
+            _prefixColor = prefixColor;
             _supportsAnsiColors = Console.LargestWindowHeight <= 0;
             LogDebug(nameof(_supportsAnsiColors) + ": " + _supportsAnsiColors);
         }
@@ -122,11 +124,11 @@ namespace BundtBot
         public void LogCritical(Exception ex)
         {
             if (LogLevel.Critical < CurrentLogLevel) return;
-            BuildAndLog("***CRITICAL*** ", $"{ex.GetType()}: {ex.Message}", ConsoleColor.Red, ConsoleColor.Red);
-            BuildAndLog("***CRITICAL*** ", ex.StackTrace ?? "No stack trace available", ConsoleColor.Red, ConsoleColor.Red);
+            BuildAndLog("❗❗❗CRITICAL❗❗❗ ", $"{ex.GetType()}: {ex.Message}", ConsoleColor.Red, ConsoleColor.Red);
+            BuildAndLog("❗❗❗CRITICAL❗❗❗ ", ex.StackTrace ?? "No stack trace available", ConsoleColor.Red, ConsoleColor.Red);
             if (ex.InnerException != null)
             {
-                BuildAndLog("***CRITICAL*** ", $"InnerException: ${ex.InnerException}", ConsoleColor.Red, ConsoleColor.Red);
+                BuildAndLog("❗❗❗CRITICAL❗❗❗ ", $"InnerException: ${ex.InnerException}", ConsoleColor.Red, ConsoleColor.Red);
             }
         }
 
@@ -137,18 +139,18 @@ namespace BundtBot
         public void LogCritical(string message)
         {
             if (LogLevel.Critical < CurrentLogLevel) return;
-            BuildAndLog("***CRITICAL*** ", message, ConsoleColor.Red);
+            BuildAndLog("❗❗❗CRITICAL❗❗❗ ", message, ConsoleColor.Red);
         }
 
         void BuildAndLog(string logLevel, object messageObject, ConsoleColor? logLevelColor = null, ConsoleColor? messageColor = null)
         {
             var message = BuildMessage(messageObject, logLevel, logLevelColor, messageColor);
 
-			message = AddTimeStampIfEnabled(message);
+            message = AddTimeStampIfEnabled(message);
 
             message = message.Replace("\n", "\n\t");
 
-			WriteStdout(message, messageColor);
+            WriteStdout(message, messageColor);
         }
 
         string BuildMessage(object messageObject, string logLevel, ConsoleColor? logLevelColor, ConsoleColor? messageColor)
@@ -161,15 +163,15 @@ namespace BundtBot
             }
             else
             {
-                return $"[{logLevel}] {_prefix}: {message}";
+                return $"[{logLevel}]{GetLogLevelSpacing(logLevel)}{_prefix}:{GetPrefixSpacing()}{message}";
             }
         }
 
         string AddAnsiColorsToMessage(string message, string logLevel, ConsoleColor? logLevelColor, ConsoleColor? messageColor)
         {
             var logLevelColorCode = logLevelColor == null
-                                ? AnsiColorFg.Default
-                                : GetAnsiColorFgEscSeq(logLevelColor.GetValueOrDefault());
+                ? AnsiColorFg.Default
+                : GetAnsiColorFgEscSeq(logLevelColor.GetValueOrDefault());
 
             var msgColorCode = "";
             if (messageColor == null)
@@ -181,12 +183,44 @@ namespace BundtBot
                 msgColorCode = GetAnsiColorFgEscSeq(messageColor.GetValueOrDefault());
             }
 
-            return $"{logLevelColorCode}[{logLevel}]{AnsiColorFg.Default} {_prefix}: {msgColorCode}{message}{AnsiColorFg.Default}";
+            var prefixColorCode = _prefixColor == null
+                ? AnsiColorFg.Default
+                : GetAnsiColorFgEscSeq(_prefixColor.GetValueOrDefault());
+
+            return $"{logLevelColorCode}[{logLevel}]{AnsiColorFg.Default}{GetLogLevelSpacing(logLevel)}{prefixColorCode}{_prefix}:{GetPrefixSpacing()}{msgColorCode}{message}{AnsiColorFg.Default}";
+        }
+
+        string GetLogLevelSpacing(string logLevel)
+        {
+            var spaces = "";
+
+            var spacesCount = 9 - logLevel.Length;
+
+            for (int i = 0; i < spacesCount; i++)
+            {
+                spaces += ' ';
+            }
+
+            return spaces;
+        }
+
+        string GetPrefixSpacing()
+        {
+            var spaces = "";
+
+            var spacesCount = 26 - _prefix.Length;
+
+            for (int i = 0; i < spacesCount; i++)
+            {
+                spaces += ' ';
+            }
+
+            return spaces;
         }
 
         string AddTimeStampIfEnabled(string message)
         {
-			if (EnableTimestamps == false) return message;
+            if (EnableTimestamps == false) return message;
             var dateTimeString = DateTime.Now.ToString("o");
             if (_supportsAnsiColors)
             {
@@ -198,13 +232,13 @@ namespace BundtBot
         string AddAnsiColorsToDateTimeString(string dateTimeString)
         {
             var split = dateTimeString.Split('T');
-            dateTimeString = $"{AnsiColorFg.Green}{split[0]}";
-            dateTimeString += $"{AnsiColorFg.DarkGray}T";
+            dateTimeString = AnsiColorFg.Green + split[0];
+            dateTimeString += AnsiColorFg.DarkGray + 'T';
             var split2 = split[1].Split('.');
-            dateTimeString += $"{AnsiColorFg.Green}{split2[0]}";
-            dateTimeString += $"{AnsiColorFg.DarkGray}.";
-            dateTimeString += $"{AnsiColorFg.DarkGray}{split2[1]}";
-            dateTimeString += $"{AnsiColorFg.Default}";
+            dateTimeString += AnsiColorFg.DarkGreen + split2[0];
+            dateTimeString += AnsiColorFg.DarkGray + '.';
+            dateTimeString += AnsiColorFg.Green + split2[1];
+            dateTimeString += AnsiColorFg.Default;
             return dateTimeString;
         }
 
@@ -230,26 +264,6 @@ namespace BundtBot
         void WriteStdoutUnix(string message)
         {
             Console.WriteLine(message + AnsiColorFg.Default + AnsiColorBg.Default);
-        }
-
-        public void PrintTestLogColors()
-        {
-            BuildAndLog("Test", "Black Fg", ConsoleColor.Black);
-            BuildAndLog("Test", "DarkBlue Fg", ConsoleColor.DarkBlue);
-            BuildAndLog("Test", "DarkGreen Fg", ConsoleColor.DarkGreen);
-            BuildAndLog("Test", "DarkCyan Fg", ConsoleColor.DarkCyan);
-            BuildAndLog("Test", "DarkRed Fg", ConsoleColor.DarkRed);
-            BuildAndLog("Test", "DarkMagenta Fg", ConsoleColor.DarkMagenta);
-            BuildAndLog("Test", "DarkYellow Fg", ConsoleColor.DarkYellow);
-            BuildAndLog("Test", "Gray Fg", ConsoleColor.Gray);
-            BuildAndLog("Test", "DarkGray Fg", ConsoleColor.DarkGray);
-            BuildAndLog("Test", "Blue Fg", ConsoleColor.Blue);
-            BuildAndLog("Test", "Green Fg", ConsoleColor.Green);
-            BuildAndLog("Test", "Cyan Fg", ConsoleColor.Cyan);
-            BuildAndLog("Test", "Red Fg", ConsoleColor.Red);
-            BuildAndLog("Test", "Magenta Fg", ConsoleColor.Magenta);
-            BuildAndLog("Test", "Yellow Fg", ConsoleColor.Yellow);
-            BuildAndLog("Test", "White Fg", ConsoleColor.White);
         }
 
         string GetAnsiColorFgEscSeq(ConsoleColor color)
@@ -345,5 +359,106 @@ namespace BundtBot
             public static string White = prefix + 107 + suffix;
             public static string Default = prefix + 49 + suffix;
         }
+
+        // Emoji confirmed to work in gitbash
+        // ✂
+        // ✈
+        // ✉
+        // ✏
+        // ✒
+        // ✔
+        // ✖
+        // ✳
+        // ✴
+        // ❄
+        // ❇
+        // ❗
+        // ❤
+        // ♥
+        // ➡
+        // ©
+        // ®
+        // ‼
+        // 8⃣
+        // 9⃣
+        // 7⃣
+        // 6⃣
+        // 1⃣
+        // 0⃣
+        // 2⃣
+        // 3⃣
+        // 5⃣
+        // 4⃣
+        // #⃣
+        // ™
+        // ↔
+        // ↕
+        // ▪
+        // ▫
+        // ☀
+        // ☁
+        // ☎
+        // ☑
+        // ☺
+        // ♈
+        // ♉
+        // ♊
+        // ♋
+        // ♌
+        // ♍
+        // ♎
+        // ♏
+        // ♐
+        // ♑
+        // ♒
+        // ♓
+        // ♠
+        // ♣
+        // ♥
+        // ♦
+        // ⭕
+        // 〰
+        // 〽
+        // ㊗
+        // ㊙
+        // ♥
+        // ☺
+        // ☻
+        // ♥
+        // ♦
+        // ♣
+        // ♠
+        // •
+        // ◘
+        // ○
+        // ◙
+        // ♂
+        // ♀
+        // ♪
+        // ♫
+        // ☼
+        // ♂
+        // ♀
+        // ♪
+        // ♫
+        // ☼
+        // ►
+        // ◄
+        // ↕
+        // ‼
+        // ¶
+        // §
+        // ▬
+        // ↨
+        // ↑
+        // ↓
+        // →
+        // ←
+        // ∟
+        // ↔
+        // ▲
+        // ☺
+        // ☻
+        // ▼
     }
 }

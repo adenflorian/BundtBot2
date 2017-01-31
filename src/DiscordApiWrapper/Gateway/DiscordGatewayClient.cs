@@ -31,7 +31,7 @@ namespace BundtBot.Discord.Gateway
 		public event GuildCreatedHandler GuildCreated;
 
 		readonly ClientWebSocketWrapper _clientWebSocketWrapper = new ClientWebSocketWrapper();
-		readonly MyLogger _logger = new MyLogger(nameof(DiscordGatewayClient));
+		readonly MyLogger _logger = new MyLogger(nameof(DiscordGatewayClient), ConsoleColor.Cyan);
 		readonly string _authToken;
 
 		int _lastSequenceReceived;

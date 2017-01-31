@@ -14,7 +14,7 @@ namespace BundtBot.Discord
     {
         internal readonly HttpClient HttpClient;
 
-        static readonly MyLogger _logger = new MyLogger(nameof(DiscordRestClient));
+        static readonly MyLogger _logger = new MyLogger(nameof(DiscordRestClient), ConsoleColor.Magenta);
 
         public DiscordRestClient(RestClientConfig config, HttpClient httpClient = null)
         {
