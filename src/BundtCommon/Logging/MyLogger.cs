@@ -16,7 +16,7 @@ namespace BundtBot
         public const ConsoleColor DefaultColor = ConsoleColor.Gray;
 
         public bool EnableTimestamps = true;
-        public LogLevel CurrentLogLevel = LogLevel.Information;
+        public LogLevel CurrentLogLevel = LogLevel.Debug;
 
         readonly string _prefix;
         readonly ConsoleColor? _prefixColor;

@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using BundtCommon;
 using Microsoft.AspNetCore.Builder;
@@ -46,6 +47,10 @@ namespace FakeDiscordSharp
 
             app.UseStaticFiles();
 
+            //var _resetFakeOffset = (int)app.Properties["_resetFakeOffset"];
+
+            //var IncrementRateLimitExceededCount = app.Properties["IncrementRateLimitExceededCount"] as Action;
+
             app.Run(async (context) =>
             {
                 remaining--;
@@ -53,20 +58,22 @@ namespace FakeDiscordSharp
                 context.Response.Headers.Clear();
                 context.Response.Headers["X-RateLimit-Limit"] = limit.ToString();
                 context.Response.Headers["X-RateLimit-Remaining"] = remaining.ToString();
-                context.Response.Headers["X-RateLimit-Reset"] = reset.ToString();
-                // await context.Response
-                    // .WriteAsync($"{warning}Now: {UnixTime.GetTimestamp()} Limit: {limit} | Remaining: {remaining} | Reset: {reset}");
+                context.Response.Headers["X-RateLimit-Reset"] = (reset + FakeDiscord._resetFakeOffset).ToString();
+
                 if (remaining < 0)
                 {
+                    //IncrementRateLimitExceededCount.Invoke();
+                    FakeDiscord.RateLimitExceededCount++;
+                    context.Response.StatusCode = 429;
                     await context.Response
-                        .WriteAsync("RATE LIMIT EXCEEDED! ");
+                        .WriteAsync("{\"message\":\"You are being rate limited.\",\"retry_after\": 6457,\"global\": false}");
                 }
                 else
                 {
                     await context.Response
                         .WriteAsync("{\"id\": \"162701077035089920\",\"channel_id\": \"131391742183342080\",\"author\": {},\"content\": \"Hey guys!\",\"timestamp\": \"2016-03-24T23:15:59.605000+00:00\",\"edited_timestamp\": null,\"tts\": false,\"mention_everyone\": false,\"mentions\": [],\"mention_roles\": [],\"attachments\": [],\"embeds\": [],\"reactions\": []}");
                 }
-                
+
             });
         }
     }

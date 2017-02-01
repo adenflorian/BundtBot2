@@ -2,6 +2,7 @@ using System;
 using System.Net.Http;
 using Newtonsoft.Json;
 using DiscordApiWrapper.RestApi.Extensions;
+using System.Threading.Tasks;
 
 namespace DiscordApiWrapper.RestApi
 {
@@ -27,14 +28,12 @@ namespace DiscordApiWrapper.RestApi
         [JsonProperty("global")]
         public bool Global;
 
-        public RateLimitExceeded(HttpResponseMessage response)
+        public static async Task<RateLimitExceeded> Create(HttpResponseMessage response)
         {
-            var rateLimitExceeded = response.DeserializeResponse<RateLimitExceeded>().GetAwaiter().GetResult();
-            Message = rateLimitExceeded.Message;
-            RetryAfter = rateLimitExceeded.RetryAfter;
-            Global = rateLimitExceeded.Global;
-            RateLimit = response.GetRateLimit();
-            Reason = response.ReasonPhrase;
+            var rateLimitExceeded = await response.DeserializeResponse<RateLimitExceeded>();
+            rateLimitExceeded.RateLimit = response.GetRateLimit();
+            rateLimitExceeded.Reason = response.ReasonPhrase;
+            return rateLimitExceeded;
         }
     }
 }

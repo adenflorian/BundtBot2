@@ -1,95 +1,74 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
 using BundtBot;
 using BundtBot.Discord;
 using DiscordApiWrapper.RestApi;
 using DiscordApiWrapper.RestApi.RestApiRequests;
 using FakeDiscordSharp;
+using Xunit;
 
 public class RateLimitTester
 {
     static readonly MyLogger _logger = new MyLogger(nameof(RateLimitTester));
 
-    static RateLimitedClient _msgClient;
-
-    public static void Main(string[] args)
+    [Fact]
+    public void ShouldNotExceedRateLimitWhenServerIsFair()
     {
-        Console.WriteLine("Hello World!");
-
-        var fakeDiscord = new FakeDiscord();
+        var port = 5000;
+        var fakeDiscord = new FakeDiscord(port);
         Task.Run(() => fakeDiscord.Start());
-        Task.Run(async () => {
-            await Task.Delay(1);
-        });
 
-        var apiUri = new Uri("http://localhost:5000/");
+        var apiUri = new Uri($"http://localhost:{port}/");
         var restClient = new DiscordRestClient(new RestClientConfig("token", "name", "version", apiUri));
-        _msgClient = new RateLimitedClient(restClient);
+        var _rateLimitedClient = new RateLimitedClient(restClient);
 
-        Test1();
-        _logger.LogInfo("Test1 Complete");
-    }
-
-    public static void Test1()
-    {
         var queue = new ConcurrentQueue<int>();
         var tasks = new List<Task>();
 
         for (int i = 0; i < 11; i++)
         {
-            tasks.Add(StartThread(i + 1, queue));
-            Thread.Sleep(100);
+            tasks.Add(_rateLimitedClient.ProcessRequestAsync(new NewMessageRequest((ulong)i) { Content = "hello world " + i }));
         }
 
-        log($"Now waiting for {tasks.Count} to complete");
+        _logger.LogInfo($"Now waiting for {tasks.Count} to complete");
 
         Task.WhenAll(tasks).Wait();
 
-        log($"{tasks.Count} tasks complete!");
+        _logger.LogInfo($"{tasks.Count} tasks complete!");
 
-        var myArr = new int[queue.Count];
-
-        for (int i = 0; i < tasks.Count; i++)
-        {
-            int result;
-            queue.TryDequeue(out result);
-            myArr[i] = result;
-            log($"myArr[{i}]: {myArr[i]}");
-        }
-
-        for (int i = 0; i < tasks.Count; i++)
-        {
-            if(myArr[i] != i + 1)
-            {
-                throw new Exception((i + 1).ToString());
-            }
-        }
+        Assert.Equal(0, FakeDiscord.RateLimitExceededCount);
     }
 
-    static Task StartThread(int i, ConcurrentQueue<int> queue)
+    [Fact]
+    public void ShouldExceedRateLimitOnceWhenServerIsOffByOneSecond()
     {
-        return Task.Run(async () =>
+        var port = 5001;
+        var fakeDiscord = new FakeDiscord(port, -1);
+        Task.Run(() => fakeDiscord.Start());
+
+        var apiUri = new Uri($"http://localhost:{port}/");
+        var restClient = new DiscordRestClient(new RestClientConfig("token", "name", "version", apiUri));
+        RateLimitedClient._waitTimeCushionStart = TimeSpan.FromSeconds(0);
+        var _rateLimitedClient = new RateLimitedClient(restClient);
+
+        var queue = new ConcurrentQueue<int>();
+        var tasks = new List<Task>();
+
+        for (int i = 0; i < 6; i++)
         {
-            log(i + " Start!");
+            tasks.Add(_rateLimitedClient.ProcessRequestAsync(new NewMessageRequest((ulong)i) { Content = "hello world " + i }));
+        }
 
-            var message = await _msgClient.ProcessRequestAsync(new NewMessageRequest((ulong)i){Content = "hello world " + i});
-            
-            if(message == null)
-            {
-                log(i + " null :(");
-                return;
-            }
+        _logger.LogInfo($"Now waiting for {tasks.Count} to complete");
 
-            queue.Enqueue((int)i);
-            log(i + " Done!");
-        });
-    }
+        Task.WhenAll(tasks).Wait();
 
-    static void log(string msg)
-    {
-        _logger.LogInfo(msg);
+        tasks.ForEach(x => x.GetAwaiter().GetResult());
+
+        _logger.LogInfo($"{tasks.Count} tasks complete!");
+
+        Assert.Equal(1, FakeDiscord.RateLimitExceededCount);
     }
 }

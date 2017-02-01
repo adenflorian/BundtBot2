@@ -62,7 +62,7 @@ namespace BundtBot.Discord
 
             if (response.IsSuccessStatusCode == false)
             {
-                HandleErrorResponse(response);
+                await HandleErrorResponseAsync(response);
             }
 
             return response;
@@ -76,12 +76,12 @@ namespace BundtBot.Discord
             return content;
         }
 
-        void HandleErrorResponse(HttpResponseMessage response)
+        async Task HandleErrorResponseAsync(HttpResponseMessage response)
         {
             Exception ex;
             if (response.StatusCode == (HttpStatusCode)429)
             {
-                ex = new RateLimitExceededException(new RateLimitExceeded(response));
+                ex = new RateLimitExceededException(await RateLimitExceeded.Create(response));
             }
             else
             {

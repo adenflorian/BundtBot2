@@ -19,6 +19,11 @@ const tarFileName = `${projectName}.tar`
 const viewsFolderName = `Views`
 const viewsFolder = `${projectFolder}/${viewsFolderName}`
 
+const testFolder = 'test'
+const rateLimitTestsProjectName = 'RateLimitTests'
+const rateLimitTestsProjectFolder = `${testFolder}/${rateLimitTestsProjectName}`
+const rateLimitTestsOutputFolder = `${rateLimitTestsProjectFolder}/bin/Debug/netcoreapp1.1`
+
 var secret;
 
 if (fs.existsSync(secretFilePath)) {
@@ -50,7 +55,7 @@ gulp.task('copytokendev', ['dotnet-build'], function () {
 
 gulp.task('build', ['dotnet-build', 'copyviews', 'copytokendev'])
 
-gulp.task('run', ['build', 'copyviews', 'copytokendev'], shell.task(`dotnet BundtBot.dll`, { verbose: true,  cwd: buildOutputFolder}))
+gulp.task('run', ['build', 'copyviews', 'copytokendev'], shell.task(`dotnet BundtBot.dll`, { verbose: true,  cwd: buildOutputFolder }))
 
 gulp.task('publish', shell.task(`dotnet publish ${projectFilePath}`,
 	{ verbose: true }))
@@ -85,6 +90,8 @@ gulp.task('test', shell.task('dotnet test test/BundtBotTests/project.json',
 
 gulp.task('integration-tests', shell.task('dotnet test test/IntegrationTests/project.json',
 	{ verbose: true }))
+
+gulp.task('rate-limit-tester', shell.task(`dotnet test ${rateLimitTestsProjectFolder}/project.json`))
 
 gulp.task('rlogs', shell.task(
 	`ssh ${secret.testusername}@${secret.testhost} "journalctl -f -o cat -u bundtbot.service"`,
