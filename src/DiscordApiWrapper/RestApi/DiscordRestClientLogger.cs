@@ -18,8 +18,9 @@ namespace DiscordApiWrapper.RestApi
             CancellationToken cancellationToken)
         {
             _logger.LogInfo(
-                new LogMessage("Request: "),
-                new LogMessage(request.RequestUri.ToString(), ConsoleColor.Magenta));
+                new LogMessage($"Requested "),
+                new LogMessage($"{request.Method} ", ConsoleColor.Magenta),
+                new LogMessage(request.RequestUri.PathAndQuery, ConsoleColor.DarkMagenta));
             _logger.LogTrace(request);
             if (request.Content != null)
             {
@@ -28,15 +29,12 @@ namespace DiscordApiWrapper.RestApi
 
             var response = await base.SendAsync(request, cancellationToken);
 
-            var logResponseMessage = "Response: " + response.StatusCode;
-            if (response.IsSuccessStatusCode)
-            {
-                _logger.LogInfo(logResponseMessage, ConsoleColor.DarkMagenta);
-            }
-            else
-            {
-                _logger.LogWarning(logResponseMessage);
-            }
+            _logger.LogInfo(
+                new LogMessage($"Received "),
+                new LogMessage($"{(int)response.StatusCode} {response.StatusCode}", ConsoleColor.Magenta),
+                new LogMessage($" in response to "),
+                new LogMessage($"{response.RequestMessage.Method} ", ConsoleColor.Magenta),
+                new LogMessage($"{response.RequestMessage.RequestUri.PathAndQuery}", ConsoleColor.DarkMagenta));
             _logger.LogTrace(response);
             if (response.Content != null)
             {
