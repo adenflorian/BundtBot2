@@ -107,7 +107,7 @@ namespace DiscordApiWrapper.RestApi
             if (_rateLimit.Remaining == 0)
             {
                 _logger.LogInfo($"Out of requests", ConsoleColor.Magenta);
-                await WaitUntilReset();
+                await DelayUntilReset();
             }
             else
             {
@@ -116,7 +116,7 @@ namespace DiscordApiWrapper.RestApi
             }
         }
 
-        async Task WaitUntilReset()
+        async Task DelayUntilReset()
         {
             var currentTime = UnixTime.GetTimestamp();
             _logger.LogDebug($"WaitUntilReset: currentTime: {currentTime} resetTime: {_rateLimit.Reset}", ConsoleColor.Magenta);
