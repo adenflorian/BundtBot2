@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using BundtBot.Extensions;
 using DiscordApiWrapper.RestApi;
 using DiscordApiWrapper.RestApi.RestApiRequests;
-using Newtonsoft.Json;
 
 namespace BundtBot.Discord
 {
@@ -44,7 +43,7 @@ namespace BundtBot.Discord
         /// </summary>
         /// <exception cref="DiscordRestException" />
         /// <exception cref="RateLimitExceededException" />
-        public async Task<HttpResponseMessage> ProcessRequestAsync(IRestApiRequest request)
+        public async Task<HttpResponseMessage> ProcessRequestAsync(RestApiRequest request)
         {
             HttpResponseMessage response;
 
@@ -54,7 +53,7 @@ namespace BundtBot.Discord
                     response = await HttpClient.GetAsync(request.RequestUri);
                     break;
                 case RestRequestType.Post:
-                    response = await HttpClient.PostAsync(request.RequestUri, BuildContent(request));
+                    response = await HttpClient.PostAsync(request.RequestUri, request.BuildContent());
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -66,14 +65,6 @@ namespace BundtBot.Discord
             }
 
             return response;
-        }
-
-        StringContent BuildContent(IRestApiRequest request)
-        {
-            var body = JsonConvert.SerializeObject(request);
-            var content = new StringContent(body);
-            content.Headers.ContentType = MediaTypeHeaderValue.Parse("application/json");
-            return content;
         }
 
         async Task HandleErrorResponseAsync(HttpResponseMessage response)

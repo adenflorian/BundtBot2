@@ -29,7 +29,7 @@ namespace DiscordApiWrapper.RestApi
             return (await DoRequestAsync<GatewayUrl>(new GetRequest("gateway"), _getGatewayUrlCient)).Url;
         }
 
-        async Task<T> DoRequestAsync<T>(IRestApiRequest request, IRestRequestProcessor processor)
+        async Task<T> DoRequestAsync<T>(RestApiRequest request, IRestRequestProcessor processor)
         {
             var response = await processor.ProcessRequestAsync(request);
             var content = await response.Content.ReadAsStringAsync();

@@ -36,6 +36,7 @@ namespace DiscordApiWrapper.RestApi
                 new LogMessage($"{response.RequestMessage.Method} ", ConsoleColor.Magenta),
                 new LogMessage($"{response.RequestMessage.RequestUri.PathAndQuery}", ConsoleColor.DarkMagenta));
             _logger.LogTrace(response);
+            _logger.LogTrace("The current system time is " + DateTime.UtcNow);
             if (response.Content != null)
             {
                 _logger.LogTrace(await response.Content.ReadAsStringAsync());

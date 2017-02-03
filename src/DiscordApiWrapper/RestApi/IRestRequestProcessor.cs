@@ -4,8 +4,8 @@ using DiscordApiWrapper.RestApi.RestApiRequests;
 
 namespace DiscordApiWrapper.RestApi
 {
-    public interface IRestRequestProcessor
+    interface IRestRequestProcessor
     {
-         Task<HttpResponseMessage> ProcessRequestAsync(IRestApiRequest request);
+         Task<HttpResponseMessage> ProcessRequestAsync(RestApiRequest request);
     }
 }

@@ -1,12 +1,12 @@
 namespace DiscordApiWrapper.RestApi.RestApiRequests
 {
-    public class GetRequest : IRestApiRequest
+    class GetRequest : RestApiRequest
     {
-        public RestRequestType RequestType => RestRequestType.Get;
+        internal override RestRequestType RequestType => RestRequestType.Get;
 
-        public string RequestUri { get; }
+        internal override string RequestUri { get; }
 
-        public GetRequest(string requestUri)
+        internal GetRequest(string requestUri)
         {
             RequestUri = requestUri;
         }

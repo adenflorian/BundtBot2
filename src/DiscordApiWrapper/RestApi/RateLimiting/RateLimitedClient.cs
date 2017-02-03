@@ -17,8 +17,8 @@ namespace DiscordApiWrapper.RestApi
         public static TimeSpan _waitTimeCushionStart = TimeSpan.FromSeconds(2.5f);
         public static TimeSpan _waitTimeCushionIncrement = TimeSpan.FromSeconds(1);
 
-        readonly ConcurrentQueue<Tuple<IRestApiRequest, Action<HttpResponseMessage>>> _queue =
-            new ConcurrentQueue<Tuple<IRestApiRequest, Action<HttpResponseMessage>>>();
+        readonly ConcurrentQueue<Tuple<RestApiRequest, Action<HttpResponseMessage>>> _queue =
+            new ConcurrentQueue<Tuple<RestApiRequest, Action<HttpResponseMessage>>>();
         readonly IRestRequestProcessor _innerProcessor;
 
         //bool _isGlobalRateLimitInEffect = false;
@@ -34,12 +34,12 @@ namespace DiscordApiWrapper.RestApi
             StartProcessRequestLoop();
         }
 
-        public async Task<HttpResponseMessage> ProcessRequestAsync(IRestApiRequest request)
+        public async Task<HttpResponseMessage> ProcessRequestAsync(RestApiRequest request)
         {
             HttpResponseMessage response = null;
             var notDone = true;
 
-            _queue.Enqueue(Tuple.Create<IRestApiRequest, Action<HttpResponseMessage>>(request, (msg) =>
+            _queue.Enqueue(Tuple.Create<RestApiRequest, Action<HttpResponseMessage>>(request, (msg) =>
             {
                 response = msg;
                 notDone = false;
@@ -67,7 +67,7 @@ namespace DiscordApiWrapper.RestApi
 
         async Task TryToProcessNextRequestAsync()
         {
-            Tuple<IRestApiRequest, Action<HttpResponseMessage>> result;
+            Tuple<RestApiRequest, Action<HttpResponseMessage>> result;
 
             if (_queue.TryDequeue(out result))
             {
@@ -80,7 +80,7 @@ namespace DiscordApiWrapper.RestApi
             }
         }
 
-        async Task ProcessRequestAsync(IRestApiRequest request, Action<HttpResponseMessage> requestCompletedCallback)
+        async Task ProcessRequestAsync(RestApiRequest request, Action<HttpResponseMessage> requestCompletedCallback)
         {
             await DecrementRemainingRequestsOrWaitForReset();
 
@@ -129,7 +129,7 @@ namespace DiscordApiWrapper.RestApi
             _logger.LogInfo($"WaitUntilReset: Done waiting for {finalWaitAmount.TotalSeconds} seconds", ConsoleColor.Magenta);
         }
 
-        async Task RequestAsync(IRestApiRequest request, Action<HttpResponseMessage> requestCompletedCallback)
+        async Task RequestAsync(RestApiRequest request, Action<HttpResponseMessage> requestCompletedCallback)
         {
             var response = await _innerProcessor.ProcessRequestAsync(request);
             UpdateRateLimitFrom(response);
@@ -148,7 +148,7 @@ namespace DiscordApiWrapper.RestApi
             await Task.Delay(ex.RateLimitExceeded.RetryAfter + _waitTimeCushion);
         }
 
-        async Task RetryRequest(IRestApiRequest request, Action<HttpResponseMessage> requestCompletedCallback)
+        async Task RetryRequest(RestApiRequest request, Action<HttpResponseMessage> requestCompletedCallback)
         {
             _logger.LogError("Retrying request...");
             try

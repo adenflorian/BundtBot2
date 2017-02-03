@@ -3,13 +3,13 @@ using Newtonsoft.Json;
 
 namespace DiscordApiWrapper.RestApi.RestApiRequests
 {
-    public class NewMessageRequest : IRestApiRequest
+    public class NewMessageRequest : RestApiRequest
     {
         [JsonIgnore]
-        public RestRequestType RequestType => RestRequestType.Post;
+        internal override RestRequestType RequestType => RestRequestType.Post;
 
         [JsonIgnore]
-        public string RequestUri => $"channels/{_channelId}/messages";
+        internal override string RequestUri => $"channels/{_channelId}/messages";
         
         [JsonIgnore]
 		ulong _channelId;
