@@ -4,7 +4,6 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using BundtBot;
 using BundtBot.Discord;
-using BundtCommon;
 using DiscordApiWrapper.RestApi.Extensions;
 using DiscordApiWrapper.RestApi.RestApiRequests;
 using Newtonsoft.Json;
@@ -13,23 +12,25 @@ namespace DiscordApiWrapper.RestApi
 {
     class RateLimitedClient : IRestRequestProcessor
     {
+        public static readonly TimeSpan _waitTimeCushionIncrement = TimeSpan.FromSeconds(0.5f);
+
         static readonly MyLogger _logger = new MyLogger(nameof(RateLimitedClient), ConsoleColor.Magenta);
-        public static TimeSpan _waitTimeCushionStart = TimeSpan.FromSeconds(2.5f);
-        public static TimeSpan _waitTimeCushionIncrement = TimeSpan.FromSeconds(1);
 
         readonly ConcurrentQueue<Tuple<RestApiRequest, Action<HttpResponseMessage>>> _queue =
             new ConcurrentQueue<Tuple<RestApiRequest, Action<HttpResponseMessage>>>();
         readonly IRestRequestProcessor _innerProcessor;
 
-        //bool _isGlobalRateLimitInEffect = false;
-        //RateLimit _globalRateLimit;
-        // Will be overriden each response
-        RateLimit _rateLimit = new RateLimit(1, 1, UnixTime.GetTimestamp());
-        TimeSpan _waitTimeCushion = _waitTimeCushionStart;
+        int _limit = 1;
+        int _remainingAllowedRequests = 1;
+        DateTime _resetTimeUtc;
+        TimeSpan _waitTimeCushion;
 
-        public RateLimitedClient(IRestRequestProcessor innerProcessor)
+        public RateLimitedClient(IRestRequestProcessor innerProcessor) : this(innerProcessor, TimeSpan.Zero) { }
+
+        public RateLimitedClient(IRestRequestProcessor innerProcessor, TimeSpan waitTimeCushionStart)
         {
             _innerProcessor = innerProcessor;
+            _waitTimeCushion = waitTimeCushionStart;
 
             StartProcessRequestLoop();
         }
@@ -104,29 +105,36 @@ namespace DiscordApiWrapper.RestApi
 
         async Task DecrementRemainingRequestsOrWaitForReset()
         {
-            if (_rateLimit.Remaining == 0)
+            if (_remainingAllowedRequests == 0)
             {
                 _logger.LogInfo($"Out of requests", ConsoleColor.Magenta);
                 await DelayUntilReset();
+                OnReset();
             }
             else
             {
-                _logger.LogDebug($"{_rateLimit.Remaining} request(s) available, using one...");
-                _rateLimit.Remaining--;
+                _logger.LogDebug($"{_remainingAllowedRequests} request(s) available, using one...");
+                _remainingAllowedRequests--;
             }
         }
 
         async Task DelayUntilReset()
         {
-            var currentTime = UnixTime.GetTimestamp();
-            _logger.LogDebug($"WaitUntilReset: currentTime: {currentTime} resetTime: {_rateLimit.Reset}", ConsoleColor.Magenta);
+            var currentTimeUtc = DateTime.UtcNow;
+            _logger.LogDebug($"WaitUntilReset: currentTime: {currentTimeUtc.ToString("hh:mm:ss.fff")} resetTime: {_resetTimeUtc.ToString("hh:mm:ss.fff")}", ConsoleColor.Magenta);
 
-            var waitAmount = TimeSpan.FromSeconds(Math.Max(0, (_rateLimit.Reset - currentTime)));
+            var timeDiff = _resetTimeUtc - currentTimeUtc;
+            var waitAmount = timeDiff.TotalMilliseconds >= 0 ? timeDiff : TimeSpan.Zero;
 
             _logger.LogInfo($"WaitUntilReset: Waiting for {waitAmount.TotalSeconds} + {_waitTimeCushion.TotalSeconds}(cushion) seconds", ConsoleColor.Magenta);
             var finalWaitAmount = waitAmount + _waitTimeCushion;
             await Task.Delay(finalWaitAmount);
             _logger.LogInfo($"WaitUntilReset: Done waiting for {finalWaitAmount.TotalSeconds} seconds", ConsoleColor.Magenta);
+        }
+
+        void OnReset()
+        {
+            _remainingAllowedRequests = _limit;
         }
 
         async Task RequestAsync(RestApiRequest request, Action<HttpResponseMessage> requestCompletedCallback)
@@ -140,7 +148,7 @@ namespace DiscordApiWrapper.RestApi
         {
             _logger.LogError("Exceeded rate limit: " + JsonConvert.SerializeObject(ex.RateLimitExceeded, Formatting.Indented));
             _logger.LogError(ex);
-            _rateLimit = ex.RateLimitExceeded.RateLimit;
+            UpdateRateLimitFrom(ex.RateLimitExceeded);
             _logger.LogError($"OnRateLimitExceededAsync: Increasing wait cushion from {_waitTimeCushion.TotalSeconds} seconds "
                 + $"to {(_waitTimeCushion + _waitTimeCushionIncrement).TotalSeconds} seconds");
             _waitTimeCushion += _waitTimeCushionIncrement;
@@ -162,16 +170,29 @@ namespace DiscordApiWrapper.RestApi
             }
         }
 
+        void UpdateRateLimitFrom(RateLimitExceeded rateLimitExceeded)
+        {
+            UpdateRateLimitFrom(rateLimitExceeded.RateLimit);
+        }
+
         void UpdateRateLimitFrom(HttpResponseMessage response)
         {
             if (response.Headers.Contains("X-RateLimit-Limit"))
             {
-                _rateLimit = response.GetRateLimit();
+                UpdateRateLimitFrom(response.GetRateLimit());
             }
             else
             {
-                _rateLimit = new RateLimit(999, 999, 0);
+                _logger.LogWarning("Response does not have X-RateLimit-Limit header");
+                _remainingAllowedRequests++;
             }
+        }
+
+        void UpdateRateLimitFrom(DiscordRateLimit discordRateLimit)
+        {
+            _remainingAllowedRequests = discordRateLimit.Remaining;
+            _limit = discordRateLimit.Limit;
+            _resetTimeUtc = discordRateLimit.ResetTime;
         }
     }
 }

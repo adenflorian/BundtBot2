@@ -22,18 +22,13 @@ namespace FakeDiscordSharp
 
         public void Start()
         {
-            Console.WriteLine("Running demo with Kestrel.");
-
             var configBuilder = new ConfigurationBuilder();
-            //configBuilder.Properties.Add("_resetFakeOffset", _resetFakeOffset);
-            //Action p = () => { RateLimitExceededCount++; };
-            //configBuilder.Properties.Add("IncrementRateLimitExceededCount", p);
             var config = configBuilder.Build();
 
             var builder = new WebHostBuilder()
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseConfiguration(config)
-                .UseStartup<Startup>()
+                .UseStartup<FakeDiscordServer>()
                 .UseKestrel(options =>
                 {
                     if (config["threadCount"] != null)

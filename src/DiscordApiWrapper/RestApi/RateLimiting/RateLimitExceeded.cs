@@ -9,7 +9,7 @@ namespace DiscordApiWrapper.RestApi
     public class RateLimitExceeded
     {
         [JsonIgnore]
-        public RateLimit RateLimit;
+        public DiscordRateLimit RateLimit;
 
         [JsonIgnore]
         public string Reason;

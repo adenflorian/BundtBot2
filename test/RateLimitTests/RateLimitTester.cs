@@ -50,8 +50,7 @@ public class RateLimitTester
 
         var apiUri = new Uri($"http://localhost:{port}/");
         var restClient = new DiscordRestClient(new RestClientConfig("token", "name", "version", apiUri));
-        RateLimitedClient._waitTimeCushionStart = TimeSpan.FromSeconds(0);
-        var _rateLimitedClient = new RateLimitedClient(restClient);
+        var _rateLimitedClient = new RateLimitedClient(restClient, TimeSpan.FromSeconds(0));
 
         var queue = new ConcurrentQueue<int>();
         var tasks = new List<Task>();

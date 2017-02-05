@@ -2,6 +2,7 @@ const copydir = require('copy-dir');
 const fs = require('fs')
 const gulp = require('gulp')
 const shell = require('gulp-shell')
+const shelljs = require('shelljs')
 const tar = require('tar-fs')
 const waitUntil = require('wait-until')
 
@@ -88,10 +89,9 @@ gulp.task('deploy', ['publish', 'tar', 'sftpdeploy', 'sshdeploy'])
 gulp.task('test', shell.task('dotnet test test/BundtBotTests/project.json',
 	{ verbose: true }))
 
-gulp.task('integration-tests', shell.task('dotnet test test/IntegrationTests/project.json',
-	{ verbose: true }))
+gulp.task('integration-tests', () => shelljs.exec('dotnet test test/IntegrationTests/project.json'))
 
-gulp.task('rate-limit-tester', shell.task(`dotnet test ${rateLimitTestsProjectFolder}/project.json`))
+gulp.task('rate-limiter-tests', () => shelljs.exec(`dotnet test ${rateLimitTestsProjectFolder}/project.json`))
 
 gulp.task('rlogs', shell.task(
 	`ssh ${secret.testusername}@${secret.testhost} "journalctl -f -o cat -u bundtbot.service"`,

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 
 namespace BundtBot
 {
@@ -49,6 +50,12 @@ namespace BundtBot
         {
             if (LogLevel.Debug < CurrentLogLevel) return;
             BuildAndLog("Debug", message, ConsoleColor.DarkCyan, color);
+        }
+        
+        public void LogDebugJson(object message, ConsoleColor? color = null)
+        {
+            if (LogLevel.Debug < CurrentLogLevel) return;
+            BuildAndLog("Debug", JsonConvert.SerializeObject(message, Formatting.Indented), ConsoleColor.DarkCyan, color);
         }
 
         /// <summary>
