@@ -24,7 +24,8 @@ namespace DiscordApiWrapper.RestApi.Extensions
 				GetHeaderIntValue("X-RateLimit-Limit", response.Headers),
 				GetHeaderIntValue("X-RateLimit-Remaining", response.Headers),
                 DateTimeOffset.FromUnixTimeSeconds(GetHeaderLongValue("X-RateLimit-Reset", response.Headers)).UtcDateTime,
-                DateTime.Parse(response.Headers.GetValues("Date").First()).ToUniversalTime());
+                DateTime.Parse(response.Headers.GetValues("Date").First()).ToUniversalTime(),
+                () => DateTime.UtcNow);
 		}
 
         static long GetHeaderLongValue(string headerName, HttpResponseHeaders headers)

@@ -42,10 +42,10 @@ public class RateLimitTester
     }
 
     [Fact]
-    public void ShouldExceedRateLimitOnceWhenServerIsOffByOneSecond()
+    public void ShouldExceedRateLimitOnceWhenServerIsOffByTwoSeconds()
     {
         var port = 5001;
-        var fakeDiscord = new FakeDiscord(port, -1);
+        var fakeDiscord = new FakeDiscord(port, -2);
         Task.Run(() => fakeDiscord.Start());
 
         var apiUri = new Uri($"http://localhost:{port}/");
