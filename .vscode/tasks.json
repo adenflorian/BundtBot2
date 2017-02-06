@@ -13,14 +13,6 @@
             "showOutput": "always"
         },
         {
-            "taskName": "deploy",
-            "showOutput": "always"
-        },
-        {
-            "taskName": "run",
-            "showOutput": "always"
-        },
-        {
             "taskName": "test",
             "isTestCommand": true,
             "showOutput": "always"
