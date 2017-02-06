@@ -1,7 +1,9 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using BundtBot.Discord;
+using BundtCord.Discord;
 
 namespace BundtBot
 {
@@ -39,11 +41,11 @@ namespace BundtBot
                 }
             };
 
-            /*Client.GuildCreated += async (guild) => {
-				await guild.TextChannels.First().SendMessage("yo");
+            Client.ServerCreated += async (server) => {
+				await server.TextChannels.First().SendMessageAsync("yo");
 			};
 
-			Client.Ready += (ready) => {
+			/*Client.Ready += (ready) => {
 				_logger.LogInfo("Client is Ready/Connected! ໒( ͡ᵔ ▾ ͡ᵔ )७", ConsoleColor.Green);
 				_logger.LogInfo("Setting game...");
 				Client.SetGame(Assembly.GetEntryAssembly().GetName().Version.ToString());

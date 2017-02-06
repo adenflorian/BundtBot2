@@ -1,4 +1,4 @@
-namespace BundtBot.Discord
+namespace BundtCord.Discord
 {
     public interface IUser
 	{

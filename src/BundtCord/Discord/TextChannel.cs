@@ -2,7 +2,7 @@ using System.Threading.Tasks;
 using BundtBot.Discord.Models;
 using DiscordApiWrapper.RestApi.RestApiRequests;
 
-namespace BundtBot.Discord
+namespace BundtCord.Discord
 {
     public class TextChannel : ITextChannel
     {

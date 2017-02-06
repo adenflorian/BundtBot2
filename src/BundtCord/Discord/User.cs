@@ -1,6 +1,6 @@
 using BundtBot.Discord.Models;
 
-namespace BundtBot.Discord
+namespace BundtCord.Discord
 {
     public class User : IUser
     {

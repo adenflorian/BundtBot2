@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
 
-namespace BundtBot.Discord
+namespace BundtCord.Discord
 {
     public interface ITextChannel
 	{
