@@ -2,7 +2,6 @@
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using BundtBot.Discord;
 using BundtCord.Discord;
 
 namespace BundtBot

@@ -29,8 +29,9 @@ namespace BundtCord.Discord
         internal Dictionary<ulong, ITextChannel> TextChannels = new Dictionary<ulong, ITextChannel>();
         internal Dictionary<ulong, IUser> Users = new Dictionary<ulong, IUser>();
 
-        readonly DiscordGatewayClient _gatewayClient;
         readonly string _botToken;
+        
+        DiscordGatewayClient _gatewayClient;
 
         public DiscordClient(string botToken)
         {
@@ -43,14 +44,15 @@ namespace BundtCord.Discord
                 BaseAddress = new Uri("https://discordapp.com/api/")
             };
             DiscordRestClient = new DiscordRestClientProxy(config);
-            _gatewayClient = new DiscordGatewayClient(_botToken);
         }
 
         public async Task Connect()
         {
             var gatewayUrl = await DiscordRestClient.GetGatewayUrlAsync();
 
-            await _gatewayClient.ConnectAsync(gatewayUrl);
+            _gatewayClient = new DiscordGatewayClient(_botToken, gatewayUrl);
+
+            await _gatewayClient.ConnectAsync();
 
             _gatewayClient.GuildCreated += (discordGuild) =>
             {

@@ -1,5 +1,4 @@
 using Xunit;
-using DiscordApiWrapper.RestApi;
 using System;
 
 namespace DiscordApiWrapperTests.DiscordRateLimit

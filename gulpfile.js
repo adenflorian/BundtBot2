@@ -86,12 +86,16 @@ gulp.task('sshdeploy', ['sftpdeploy'], shell.task('grunt sshexec:deploy', { verb
 
 gulp.task('deploy', ['publish', 'tar', 'sftpdeploy', 'sshdeploy'])
 
+// Start test commands
+
 gulp.task('test', shell.task('dotnet test test/BundtBotTests/project.json',
 	{ verbose: true }))
 
 gulp.task('integration-tests', () => shelljs.exec('dotnet test test/IntegrationTests/project.json'))
 
 gulp.task('rate-limiter-tests', () => shelljs.exec(`dotnet test ${rateLimitTestsProjectFolder}/project.json`))
+
+// Start remote server commands
 
 gulp.task('rlogs', shell.task(
 	`ssh ${secret.testusername}@${secret.testhost} "journalctl -f -o cat -u bundtbot.service"`,

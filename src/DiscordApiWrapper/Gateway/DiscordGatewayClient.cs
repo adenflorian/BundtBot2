@@ -30,25 +30,26 @@ namespace BundtBot.Discord.Gateway
 		/// </summary>
 		public event GuildCreatedHandler GuildCreated;
 
-		readonly ClientWebSocketWrapper _clientWebSocketWrapper = new ClientWebSocketWrapper();
+		readonly ClientWebSocketWrapper _clientWebSocketWrapper;
 		static readonly MyLogger _logger = new MyLogger(nameof(DiscordGatewayClient), ConsoleColor.Cyan);
 		readonly string _authToken;
 
 		int _lastSequenceReceived;
 
-		public DiscordGatewayClient(string authToken)
+		public DiscordGatewayClient(string authToken, Uri gatewayUri)
 		{
 			_authToken = authToken;
+            var modifiedGatewayUrl = gatewayUri.AddParameter("v", "5").AddParameter("encoding", "'json'");
+			_clientWebSocketWrapper = new ClientWebSocketWrapper(modifiedGatewayUrl);
 			HelloReceived += OnHelloReceived;
 			HeartbackAckReceived += HeartbackAckOperation.Instance.Execute;
 			DispatchReceived += OnDispatchReceived;
 			_clientWebSocketWrapper.MessageReceived += OnMessageReceived;
 		}
 
-		public async Task ConnectAsync(Uri gatewayUrl)
+		public async Task ConnectAsync()
 		{
-			var modifiedGatewayUrl = gatewayUrl.AddParameter("v", "5").AddParameter("encoding", "'json'");
-			await _clientWebSocketWrapper.ConnectAsync(modifiedGatewayUrl);
+			await _clientWebSocketWrapper.ConnectAsync();
 			_logger.LogInfo($"Connected to Gateway", ConsoleColor.Green);
 		}
 		

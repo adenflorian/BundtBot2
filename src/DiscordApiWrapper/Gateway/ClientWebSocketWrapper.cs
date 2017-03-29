@@ -8,23 +8,28 @@ using Newtonsoft.Json;
 
 namespace BundtBot
 {
-	public class ClientWebSocketWrapper
+    public class ClientWebSocketWrapper
 	{
 		public delegate void MessageReceivedHandler(string message);
 		public event MessageReceivedHandler MessageReceived;
 
+		static readonly MyLogger _logger = new MyLogger(nameof(ClientWebSocketWrapper), ConsoleColor.DarkCyan);
 		readonly ClientWebSocket _clientWebSocket = new ClientWebSocket();
 		readonly UTF8Encoding _utf8Encoding = new UTF8Encoding();
-		static readonly MyLogger _logger = new MyLogger(nameof(ClientWebSocketWrapper), ConsoleColor.DarkCyan);
-
 		readonly Queue<Tuple<string, Action>> _outgoingQueue = new Queue<Tuple<string, Action>>();
+		readonly Uri _serverUri;
 
-		public async Task ConnectAsync(Uri serverUri)
+		public ClientWebSocketWrapper(Uri serverUri)
 		{
-			await _clientWebSocket.ConnectAsync(serverUri, CancellationToken.None);
+			_serverUri = serverUri;
+		}
+
+		public async Task ConnectAsync()
+		{
+			await _clientWebSocket.ConnectAsync(_serverUri, CancellationToken.None);
 			_logger.LogInfo(
 				new LogMessage($"Connected to "),
-				new LogMessage($"{serverUri}", ConsoleColor.Cyan),
+				new LogMessage($"{_serverUri}", ConsoleColor.Cyan),
 				new LogMessage($" (ClientWebSocket State: "),
 				new LogMessage($"{_clientWebSocket.State}", ConsoleColor.Green),
 				new LogMessage($")"));
@@ -32,7 +37,18 @@ namespace BundtBot
 			StartSendLoop();
 		}
 
-		public async Task SendMessageUsingQueueAsync(string data)
+        async Task ReconnectAsync()
+        {
+            await _clientWebSocket.ConnectAsync(_serverUri, CancellationToken.None);
+            _logger.LogInfo(
+                new LogMessage($"Reconnected to "),
+                new LogMessage($"{_serverUri}", ConsoleColor.Cyan),
+                new LogMessage($" (ClientWebSocket State: "),
+                new LogMessage($"{_clientWebSocket.State}", ConsoleColor.Green),
+                new LogMessage($")"));
+        }
+
+        public async Task SendMessageUsingQueueAsync(string data)
 		{
 			await Task.Run(async () => {
 				var isDone = false;
@@ -97,30 +113,27 @@ namespace BundtBot
 					catch (Exception ex)
 					{
 						_logger.LogWarning("Exception caught in ClientWebSocketWrapper ReceiveLoop.");
+
+                        if (waitTimeMs > 1000 * 60)
+                        {
+                            _logger.LogCritical(ex);
+                            throw;
+                        }
+
 						_logger.LogError(ex);
 
-						// TODO Log critical error if wait time gets above a certain value
-
-						_logger.LogWarning($"Waiting for {waitTimeMs / 1000} seconds, then restarting ReceiveLoop");
+						_logger.LogWarning($"Waiting for {waitTimeMs / 1000} seconds, then reconnecting");
 						await Task.Delay(waitTimeMs);
 						waitTimeMs *= 2;
-						_logger.LogWarning($"Doubled web socket restart wait time to {waitTimeMs / 1000} seconds");
+						_logger.LogWarning($"Doubled web socket reconnect wait time to {waitTimeMs / 1000} seconds");
 						message = "";
 
-						_logger.LogWarning("Restarting ClientWebSocketWrapper ReceiveLoop.");
+						_logger.LogWarning("Reconnecting ClientWebSocketWrapper.");
+
+						await ReconnectAsync();
 					}
 				}
 			});
-		}
-
-		void ReceiveLoop()
-		{
-
-		}
-
-		void WaitForSocketToOpen()
-		{
-
 		}
 
 		async Task<Tuple<WebSocketReceiveResult, string>> ReceiveAsync()
