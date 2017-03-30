@@ -9,6 +9,7 @@
     "gulp-grunt": "^0.5.5",
     "gulp-shell": "^0.5.2",
     "inquirer": "^2.0.0",
+    "nodejs-websocket": "^1.7.1",
     "shelljs": "^0.7.6",
     "tar-fs": "~1.15.0",
     "wait-until": "0.0.2"
