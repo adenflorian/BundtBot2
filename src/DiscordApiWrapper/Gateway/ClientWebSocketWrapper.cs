@@ -14,10 +14,11 @@ namespace BundtBot
 		public event MessageReceivedHandler MessageReceived;
 
 		static readonly MyLogger _logger = new MyLogger(nameof(ClientWebSocketWrapper), ConsoleColor.DarkCyan);
-		readonly ClientWebSocket _clientWebSocket = new ClientWebSocket();
 		readonly UTF8Encoding _utf8Encoding = new UTF8Encoding();
 		readonly Queue<Tuple<string, Action>> _outgoingQueue = new Queue<Tuple<string, Action>>();
 		readonly Uri _serverUri;
+		
+		ClientWebSocket _clientWebSocket = new ClientWebSocket();
 
 		public ClientWebSocketWrapper(Uri serverUri)
 		{
@@ -39,6 +40,8 @@ namespace BundtBot
 
         async Task ReconnectAsync()
         {
+			_clientWebSocket.Dispose();
+			_clientWebSocket = new ClientWebSocket();
             await _clientWebSocket.ConnectAsync(_serverUri, CancellationToken.None);
             _logger.LogInfo(
                 new LogMessage($"Reconnected to "),
