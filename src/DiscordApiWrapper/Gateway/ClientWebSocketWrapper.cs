@@ -29,28 +29,52 @@ namespace BundtBot
 
 		public async Task ConnectAsync()
 		{
-			await _clientWebSocket.ConnectAsync(_serverUri, CancellationToken.None);
+			await DoConnectLoopAsync();
+
 			_logger.LogInfo(
 				new LogMessage($"Connected to "),
 				new LogMessage($"{_serverUri}", ConsoleColor.Cyan),
 				new LogMessage($" (ClientWebSocket State: "),
 				new LogMessage($"{_clientWebSocket.State}", ConsoleColor.Green),
 				new LogMessage($")"));
+
 			StartReceiveLoop();
 			StartSendLoop();
 		}
 
         async Task ReconnectAsync()
         {
-			_clientWebSocket.Dispose();
-			_clientWebSocket = new ClientWebSocket();
-            await _clientWebSocket.ConnectAsync(_serverUri, CancellationToken.None);
+			await DoConnectLoopAsync();
+			
             _logger.LogInfo(
                 new LogMessage($"Reconnected to "),
                 new LogMessage($"{_serverUri}", ConsoleColor.Cyan),
                 new LogMessage($" (ClientWebSocket State: "),
                 new LogMessage($"{_clientWebSocket.State}", ConsoleColor.Green),
                 new LogMessage($")"));
+        }
+
+        async Task DoConnectLoopAsync()
+        {
+            while (true)
+            {
+                try
+                {
+                    _clientWebSocket.Dispose();
+                    _clientWebSocket = new ClientWebSocket();
+                    var tokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+                    _logger.LogInfo("[Connect Loop] Connecting websocket...");
+                    await _clientWebSocket.ConnectAsync(_serverUri, tokenSource.Token);
+                    break;
+                }
+                catch (System.Exception ex)
+                {
+                    _logger.LogError("[Connect Loop] Error while connecting websocket");
+                    _logger.LogError(ex);
+                    _logger.LogWarning("[Connect Loop] Waiting 5 seconds before attempting to reconnect...");
+					await Task.Delay(TimeSpan.FromSeconds(5));
+                }
+            }
         }
 
         public async Task SendMessageUsingQueueAsync(string data)
@@ -69,12 +93,30 @@ namespace BundtBot
 		void StartSendLoop()
 		{
 			Task.Run(async () => {
-				while (_clientWebSocket.State == WebSocketState.Open) {
-					while (_outgoingQueue.Count == 0) {
+				while (true) {
+					while (_outgoingQueue.Count == 0)
+					{
 						await Task.Delay(100);
 					}
+
 					var message = _outgoingQueue.Dequeue();
-					await SendAsync(message.Item1);
+
+					while (true)
+					{
+						try
+						{
+                            _logger.LogInfo("[Send Loop] Sending message on websocket...");
+							await SendAsync(message.Item1);
+                            _logger.LogInfo("[Send Loop] Sent!");
+							break;
+						}
+						catch (System.Exception ex)
+						{
+                            _logger.LogInfo("[Send Loop] Error while sending message on websocket");
+							_logger.LogError(ex);
+						}
+					}
+					
 					message.Item2.Invoke();
 				}
 			});
@@ -117,7 +159,7 @@ namespace BundtBot
 					}
 					catch (Exception ex)
 					{
-						_logger.LogWarning("Exception caught in ClientWebSocketWrapper ReceiveLoop.");
+						_logger.LogWarning("[Receive Loop] Exception caught in ClientWebSocketWrapper ReceiveLoop.");
 
                         if (waitTimeMs > 1000 * 60)
                         {
@@ -125,15 +167,18 @@ namespace BundtBot
                             throw;
                         }
 
-						_logger.LogError(ex);
+                        _logger.LogError(ex);
+                        _logger.LogError($"[Receive Loop] _clientWebSocket.State: {_clientWebSocket.State.ToString()}");
+                        _logger.LogError($"[Receive Loop] _clientWebSocket.CloseStatus: {_clientWebSocket.CloseStatus.ToString()}");
+                        _logger.LogError($"[Receive Loop] _clientWebSocket.CloseStatusDescription: {_clientWebSocket.CloseStatusDescription}");
 
-						_logger.LogWarning($"Waiting for {waitTimeMs / 1000} seconds, then reconnecting");
+						_logger.LogWarning($"[Receive Loop] Waiting for {waitTimeMs / 1000} seconds, then reconnecting");
 						await Task.Delay(waitTimeMs);
 						waitTimeMs *= 2;
-						_logger.LogWarning($"Doubled web socket reconnect wait time to {waitTimeMs / 1000} seconds");
+						_logger.LogWarning($"[Receive Loop] Doubled web socket reconnect wait time to {waitTimeMs / 1000} seconds");
 						message = "";
 
-						_logger.LogWarning("Reconnecting ClientWebSocketWrapper.");
+						_logger.LogWarning("[Receive Loop] Reconnecting ClientWebSocketWrapper.");
 
 						await ReconnectAsync();
 					}
