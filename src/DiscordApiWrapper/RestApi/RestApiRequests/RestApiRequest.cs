@@ -8,9 +8,7 @@ namespace DiscordApiWrapper.RestApi.RestApiRequests
 
     public abstract class RestApiRequest
     {
-        /// <summary>
-        /// Example: channels/123/messages
-        /// </summary>
+        /// <summary>Example: channels/123/messages</summary>
         internal abstract string RequestUri { get; }
         internal abstract RestRequestType RequestType { get; }
 

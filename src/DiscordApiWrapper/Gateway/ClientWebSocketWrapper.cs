@@ -10,10 +10,12 @@ namespace BundtBot
 {
     public class ClientWebSocketWrapper
 	{
-		public delegate void MessageReceivedHandler(string message);
+		public delegate void MessageReceivedHandler();
 		public event MessageReceivedHandler MessageReceived;
+		public Queue<string> ReceivedMessages = new Queue<string>();
 
 		static readonly MyLogger _logger = new MyLogger(nameof(ClientWebSocketWrapper), ConsoleColor.DarkCyan);
+		
 		readonly UTF8Encoding _utf8Encoding = new UTF8Encoding();
 		readonly Queue<Tuple<string, Action>> _outgoingQueue = new Queue<Tuple<string, Action>>();
 		readonly Uri _serverUri;
@@ -160,7 +162,8 @@ namespace BundtBot
 
 		void OnMessageReceived(string message)
 		{
-			MessageReceived?.Invoke(message);
+			ReceivedMessages.Enqueue(message);
+			MessageReceived?.Invoke();
 		}
 	}
 }

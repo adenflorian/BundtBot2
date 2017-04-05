@@ -120,8 +120,9 @@ namespace BundtBot.Discord.Gateway
 			_logger.LogDebug($"Sent {gatewayPayload.GatewayOpCode}");
 		}
 
-		void OnMessageReceived(string message)
+		void OnMessageReceived()
 		{
+			string message = _clientWebSocketWrapper.ReceivedMessages.Dequeue();
 			var payload = JsonConvert.DeserializeObject<GatewayPayload>(message);
 
 			StoreSequenceNumberForHeartbeat(payload);
