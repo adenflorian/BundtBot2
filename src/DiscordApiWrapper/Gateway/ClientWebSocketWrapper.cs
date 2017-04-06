@@ -70,9 +70,10 @@ namespace BundtBot
                 catch (System.Exception ex)
                 {
                     _logger.LogError("[Connect Loop] Error while connecting websocket");
-                    _logger.LogError(ex);
-                    _logger.LogWarning("[Connect Loop] Waiting 5 seconds before attempting to reconnect...");
-					await Task.Delay(TimeSpan.FromSeconds(5));
+                    _logger.LogError(ex, true);
+					var waitAmount = TimeSpan.FromSeconds(5);
+                    _logger.LogWarning($"[Connect Loop] Waiting {waitAmount.TotalSeconds} seconds before attempting to reconnect...");
+					await Task.Delay(waitAmount);
                 }
             }
         }
@@ -105,15 +106,26 @@ namespace BundtBot
 					{
 						try
 						{
-                            _logger.LogInfo("[Send Loop] Sending message on websocket...");
+                            _logger.LogInfo($"[Send Loop] Sending message on websocket... ({message.Item1.GetHashCode()})");
 							await SendAsync(message.Item1);
-                            _logger.LogInfo("[Send Loop] Sent!");
+                            _logger.LogInfo($"[Send Loop] Sent! ({message.Item1.GetHashCode()})");
 							break;
 						}
 						catch (System.Exception ex)
 						{
-                            _logger.LogInfo("[Send Loop] Error while sending message on websocket");
-							_logger.LogError(ex);
+                            _logger.LogError($"[Send Loop] Error while sending message on websocket ({message.Item1.GetHashCode()})");
+                            _logger.LogError(ex);
+
+							while (true)
+							{
+								if (_clientWebSocket.State == WebSocketState.Open) break;
+								var secondsToWait = 5;
+                                _logger.LogWarning($"[Send Loop] WebSocket is not Open, waiting for {secondsToWait} seconds then checking again... (State: {_clientWebSocket.State})");
+								await Task.Delay(TimeSpan.FromSeconds(secondsToWait));
+							}
+
+                            _logger.LogWarning($"[Send Loop] Waiting for 1 second then retrying send... ({message.Item1.GetHashCode()})");
+							await Task.Delay(TimeSpan.FromSeconds(1));
 						}
 					}
 					
@@ -140,7 +152,6 @@ namespace BundtBot
 
 		void StartReceiveLoop()
 		{
-			var waitTimeMs = 1000;
 			Task.Run(async () => {
 				var message = "";
 				while (_clientWebSocket.State == WebSocketState.Open) {
@@ -159,23 +170,12 @@ namespace BundtBot
 					}
 					catch (Exception ex)
 					{
-						_logger.LogWarning("[Receive Loop] Exception caught in ClientWebSocketWrapper ReceiveLoop.");
-
-                        if (waitTimeMs > 1000 * 60)
-                        {
-                            _logger.LogCritical(ex);
-                            throw;
-                        }
-
+						_logger.LogError("[Receive Loop] Exception caught in ClientWebSocketWrapper ReceiveLoop.");
                         _logger.LogError(ex);
-                        _logger.LogError($"[Receive Loop] _clientWebSocket.State: {_clientWebSocket.State.ToString()}");
-                        _logger.LogError($"[Receive Loop] _clientWebSocket.CloseStatus: {_clientWebSocket.CloseStatus.ToString()}");
-                        _logger.LogError($"[Receive Loop] _clientWebSocket.CloseStatusDescription: {_clientWebSocket.CloseStatusDescription}");
+                        _logger.LogWarning($"[Receive Loop] _clientWebSocket.State: {_clientWebSocket.State.ToString()}");
+                        _logger.LogWarning($"[Receive Loop] _clientWebSocket.CloseStatus: {_clientWebSocket.CloseStatus.ToString()}");
+                        _logger.LogWarning($"[Receive Loop] _clientWebSocket.CloseStatusDescription: {_clientWebSocket.CloseStatusDescription}");
 
-						_logger.LogWarning($"[Receive Loop] Waiting for {waitTimeMs / 1000} seconds, then reconnecting");
-						await Task.Delay(waitTimeMs);
-						waitTimeMs *= 2;
-						_logger.LogWarning($"[Receive Loop] Doubled web socket reconnect wait time to {waitTimeMs / 1000} seconds");
 						message = "";
 
 						_logger.LogWarning("[Receive Loop] Reconnecting ClientWebSocketWrapper.");

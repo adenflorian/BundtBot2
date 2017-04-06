@@ -79,6 +79,16 @@ namespace BundtCord.Discord
             {
                 Me = new User(readyInfo.User);
             };
+
+            _gatewayClient.InvalidSessionReceived += async (string eventName, string eventJsonData) =>
+            {
+                _logger.LogInfo("Received InvalidSession from Gateway, clearing state data...", ConsoleColor.Red);
+                TextChannels.Clear();
+                Users.Clear();
+                Me = null;
+
+                await _gatewayClient.SendGatewayIdentify();
+            };
         }
 
         public async void SetGame(string gameName)

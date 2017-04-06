@@ -5,7 +5,7 @@ namespace DiscordApiWrapper.RestApi
 {
     public class DiscordRateLimit
     {
-        static readonly MyLogger _logger = new MyLogger(nameof(DiscordRateLimit));
+        static readonly MyLogger _logger = new MyLogger(nameof(DiscordRateLimit), ConsoleColor.Magenta);
         // X-RateLimit-Limit
         public int Limit { get; }
 

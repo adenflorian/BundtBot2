@@ -18,7 +18,10 @@ namespace DiscordApiWrapper.RestApi
             _createMessageClient = new RateLimitedClient(discordRestClient);
             _getGatewayUrlCient = new RateLimitedClient(discordRestClient);
         }
-
+        
+        /// <summary>
+        /// /// TODO Requires the 'SEND_MESSAGES' permission to be present on the current user.
+        /// </summary>
         public async Task<DiscordMessage> CreateMessageAsync(NewMessageRequest createMessage)
         {
             return await DoRequestAsync<DiscordMessage>(createMessage, _createMessageClient);

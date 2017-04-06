@@ -8,7 +8,7 @@ namespace BundtBot
 {
     public class BundtBot
     {
-        public DiscordClient Client;
+        DiscordClient _client;
 
         static readonly MyLogger _logger = new MyLogger(nameof(BundtBot));
 
@@ -16,41 +16,49 @@ namespace BundtBot
 
         public async Task Start()
         {
-            Client = new DiscordClient(File.ReadAllText("bottoken"));
+            _client = new DiscordClient(File.ReadAllText("bottoken"));
 
             RegisterEventHandlers();
 
-            await Client.Connect();
+            await _client.Connect();
         }
 
         void RegisterEventHandlers()
         {
-            Client.MessageCreated += async (message) =>
+            _client.MessageCreated += async (message) =>
             {
                 try
                 {
-                    if (message.Author.Id == Client.Me.Id) return;
+                    if (message.Author.Id == _client.Me.Id) return;
                     if (message.Content.StartsWith("echo ") == false) return;
                     await message.TextChannel.SendMessageAsync(message.Content.Substring(5));
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError("Exception thrown while handling event " + nameof(Client.MessageCreated));
+                    _logger.LogError("Exception thrown while handling event " + nameof(_client.MessageCreated));
                     _logger.LogError(ex);
                 }
             };
 
-            Client.ServerCreated += async (server) => {
-				await server.TextChannels.First().SendMessageAsync("yo");
+            _client.ServerCreated += async (server) => {
+                try
+                {
+                    await server.TextChannels.First().SendMessageAsync("yo");
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError("Exception thrown while handling event " + nameof(_client.ServerCreated));
+                    _logger.LogError(ex);
+                }
 			};
 
-			/*Client.Ready += (ready) => {
+            /*_client.Ready += (ready) => {
 				_logger.LogInfo("Client is Ready/Connected! ໒( ͡ᵔ ▾ ͡ᵔ )७", ConsoleColor.Green);
 				_logger.LogInfo("Setting game...");
-				Client.SetGame(Assembly.GetEntryAssembly().GetName().Version.ToString());
+				_client.SetGame(Assembly.GetEntryAssembly().GetName().Version.ToString());
 			};
 			
-			Client.TextChannelCreated += async (textChannel) => {
+			_client.TextChannelCreated += async (textChannel) => {
 				try {
 					await textChannel.SendMessage("less is more");
 					if (!textChannel.Name.ToLower().Contains("bundtbot")) return;

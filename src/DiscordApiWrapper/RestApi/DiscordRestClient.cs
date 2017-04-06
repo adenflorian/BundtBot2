@@ -2,8 +2,10 @@
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Threading;
 using System.Threading.Tasks;
 using BundtBot.Extensions;
+using BundtCommon;
 using DiscordApiWrapper.RestApi;
 using DiscordApiWrapper.RestApi.RestApiRequests;
 
@@ -38,33 +40,53 @@ namespace BundtBot.Discord
             HttpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue(config.Name, config.Version));
         }
 
-        /// <summary>
-        /// TODO Requires the 'SEND_MESSAGES' permission to be present on the current user.
-        /// </summary>
         /// <exception cref="DiscordRestException" />
         /// <exception cref="RateLimitExceededException" />
         public async Task<HttpResponseMessage> ProcessRequestAsync(RestApiRequest request)
         {
             HttpResponseMessage response;
+            
+            var shortErrors = false;
+            //TODO Maybe have it throw after trying for certain amount of time?
 
-            switch (request.RequestType)
+            while (true)
             {
-                case RestRequestType.Get:
-                    response = await HttpClient.GetAsync(request.RequestUri);
+                try
+                {
+                    response = await ActuallySendRequestForReal(request);
                     break;
-                case RestRequestType.Post:
-                    response = await HttpClient.PostAsync(request.RequestUri, request.BuildContent());
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
+                }
+                catch (Exception ex)
+                {
+                    if (ex is HttpRequestException || ex is TaskCanceledException)
+                    {
+                        _logger.LogError(ex, shortErrors);
+                        shortErrors = true;
+                        await _logger.LogAndWaitRetryWarningAsync(TimeSpan.FromSeconds(5));
+                    }
+                    else throw;
+                }
             }
-
+            
             if (response.IsSuccessStatusCode == false)
             {
                 await HandleErrorResponseAsync(response);
             }
 
             return response;
+        }
+
+        async Task<HttpResponseMessage> ActuallySendRequestForReal(RestApiRequest request)
+        {
+            switch (request.RequestType)
+            {
+                case RestRequestType.Get:
+                    return await HttpClient.GetAsync(request.RequestUri);
+                case RestRequestType.Post:
+                    return await HttpClient.PostAsync(request.RequestUri, request.BuildContent());
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
         }
 
         async Task HandleErrorResponseAsync(HttpResponseMessage response)

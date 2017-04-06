@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
@@ -28,7 +29,13 @@ namespace BundtBot
             _prefix = prefix;
             _prefixColor = prefixColor;
             _supportsAnsiColors = Console.LargestWindowHeight <= 0;
-            LogDebug(nameof(_supportsAnsiColors) + ": " + _supportsAnsiColors);
+            LogTrace(nameof(_supportsAnsiColors) + ": " + _supportsAnsiColors);
+        }
+
+        public async Task LogAndWaitRetryWarningAsync(TimeSpan waitAmount)
+        {
+            LogWarning($"Waiting {waitAmount.TotalSeconds} seconds then retrying...");
+            await Task.Delay(waitAmount);
         }
 
         /// <summary>
@@ -106,10 +113,11 @@ namespace BundtBot
         /// Logs that highlight when the current flow of execution is stopped due to a failure.
         /// These should indicate a failure in the current activity, not an application-wide failure.
         /// </summary>
-        public void LogError(Exception ex)
+        public void LogError(Exception ex, bool shortVersion = false)
         {
             if (LogLevel.Error < CurrentLogLevel) return;
             BuildAndLog("**ERROR**", $"{ex.GetType()}: {ex.Message}", ConsoleColor.Red, ConsoleColor.Red);
+            if (shortVersion) return;
             BuildAndLog("**ERROR**", ex.StackTrace ?? "No stack trace available", ConsoleColor.Red);
             if (ex.InnerException != null)
             {

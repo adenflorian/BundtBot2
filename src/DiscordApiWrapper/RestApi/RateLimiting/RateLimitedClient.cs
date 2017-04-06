@@ -98,6 +98,7 @@ namespace DiscordApiWrapper.RestApi
             {
                 _logger.LogError(ex);
                 _logger.LogError("Invoking callback with null");
+                // TODO This is BAD!
                 requestCompletedCallback.Invoke(null);
                 return;
             }

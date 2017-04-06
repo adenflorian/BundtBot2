@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Threading;
 using System.Threading.Tasks;
 using BundtBot.Discord.Gateway.Operation;
 using BundtBot.Discord.Models;
@@ -16,6 +15,9 @@ namespace BundtBot.Discord.Gateway
         public event OperationHandler DispatchReceived;
         public event OperationHandler HeartbackAckReceived;
         public event OperationHandler HelloReceived;
+        /// <summary>All state info that is set in the Ready and GuildCreated events must be cleared 
+        /// when an InvalidSession opcode is received. Once that is done, call SendGatewayIdentify.</summary>
+        public event OperationHandler InvalidSessionReceived;
         public delegate void ReadyHandler(Ready readyInfo);
         public event ReadyHandler Ready;
         public delegate void MessageCreatedHandler(DiscordMessage discordMessage);
@@ -99,7 +101,7 @@ namespace BundtBot.Discord.Gateway
             await SendOpCodeAsync(OpCode.Heartbeat, _lastSequenceReceived);
         }
 
-        async Task SendGatewayIdentify()
+        public async Task SendGatewayIdentify()
         {
             _logger.LogInfo("Sending GatewayIdentify to Gateway", ConsoleColor.Green);
             await SendOpCodeAsync(OpCode.Identify, new GatewayIdentify
@@ -120,12 +122,12 @@ namespace BundtBot.Discord.Gateway
 
         async Task SendGatewayResume()
         {
-            _logger.LogInfo("Sending GatewayResume to Gateway", ConsoleColor.Green);
+            _logger.LogInfo($"Sending GatewayResume to Gateway (session_id: {_sessionId})", ConsoleColor.Green);
             await SendOpCodeAsync(OpCode.Resume, new GatewayResume
             {
                 SessionToken = _authToken,
                 SessionId = _sessionId,
-				LastSequenceNumberReceived = _lastSequenceReceived
+                LastSequenceNumberReceived = _lastSequenceReceived
             });
         }
 
@@ -171,15 +173,15 @@ namespace BundtBot.Discord.Gateway
                 case OpCode.Dispatch: InvokeEvent(DispatchReceived, payload); break;
                 case OpCode.HeartbackAck: InvokeEvent(HeartbackAckReceived, payload); break;
                 case OpCode.Hello: InvokeEvent(HelloReceived, payload); break;
-                case OpCode.Heartbeat:
-                case OpCode.Identify:
-                case OpCode.StatusUpdate:
-                case OpCode.VoiceStateUpdate:
-                case OpCode.VoiceServerPing:
-                case OpCode.Resume:
-                case OpCode.Reconnect:
-                case OpCode.RequestGuildMembers:
-                case OpCode.InvalidSession:
+                //case OpCode.Heartbeat: break;
+                //case OpCode.Identify: break;
+                //case OpCode.StatusUpdate: break;
+                //case OpCode.VoiceStateUpdate: break;
+                //case OpCode.VoiceServerPing: break;
+                //case OpCode.Resume: break;
+                //case OpCode.Reconnect: break;
+                //case OpCode.RequestGuildMembers: break;
+                case OpCode.InvalidSession: InvokeEvent(InvalidSessionReceived, payload); break;
                 default:
                     _logger.LogWarning($"Received an OpCode with no handler: {payload.GatewayOpCode}");
                     break;
