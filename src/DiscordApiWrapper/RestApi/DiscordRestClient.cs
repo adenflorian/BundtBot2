@@ -2,10 +2,8 @@
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Threading;
 using System.Threading.Tasks;
 using BundtBot.Extensions;
-using BundtCommon;
 using DiscordApiWrapper.RestApi;
 using DiscordApiWrapper.RestApi.RestApiRequests;
 
