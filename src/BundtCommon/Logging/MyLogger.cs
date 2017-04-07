@@ -116,15 +116,15 @@ namespace BundtBot
         public void LogError(Exception ex, bool shortVersion = false)
         {
             if (LogLevel.Error < CurrentLogLevel) return;
-            BuildAndLog("**ERROR**", $"{ex.GetType()}: {ex.Message}", ConsoleColor.Red, ConsoleColor.Red);
+            BuildAndLog("**ERROR**", $"{ex.GetType()}: {ex.Message}", ConsoleColor.Red, ConsoleColor.Red, stdErr: true);
             if (shortVersion) return;
-            BuildAndLog("**ERROR**", ex.StackTrace ?? "No stack trace available", ConsoleColor.Red);
+            BuildAndLog("**ERROR**", ex.StackTrace ?? "No stack trace available", ConsoleColor.Red, stdErr: true);
             if (ex.InnerException != null)
             {
-                BuildAndLog("**ERROR**", $"InnerException1: ${ex.InnerException}", ConsoleColor.Red);
+                BuildAndLog("**ERROR**", $"InnerException1: ${ex.InnerException}", ConsoleColor.Red, stdErr: true);
                 if (ex.InnerException.InnerException != null)
                 {
-                    BuildAndLog("**ERROR**", $"InnerException2: ${ex.InnerException.InnerException}", ConsoleColor.Red);
+                    BuildAndLog("**ERROR**", $"InnerException2: ${ex.InnerException.InnerException}", ConsoleColor.Red, stdErr: true);
                 }
             }
         }
@@ -136,7 +136,7 @@ namespace BundtBot
         public void LogError(string message)
         {
             if (LogLevel.Error < CurrentLogLevel) return;
-            BuildAndLog("**ERROR**", message, ConsoleColor.Red, ConsoleColor.Red);
+            BuildAndLog("**ERROR**", message, ConsoleColor.Red, ConsoleColor.Red, stdErr: true);
         }
 
         /// <summary>
@@ -146,11 +146,11 @@ namespace BundtBot
         public void LogCritical(Exception ex)
         {
             if (LogLevel.Critical < CurrentLogLevel) return;
-            BuildAndLog("❗❗❗CRITICAL❗❗❗ ", $"{ex.GetType()}: {ex.Message}", ConsoleColor.Red, ConsoleColor.Red);
-            BuildAndLog("❗❗❗CRITICAL❗❗❗ ", ex.StackTrace ?? "No stack trace available", ConsoleColor.Red, ConsoleColor.Red);
+            BuildAndLog("❗❗❗CRITICAL❗❗❗ ", $"{ex.GetType()}: {ex.Message}", ConsoleColor.Red, ConsoleColor.Red, stdErr: true);
+            BuildAndLog("❗❗❗CRITICAL❗❗❗ ", ex.StackTrace ?? "No stack trace available", ConsoleColor.Red, ConsoleColor.Red, stdErr: true);
             if (ex.InnerException != null)
             {
-                BuildAndLog("❗❗❗CRITICAL❗❗❗ ", $"InnerException: ${ex.InnerException}", ConsoleColor.Red, ConsoleColor.Red);
+                BuildAndLog("❗❗❗CRITICAL❗❗❗ ", $"InnerException: ${ex.InnerException}", ConsoleColor.Red, ConsoleColor.Red, stdErr: true);
             }
         }
 
@@ -161,10 +161,10 @@ namespace BundtBot
         public void LogCritical(string message)
         {
             if (LogLevel.Critical < CurrentLogLevel) return;
-            BuildAndLog("❗❗❗CRITICAL❗❗❗ ", message, ConsoleColor.Red);
+            BuildAndLog("❗❗❗CRITICAL❗❗❗ ", message, ConsoleColor.Red, stdErr: true);
         }
 
-        void BuildAndLog(string logLevel, object messageObject, ConsoleColor? logLevelColor = null, ConsoleColor? messageColor = null)
+        void BuildAndLog(string logLevel, object messageObject, ConsoleColor? logLevelColor = null, ConsoleColor? messageColor = null, bool stdErr = false)
         {
             var message = BuildMessage(messageObject, logLevel, logLevelColor, messageColor);
 
@@ -172,7 +172,7 @@ namespace BundtBot
 
             message = message.Replace("\n", "\n\t");
 
-            WriteStdout(message, messageColor);
+            Write(message, messageColor, stdErr);
         }
 
         string BuildMessage(object messageObject, string logLevel, ConsoleColor? logLevelColor, ConsoleColor? messageColor)
@@ -264,28 +264,42 @@ namespace BundtBot
             return dateTimeString;
         }
 
-        void WriteStdout(string message, ConsoleColor? messageColor)
+        void Write(string message, ConsoleColor? messageColor, bool stdErr = false)
         {
             if (_supportsAnsiColors)
             {
-                WriteStdoutUnix(message);
+                WriteUnix(message, stdErr);
             }
             else
             {
-                WriteStdoutWindows(message, messageColor ?? DefaultColor);
+                WriteWindows(message, messageColor ?? DefaultColor, stdErr);
             }
         }
 
-        void WriteStdoutWindows(string message, ConsoleColor color)
+        void WriteWindows(string message, ConsoleColor color, bool stdErr = false)
         {
             Console.ForegroundColor = color;
-            Console.WriteLine(message);
+            if (stdErr)
+            {
+                Console.Error.WriteLine(message);
+            }
+            else
+            {
+                Console.WriteLine(message);
+            }
             Console.ForegroundColor = DefaultColor;
         }
 
-        void WriteStdoutUnix(string message)
+        void WriteUnix(string message, bool stdErr = false)
         {
-            Console.WriteLine(message + AnsiColorFg.Default + AnsiColorBg.Default);
+            if (stdErr)
+            {
+                Console.Error.WriteLine(message + AnsiColorFg.Default + AnsiColorBg.Default);
+            }
+            else
+            {
+                Console.WriteLine(message + AnsiColorFg.Default + AnsiColorBg.Default);
+            }
         }
 
         string GetAnsiColorFgEscSeq(ConsoleColor color)
