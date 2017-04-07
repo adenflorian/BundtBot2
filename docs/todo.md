@@ -13,3 +13,7 @@ Why is "System.Net.Http.WinHttpException: The operation timed out" thrown from "
 [ ] make logs accessable from webserver
   - like how many of each exception
   - when each exception was last thrown
+
+[ ] make guilds display on website again
+
+[ ] lock down website
