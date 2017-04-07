@@ -17,6 +17,8 @@ namespace BundtBot
     {
         public const ConsoleColor DefaultColor = ConsoleColor.Gray;
 
+        public static Exception LastLoggedException;
+
         public bool EnableTimestamps = true;
         public LogLevel CurrentLogLevel = LogLevel.Debug;
 
@@ -115,6 +117,8 @@ namespace BundtBot
         /// </summary>
         public void LogError(Exception ex, bool shortVersion = false)
         {
+            ex.Data["DateTime"] = DateTime.Now;
+            LastLoggedException = ex;
             if (LogLevel.Error < CurrentLogLevel) return;
             BuildAndLog("**ERROR**", $"{ex.GetType()}: {ex.Message}", ConsoleColor.Red, ConsoleColor.Red, stdErr: true);
             if (shortVersion) return;
@@ -145,6 +149,8 @@ namespace BundtBot
         /// </summary>
         public void LogCritical(Exception ex)
         {
+            ex.Data["DateTime"] = DateTime.Now;
+            LastLoggedException = ex;
             if (LogLevel.Critical < CurrentLogLevel) return;
             BuildAndLog("❗❗❗CRITICAL❗❗❗ ", $"{ex.GetType()}: {ex.Message}", ConsoleColor.Red, ConsoleColor.Red, stdErr: true);
             BuildAndLog("❗❗❗CRITICAL❗❗❗ ", ex.StackTrace ?? "No stack trace available", ConsoleColor.Red, ConsoleColor.Red, stdErr: true);

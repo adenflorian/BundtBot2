@@ -8,6 +8,8 @@ Why is "System.Net.Http.WinHttpException: The operation timed out" thrown from "
 
 [√] make LogError and LogCritical use Console.Error.Write
 
+[√] show last logged exception in website
+
 [ ] make logs accessable from webserver
   - like how many of each exception
   - when each exception was last thrown
