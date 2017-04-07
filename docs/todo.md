@@ -6,8 +6,8 @@ Why is "System.Net.Http.WinHttpException: The operation timed out" thrown from "
 
 [√] handle opcode 9 invalid session
 
-[ ] make LogError use Console.WriteError
+[√] make LogError and LogCritical use Console.Error.Write
 
 [ ] make logs accessable from webserver
   - like how many of each exception
-  - when each exception was last thronw
+  - when each exception was last thrown
