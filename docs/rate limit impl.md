@@ -1,0 +1,62 @@
+Objects:
+- Requestors
+  - Things that want to request things
+
+Rules:
+- A request is only allowed to be made if there is at least 1 remaining alloted request
+  - Variable to hold remaining requests
+- If there are 0 remaing alloted requests, then the next request can go once time has reached the reset time
+  - variable to hold reset time
+  - Delay
+- Requests must go in order received
+  - Queue
+  
+Ideas:
+- Queue of GUIDs
+  - Requestors call a rate limiter method which might make the requestor wait
+  - the rate limiter creates a guid for that call and adds to a queue
+  - periodically it peeks the item in front of the queue to see if it is its guid
+  - if it peeks its guid, it checks if there are available requests
+  - if yes, it returns, if no, it waits until the reset time, then returns
+  - Objects:
+    - Requestors
+      - Deps:
+        - RateLimiter
+        - Service
+    - RateLimiter
+      - Deps:
+        - SmartQueue
+        - AvailableRequests
+        - ResetTime
+    - SmartQueue
+      - Events:
+        - Dequeued
+    - Service
+- Tom
+  - like a grocery store self checkout
+  - Line construct (queue)
+  - Customers come to the store and get in line
+  - the line manager tells the first person in line what register to go to when it's open
+  - The customer uses the register then leaves
+  - Objects:
+    - Store
+      - Deps:
+        - Everything
+    - Registers
+    - Customers
+      - Deps:
+        - Registers
+        - Line
+      - Methods:
+        - OnArrivedAtRegister(Register, FinishedCallback)
+    - Line (Queue)
+    - Line Manager
+      - Deps:
+        - Customers
+        - Line
+        - Registers
+        - AvailableRequests
+        - ResetTime
+      - Listens For:
+        - Customers joining line
+        - Customers leaving registers
