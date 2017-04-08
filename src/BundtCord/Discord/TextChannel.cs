@@ -8,6 +8,7 @@ namespace BundtCord.Discord
     {
         public ulong Id {get;}
         public string Name {get;}
+        public ulong ServerId {get;}
 
         DiscordClient _client;
 
@@ -15,6 +16,7 @@ namespace BundtCord.Discord
         {
             Name = guildChannel.Name;
             Id = guildChannel.Id;
+            ServerId = guildChannel.GuildID;
             _client = client;
         }
 

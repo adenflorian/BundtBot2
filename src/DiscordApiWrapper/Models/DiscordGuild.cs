@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using DiscordApiWrapper.Models;
 using Newtonsoft.Json;
 
 namespace BundtBot.Discord.Models
@@ -88,7 +89,7 @@ namespace BundtBot.Discord.Models
 		/// Only sent within the GUILD_CREATE event.
 		/// </summary>
 		[JsonProperty("voice_states")]
-		public List<object> VoiceStates;
+		public List<VoiceState> VoiceStates;
 
 		/// <summary>
 		/// Array of guild member objects.
@@ -110,5 +111,7 @@ namespace BundtBot.Discord.Models
 		/// </summary>
 		[JsonProperty("presences")]
 		public List<object> Presences;
+
+		internal DiscordGuild() {}
 	}
 }

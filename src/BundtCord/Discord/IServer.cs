@@ -4,6 +4,8 @@ namespace BundtCord.Discord
 {
     public interface IServer
     {
-         IList<ITextChannel> TextChannels { get; }
+        ulong Id { get; }
+        IEnumerable<ITextChannel> TextChannels { get; }
+        IEnumerable<VoiceChannel> VoiceChannels { get; }
     }
 }

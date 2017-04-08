@@ -8,7 +8,7 @@ namespace DiscordApiWrapper.Models
 		public ulong GuildID;
 
         [JsonProperty("channel_id")]
-        public ulong ChannelId;
+        public ulong? ChannelId;
 
         [JsonProperty("user_id")]
         public ulong UserId;

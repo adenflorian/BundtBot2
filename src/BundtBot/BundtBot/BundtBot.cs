@@ -30,8 +30,28 @@ namespace BundtBot
                 try
                 {
                     if (message.Author.Id == _client.Me.Id) return;
-                    if (message.Content.StartsWith("echo ") == false) return;
-                    await message.TextChannel.SendMessageAsync(message.Content.Substring(5));
+
+                    var messageContent = message.Content;
+
+                    if (messageContent.StartsWith("!echo "))
+                    {
+                        await message.TextChannel.SendMessageAsync(messageContent.Substring(5));
+                    }
+                    else if (messageContent == "!hello")
+                    {
+                        // Reject if user is not in a voice channel
+                        if (message.Author.VoiceChannel == null)
+                        {
+                            await message.TextChannel.SendMessageAsync("You're going to want to be in a voice channel for this...");
+                            return;
+                        }
+
+                        await message.TextChannel.SendMessageAsync("I see you in channel " + message.Author.VoiceChannel.Name);
+
+                        // Join voice channel
+                        // Play helloworld.opus
+                        // Leave channel
+                    }
                 }
                 catch (Exception ex)
                 {

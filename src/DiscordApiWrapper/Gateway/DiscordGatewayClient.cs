@@ -5,6 +5,7 @@ using BundtBot.Discord.Models;
 using BundtBot.Discord.Models.Events;
 using BundtBot.Discord.Models.Gateway;
 using BundtBot.Extensions;
+using DiscordApiWrapper.Models;
 using Newtonsoft.Json;
 
 namespace BundtBot.Discord.Gateway
@@ -18,20 +19,15 @@ namespace BundtBot.Discord.Gateway
         /// <summary>All state info that is set in the Ready and GuildCreated events must be cleared 
         /// when an InvalidSession opcode is received. Once that is done, call SendGatewayIdentify.</summary>
         public event OperationHandler InvalidSessionReceived;
-        public delegate void ReadyHandler(Ready readyInfo);
-        public event ReadyHandler Ready;
-        public delegate void MessageCreatedHandler(DiscordMessage discordMessage);
-        public event MessageCreatedHandler MessageCreated;
-        public delegate void GuildCreatedHandler(DiscordGuild discordGuild);
-        /// <summary>
-        /// This event can be sent in three different scenarios:
-        ///   1. When a user is initially connecting, to lazily load and backfill
-        ///      information for all unavailable guilds sent in the ready event.
-        ///   2. When a Guild becomes available again to the client.
-        ///   3. When the current user joins a new Guild.
-        /// The inner payload is a guild object, with all the extra fields specified.
-        /// </summary>
-        public event GuildCreatedHandler GuildCreated;
+
+        public delegate void GatewayEventHandler<T>(T eventData);
+        /// <summary>This event is sent after Identify, when a Guild becomes available again to the client, 
+        /// and when the current user joins a new Guild.</summary>
+        public event GatewayEventHandler<DiscordGuild> GuildCreated;
+        public event GatewayEventHandler<DiscordMessage> MessageCreated;
+        public event GatewayEventHandler<Ready> Ready;
+        public event GatewayEventHandler<TypingStart> TypingStart;
+        public event GatewayEventHandler<VoiceState> VoiceStateUpdate;
 
         static readonly MyLogger _logger = new MyLogger(nameof(DiscordGatewayClient), ConsoleColor.Cyan);
 
@@ -173,20 +169,18 @@ namespace BundtBot.Discord.Gateway
                 case OpCode.Dispatch: InvokeEvent(DispatchReceived, payload); break;
                 case OpCode.HeartbackAck: InvokeEvent(HeartbackAckReceived, payload); break;
                 case OpCode.Hello: InvokeEvent(HelloReceived, payload); break;
-                //case OpCode.Heartbeat: break;
-                //case OpCode.Identify: break;
-                //case OpCode.StatusUpdate: break;
-                //case OpCode.VoiceStateUpdate: break;
-                //case OpCode.VoiceServerPing: break;
-                //case OpCode.Resume: break;
-                //case OpCode.Reconnect: break;
-                //case OpCode.RequestGuildMembers: break;
                 case OpCode.InvalidSession: InvokeEvent(InvalidSessionReceived, payload); break;
                 default:
                     _logger.LogWarning($"Received an OpCode with no handler: {payload.GatewayOpCode}");
                     break;
             }
         }
+
+        // TODO Implement these gateway client requests:
+        //case OpCode.StatusUpdate: break;
+        //case OpCode.VoiceStateUpdate: break;
+        //case OpCode.VoiceServerPing: break;
+        //case OpCode.RequestGuildMembers: break;
 
         void LogMessageReceived(string message, GatewayPayload payload)
         {
@@ -224,6 +218,7 @@ namespace BundtBot.Discord.Gateway
                     break;
                 case "GUILD_CREATE":
                     var discordGuild = JsonConvert.DeserializeObject<DiscordGuild>(eventJsonData);
+                    discordGuild.AllChannels.ForEach(x => x.GuildID = discordGuild.Id);
                     LogReceivedEvent("GUILD_CREATE", discordGuild.Name);
                     GuildCreated?.Invoke(discordGuild);
                     break;
@@ -235,6 +230,12 @@ namespace BundtBot.Discord.Gateway
                 case "TYPING_START":
                     var typingStart = JsonConvert.DeserializeObject<TypingStart>(eventJsonData);
                     LogReceivedEvent("TYPING_START", typingStart.UserId.ToString());
+                    TypingStart?.Invoke(typingStart);
+                    break;
+                case "VOICE_STATE_UPDATE":
+                    var voiceStateUpdate = JsonConvert.DeserializeObject<VoiceState>(eventJsonData);
+                    LogReceivedEvent("VOICE_STATE_UPDATE", voiceStateUpdate.UserId.ToString());
+                    VoiceStateUpdate?.Invoke(voiceStateUpdate);
                     break;
                 default:
                     _logger.LogWarning($"Received an Event with no handler: {eventName}");

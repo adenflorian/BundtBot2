@@ -20,7 +20,7 @@ namespace BundtBot
         public static Exception LastLoggedException;
 
         public bool EnableTimestamps = true;
-        public LogLevel CurrentLogLevel = LogLevel.Debug;
+        public LogLevel CurrentLogLevel = LogLevel.Information;
 
         readonly string _prefix;
         readonly ConsoleColor? _prefixColor;
