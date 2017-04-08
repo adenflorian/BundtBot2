@@ -2,18 +2,18 @@ Voice Connection Design Notes
 =============================
 
 Possible Classes:
-- VoiceConnection
-- VoiceGatewayClient
-- OpusStuff
+[ ] VoiceConnection
+[ ] VoiceGatewayClient
+[ ] OpusStuff
 
 Models:
-- VoiceDataPacket
+[ ] VoiceDataPacket
     - Encrypted voice data packet header
-    - encrypted Opus audio data
-- VoiceState
+    - Encrypted Opus audio data
+[x] VoiceState
 
 Structs:
-- RtpHeader
+[ ] RtpHeader
 
 ## Opus
 - 2 channels (stereo)
@@ -30,11 +30,11 @@ Voice Events:
 Encrypted Voice Packet
 
 Required Libraries:
-- Opus
-- libsodium
+[ ] Opus
+[ ] libsodium
 
 Things To Look Into:
-- UDP Hole Punching
-- RTP Header
+[ ] UDP Hole Punching
+[ ] RTP Header
     - RTP Data Transfer Protocol
     - Real-time Transport Protocol
