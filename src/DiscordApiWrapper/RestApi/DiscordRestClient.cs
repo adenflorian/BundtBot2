@@ -42,17 +42,25 @@ namespace BundtBot.Discord
         /// <exception cref="RateLimitExceededException" />
         public async Task<HttpResponseMessage> ProcessRequestAsync(RestApiRequest request)
         {
+            if (request == null) throw new ArgumentNullException();
+
             HttpResponseMessage response;
             
             var shortErrors = false;
-            //TODO Maybe have it throw after trying for certain amount of time?
 
+            //TODO Maybe have it throw after trying for certain amount of time?
             while (true)
             {
                 try
                 {
                     response = await ActuallySendRequestForReal(request);
-                    break;
+
+                    if (response.IsSuccessStatusCode == false)
+                    {
+                        await HandleErrorResponseAsync(response);
+                    }
+
+                    return response;
                 }
                 catch (Exception ex)
                 {
@@ -65,13 +73,6 @@ namespace BundtBot.Discord
                     else throw;
                 }
             }
-            
-            if (response.IsSuccessStatusCode == false)
-            {
-                await HandleErrorResponseAsync(response);
-            }
-
-            return response;
         }
 
         async Task<HttpResponseMessage> ActuallySendRequestForReal(RestApiRequest request)
@@ -89,17 +90,14 @@ namespace BundtBot.Discord
 
         async Task HandleErrorResponseAsync(HttpResponseMessage response)
         {
-            Exception ex;
             if (response.StatusCode == (HttpStatusCode)429)
             {
-                ex = new RateLimitExceededException(await RateLimitExceeded.Create(response));
+                throw new RateLimitExceededException(await RateLimitExceeded.Create(response));
             }
             else
             {
-                ex = new DiscordRestException("Received Error Status Code: " + response.StatusCode);
+                throw new DiscordRestException("Received Error Status Code: " + response.StatusCode);
             }
-            _logger.LogError(ex);
-            throw ex;
         }
     }
 }

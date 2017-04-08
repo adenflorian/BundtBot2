@@ -19,7 +19,7 @@ Why is "System.Net.Http.WinHttpException: The operation timed out" thrown from "
 [ ] lock down website
 
 [ ] !hello
-  [ ] create handler for !hello in BundtBot
+  [√] create handler for !hello in BundtBot
   - voice hello world
   - bundtbot should join the voice channel of the requesting user and play a clip that says, "Hello, world! This is bundtbot. No relation to the cake"
 

@@ -12,15 +12,23 @@ namespace BundtBot.Tests.Discord
 {
 	public class DiscordRestClient_ProcessRequestAsyncShould
 	{
-		[Fact]
-		public async Task ThrowDiscordRestExceptionWhenGetIsUnsuccessfull()
-		{
-			var stubHandler = new StubHtpMessageHandler("", HttpStatusCode.InternalServerError);
-			var stubHttpClient = new HttpClient(stubHandler);
-			var client = CreateDiscordRestClient("token", "name", "version", stubHttpClient);
-			var ex = await Assert.ThrowsAsync<DiscordRestException>(() => client.ProcessRequestAsync(new GetRequest("test")));
-			Assert.Contains("InternalServerError", ex.Message);
-		}
+        [Fact]
+        public async Task ThrowArgumentExceptionPassedNullAsync()
+        {
+            await Assert.ThrowsAsync<ArgumentNullException>(() => CreateDiscordRestClient().ProcessRequestAsync(null));
+        }
+
+        [Fact]
+        public async Task ThrowDiscordRestExceptionWhenGetIsUnsuccessfull()
+        {
+            var stubHandler = new StubHtpMessageHandler("", HttpStatusCode.InternalServerError);
+            var stubHttpClient = new HttpClient(stubHandler);
+            var client = CreateDiscordRestClient(httpClient: stubHttpClient);
+
+            var ex = await Assert.ThrowsAsync<DiscordRestException>(() => client.ProcessRequestAsync(new GetRequest("test")));
+
+            Assert.Contains("InternalServerError", ex.Message);
+        }
 		
 		DiscordRestClient CreateDiscordRestClient(string token = "token", string name = "name",
 			string version = "version", HttpClient httpClient = null)
