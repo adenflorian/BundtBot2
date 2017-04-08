@@ -51,7 +51,7 @@ namespace BundtBot
 		static async Task StartAsync()
 		{
 			new WebServer().Start();
-			await new BundtBot().Start();
+			await new BundtBot().StartAsync();
 		}
 	}
 }

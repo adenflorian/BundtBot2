@@ -6,6 +6,7 @@ using BundtBot;
 using BundtBot.Discord.Gateway;
 using BundtBot.Discord.Models;
 using BundtBot.Discord.Models.Gateway;
+using DiscordApiWrapper.Gateway.Models;
 using DiscordApiWrapper.Models;
 using DiscordApiWrapper.RestApi;
 
@@ -49,7 +50,7 @@ namespace BundtCord.Discord
             DiscordRestClient = new DiscordRestClientProxy(config);
         }
 
-        public async Task Connect()
+        public async Task ConnectAsync()
         {
             var gatewayUrl = await DiscordRestClient.GetGatewayUrlAsync();
 
@@ -67,7 +68,7 @@ namespace BundtCord.Discord
                     .ToList().ForEach(x => { TextChannels[x.Id] = x; });
                 discordGuild.AllChannels
                     .Where(x => x.Type == GuildChannelType.Voice)
-                    .Select(x => new VoiceChannel(x))
+                    .Select(x => new VoiceChannel(x, this))
                     .ToList().ForEach(x => { VoiceChannels[x.Id] = x; });
                 discordGuild.Members
                     .Select(x => new User(x.User, this))
@@ -86,7 +87,7 @@ namespace BundtCord.Discord
                 Users.Clear();
                 Me = null;
 
-                await _gatewayClient.SendGatewayIdentify();
+                await _gatewayClient.SendIdentifyAsync();
             };
 
             _gatewayClient.MessageCreated += (discordMessage) =>
@@ -111,9 +112,31 @@ namespace BundtCord.Discord
             ((User)Users[voiceState.UserId]).VoiceChannel = voiceState.ChannelId.HasValue ? VoiceChannels[voiceState.ChannelId.Value] : null;
         }
 
-        public async void SetGame(string gameName)
+        public async void SetGameAsync(string gameName)
         {
-            await _gatewayClient.SendStatusUpdate(new StatusUpdate(null, gameName));
+            await _gatewayClient.SendStatusUpdateAsync(new StatusUpdate(null, gameName));
+        }
+
+        public async Task JoinVoiceChannel(VoiceChannel voiceChannel, bool muted = false, bool deafened = false)
+        {
+            await _gatewayClient.SendVoiceStateUpdateAsync(new GatewayVoiceStateUpdate
+            {
+                GuildId = voiceChannel.ServerId,
+                VoiceChannelId = voiceChannel.Id,
+                IsMutedBySelf = muted,
+                IsDeafenedBySelf = deafened
+            });
+        }
+
+        public async Task LeaveVoiceChannelInServer(ulong serverId, bool muted = false, bool deafened = false)
+        {
+            await _gatewayClient.SendVoiceStateUpdateAsync(new GatewayVoiceStateUpdate
+            {
+                GuildId = serverId,
+                VoiceChannelId = null,
+                IsMutedBySelf = muted,
+                IsDeafenedBySelf = deafened
+            });
         }
     }
 }

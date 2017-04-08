@@ -152,11 +152,11 @@ namespace BundtBot
             ex.Data["DateTime"] = DateTime.Now;
             LastLoggedException = ex;
             if (LogLevel.Critical < CurrentLogLevel) return;
-            BuildAndLog("❗❗❗CRITICAL❗❗❗ ", $"{ex.GetType()}: {ex.Message}", ConsoleColor.Red, ConsoleColor.Red, stdErr: true);
-            BuildAndLog("❗❗❗CRITICAL❗❗❗ ", ex.StackTrace ?? "No stack trace available", ConsoleColor.Red, ConsoleColor.Red, stdErr: true);
+            BuildAndLog("❗❗❗CRITICAL❗❗❗", $"{ex.GetType()}: {ex.Message}", ConsoleColor.Red, ConsoleColor.Red, stdErr: true);
+            BuildAndLog("❗❗❗CRITICAL❗❗❗", ex.StackTrace ?? "No stack trace available", ConsoleColor.Red, ConsoleColor.Red, stdErr: true);
             if (ex.InnerException != null)
             {
-                BuildAndLog("❗❗❗CRITICAL❗❗❗ ", $"InnerException: ${ex.InnerException}", ConsoleColor.Red, ConsoleColor.Red, stdErr: true);
+                BuildAndLog("❗❗❗CRITICAL❗❗❗", $"InnerException: ${ex.InnerException}", ConsoleColor.Red, ConsoleColor.Red, stdErr: true);
             }
         }
 
@@ -167,7 +167,7 @@ namespace BundtBot
         public void LogCritical(string message)
         {
             if (LogLevel.Critical < CurrentLogLevel) return;
-            BuildAndLog("❗❗❗CRITICAL❗❗❗ ", message, ConsoleColor.Red, stdErr: true);
+            BuildAndLog("❗❗❗CRITICAL❗❗❗", message, ConsoleColor.Red, stdErr: true);
         }
 
         void BuildAndLog(string logLevel, object messageObject, ConsoleColor? logLevelColor = null, ConsoleColor? messageColor = null, bool stdErr = false)

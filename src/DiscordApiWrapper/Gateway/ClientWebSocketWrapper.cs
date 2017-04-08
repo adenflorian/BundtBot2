@@ -4,6 +4,7 @@ using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using DiscordApiWrapper.Gateway;
 using Newtonsoft.Json;
 
 namespace BundtBot
@@ -163,9 +164,23 @@ namespace BundtBot
 
 						message += result.Item2;
 
-						if (result.Item1.EndOfMessage == false) continue;
-
-						OnMessageReceived(message);
+						if (result.Item1.EndOfMessage == false)
+						{
+							continue;
+						}
+						else if (result.Item1.CloseStatus.HasValue)
+						{
+                            await OnCloseReceivedAsync(result.Item1);
+						}
+						else if (message.Length == 0)
+                        {
+                            _logger.LogWarning("Received 0 length message from Gateway, will not invoke MessageReceived");
+                        }
+						else
+						{
+							OnMessageReceived(message);
+						}
+						
 						message = "";
 					}
 					catch (Exception ex)
@@ -192,7 +207,7 @@ namespace BundtBot
 			var receiveResult = await _clientWebSocket.ReceiveAsync(receiveBuffer, CancellationToken.None);
 
 			_logger.LogDebug($"Received {receiveResult.Count} bytes on ClientWebSocket" +
-			                $"(EndOfMessage: {receiveResult.EndOfMessage})");
+								$"(EndOfMessage: {receiveResult.EndOfMessage})");
 
 			var receivedString = _utf8Encoding.GetString(receiveBuffer.Array, 0, receiveResult.Count);
 
@@ -210,5 +225,21 @@ namespace BundtBot
 			ReceivedMessages.Enqueue(message);
 			MessageReceived?.Invoke();
 		}
-	}
+
+        async Task OnCloseReceivedAsync(WebSocketReceiveResult result)
+        {
+			var logMessage = "Received a message from Gateway with Close Status, will reconnect: " + CloseCodes.Codes[result.CloseStatus.Value.ToString()];
+			
+			if (result.CloseStatus.Value.ToString() == "4001")
+			{
+                _logger.LogCritical(logMessage);
+			}
+			else
+			{
+            	_logger.LogError(logMessage);
+			}
+
+            await ReconnectAsync();
+        }
+    }
 }

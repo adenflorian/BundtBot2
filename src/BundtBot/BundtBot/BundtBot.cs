@@ -14,13 +14,13 @@ namespace BundtBot
 
         //internal static Dictionary<Guild, TextChannel> TextChannelOverrides = new Dictionary<Guild, TextChannel>();
 
-        public async Task Start()
+        public async Task StartAsync()
         {
             _client = new DiscordClient(File.ReadAllText("bottoken"));
 
             RegisterEventHandlers();
 
-            await _client.Connect();
+            await _client.ConnectAsync();
         }
 
         void RegisterEventHandlers()
@@ -49,6 +49,13 @@ namespace BundtBot
                         await message.TextChannel.SendMessageAsync("I see you in channel " + message.Author.VoiceChannel.Name);
 
                         // Join voice channel
+                        await message.Author.VoiceChannel.JoinAsync();
+
+                        await Task.Delay(2345);
+
+                        // Leave voice channel
+                        await message.Author.VoiceChannel.LeaveAsync();
+
                         // Play helloworld.opus
                         // Leave channel
                     }

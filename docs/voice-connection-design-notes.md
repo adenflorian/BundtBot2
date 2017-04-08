@@ -13,6 +13,7 @@ Possible Classes:
 ## Connecting to Voice
 ### Retrieving Voice Server Information
 [ ] Send Voice State Update opcode to Gateway
+    [√] Create SendVoiceStateUpdateAsync in DiscordGatewayClient
 [ ] Receive Voice State Update and VoiceServer Update events
 ### Establishing a Voice Websocket Connection
 [ ] 

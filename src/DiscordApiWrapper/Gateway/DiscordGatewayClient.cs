@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Threading.Tasks;
-using BundtBot.Discord.Gateway.Operation;
 using BundtBot.Discord.Models;
 using BundtBot.Discord.Models.Events;
 using BundtBot.Discord.Models.Gateway;
 using BundtBot.Extensions;
+using DiscordApiWrapper.Gateway;
+using DiscordApiWrapper.Gateway.Models;
 using DiscordApiWrapper.Models;
 using Newtonsoft.Json;
 
@@ -42,12 +43,16 @@ namespace BundtBot.Discord.Gateway
         public DiscordGatewayClient(string authToken, Uri gatewayUri)
         {
             _authToken = authToken;
+
             var modifiedGatewayUrl = gatewayUri.AddParameter("v", "5").AddParameter("encoding", "'json'");
+
             _clientWebSocketWrapper = new ClientWebSocketWrapper(modifiedGatewayUrl);
-            HelloReceived += OnHelloReceived;
-            HeartbackAckReceived += HeartbackAckOperation.Instance.Execute;
+
+            HelloReceived += OnHelloReceivedAsync;
+            HeartbackAckReceived += (e, d) => _logger.LogInfo(new LogMessage("HeartbackAck Received ← "), new LogMessage("♥", ConsoleColor.Red));
             Ready += OnReady;
             DispatchReceived += OnDispatchReceived;
+            
             _clientWebSocketWrapper.MessageReceived += OnMessageReceived;
         }
 
@@ -57,7 +62,21 @@ namespace BundtBot.Discord.Gateway
             _logger.LogInfo($"Connected to Gateway", ConsoleColor.Green);
         }
 
-        async void OnHelloReceived(string eventName, string eventData)
+        void StartHeartBeatLoop()
+        {
+            Task.Run(async () =>
+            {
+                while (true)
+                {
+                    await SendHeartbeatAsync();
+                    await Task.Delay(_heartbeatInterval);
+                }
+            });
+            _logger.LogInfo($"Heartbeat loop started with interval of {_heartbeatInterval.TotalSeconds} seconds", ConsoleColor.Green);
+        }
+
+        #region Handlers
+        async void OnHelloReceivedAsync(string eventName, string eventData)
         {
             _logger.LogInfo("Received Hello from Gateway", ConsoleColor.Green);
             var hello = JsonConvert.DeserializeObject<GatewayHello>(eventData.ToString());
@@ -66,93 +85,19 @@ namespace BundtBot.Discord.Gateway
             if (_readyEventHasNotBeenProcessed)
             {
                 StartHeartBeatLoop();
-                await SendGatewayIdentify();
+                await SendIdentifyAsync();
             }
             else
             {
-                await SendHeartBeatAsync();
-                await SendGatewayResume();
+                await SendHeartbeatAsync();
+                await SendResumeAsync();
             }
-        }
-
-        void StartHeartBeatLoop()
-        {
-            Task.Run(async () =>
-            {
-                while (true)
-                {
-                    await SendHeartBeatAsync();
-                    await Task.Delay(_heartbeatInterval);
-                }
-            });
-            _logger.LogInfo($"Heartbeat loop started with interval of {_heartbeatInterval.TotalSeconds} seconds", ConsoleColor.Green);
-        }
-
-        public async Task SendHeartBeatAsync()
-        {
-            _logger.LogInfo(
-                new LogMessage("Sending Heartbeat "),
-                new LogMessage("♥", ConsoleColor.Red),
-                new LogMessage(" →"));
-            await SendOpCodeAsync(OpCode.Heartbeat, _lastSequenceReceived);
-        }
-
-        public async Task SendGatewayIdentify()
-        {
-            _logger.LogInfo("Sending GatewayIdentify to Gateway", ConsoleColor.Green);
-            await SendOpCodeAsync(OpCode.Identify, new GatewayIdentify
-            {
-                AuthenticationToken = _authToken,
-                ConnectionProperties = new ConnectionProperties
-                {
-                    OperatingSystem = "windows",
-                    Browser = "bundtbot",
-                    Device = "bundtbot",
-                    Referrer = "",
-                    ReferringDomain = "",
-                },
-                SupportsCompression = false,
-                LargeThreshold = Threshold.Maximum
-            });
-        }
-
-        async Task SendGatewayResume()
-        {
-            _logger.LogInfo($"Sending GatewayResume to Gateway (session_id: {_sessionId})", ConsoleColor.Green);
-            await SendOpCodeAsync(OpCode.Resume, new GatewayResume
-            {
-                SessionToken = _authToken,
-                SessionId = _sessionId,
-                LastSequenceNumberReceived = _lastSequenceReceived
-            });
         }
 
         void OnReady(Ready readyInfo)
         {
             _readyEventHasNotBeenProcessed = false;
             _sessionId = readyInfo.SessionId;
-        }
-
-        public async Task SendStatusUpdate(StatusUpdate statusUpdate)
-        {
-            _logger.LogInfo("Sending StatusUpdate to Gateway" +
-                            $"(idle since: {statusUpdate.IdleSince}, " +
-                            $"game: {statusUpdate.Game.Name}",
-                            ConsoleColor.Green);
-            await SendOpCodeAsync(OpCode.StatusUpdate, statusUpdate);
-        }
-
-        async Task SendOpCodeAsync(OpCode opCode, object eventData)
-        {
-            var gatewayPayload = new GatewayPayload(opCode, eventData);
-            var jsonGatewayPayload = gatewayPayload.Serialize();
-
-            _logger.LogDebug($"Sending opcode {gatewayPayload.GatewayOpCode} to gateway...");
-            _logger.LogTrace("" + jsonGatewayPayload);
-
-            await _clientWebSocketWrapper.SendMessageUsingQueueAsync(jsonGatewayPayload);
-
-            _logger.LogDebug($"Sent {gatewayPayload.GatewayOpCode}");
         }
 
         void OnMessageReceived()
@@ -175,6 +120,79 @@ namespace BundtBot.Discord.Gateway
                     break;
             }
         }
+        #endregion
+
+        #region Senders
+        public async Task SendHeartbeatAsync()
+        {
+            _logger.LogInfo(
+                new LogMessage("Sending Heartbeat "),
+                new LogMessage("♥", ConsoleColor.Red),
+                new LogMessage(" →"));
+            await SendOpCodeAsync(OpCode.Heartbeat, _lastSequenceReceived);
+        }
+
+        public async Task SendIdentifyAsync()
+        {
+            _logger.LogInfo("Sending GatewayIdentify to Gateway", ConsoleColor.Green);
+            await SendOpCodeAsync(OpCode.Identify, new GatewayIdentify
+            {
+                AuthenticationToken = _authToken,
+                ConnectionProperties = new ConnectionProperties
+                {
+                    OperatingSystem = "windows",
+                    Browser = "bundtbot",
+                    Device = "bundtbot",
+                    Referrer = "",
+                    ReferringDomain = "",
+                },
+                SupportsCompression = false,
+                LargeThreshold = Threshold.Maximum
+            });
+        }
+
+        async Task SendResumeAsync()
+        {
+            _logger.LogInfo($"Sending GatewayResume to Gateway (session_id: {_sessionId})", ConsoleColor.Green);
+            await SendOpCodeAsync(OpCode.Resume, new GatewayResume
+            {
+                SessionToken = _authToken,
+                SessionId = _sessionId,
+                LastSequenceNumberReceived = _lastSequenceReceived
+            });
+        }
+
+        public async Task SendStatusUpdateAsync(StatusUpdate statusUpdate)
+        {
+            _logger.LogInfo("Sending StatusUpdate to Gateway " +
+                            $"(idle since: {statusUpdate.IdleSince}, " +
+                            $"game: {statusUpdate.Game.Name})",
+                            ConsoleColor.Green);
+            await SendOpCodeAsync(OpCode.StatusUpdate, statusUpdate);
+        }
+
+        public async Task SendVoiceStateUpdateAsync(GatewayVoiceStateUpdate gatewayVoiceStateUpdate)
+        {
+            _logger.LogInfo("Sending VoiceStateUpdate to Gateway " +
+                            $"(guild: {gatewayVoiceStateUpdate.GuildId}, " +
+                            $"channel: {gatewayVoiceStateUpdate.VoiceChannelId})",
+                            ConsoleColor.Green);
+            await SendOpCodeAsync(OpCode.VoiceStateUpdate, gatewayVoiceStateUpdate);
+        }
+
+        async Task SendOpCodeAsync(OpCode opCode, object eventData)
+        {
+            var gatewayPayload = new GatewayPayload(opCode, eventData);
+            var jsonGatewayPayload = gatewayPayload.Serialize();
+
+            _logger.LogDebug($"Sending opcode {gatewayPayload.GatewayOpCode} to gateway...");
+            _logger.LogTrace("" + jsonGatewayPayload);
+
+            await _clientWebSocketWrapper.SendMessageUsingQueueAsync(jsonGatewayPayload);
+
+            _logger.LogDebug($"Sent {gatewayPayload.GatewayOpCode}");
+        }
+        #endregion
 
         // TODO Implement these gateway client requests:
         //case OpCode.StatusUpdate: break;
