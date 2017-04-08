@@ -17,3 +17,9 @@ Why is "System.Net.Http.WinHttpException: The operation timed out" thrown from "
 [ ] make guilds display on website again
 
 [ ] lock down website
+
+[ ] !hello
+  - voice hello world
+  - bundtbot should join the voice channel of the requesting user and play a clip that says, "Hello, world! This is bundtbot. No relation to the cake"
+
+[ ] !yt
