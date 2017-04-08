@@ -12,9 +12,9 @@ Possible Classes:
 
 ## Connecting to Voice
 ### Retrieving Voice Server Information
-[ ] Send Voice State Update opcode to Gateway
+[√] Send Voice State Update opcode to Gateway (join a voice channel)
     [√] Create SendVoiceStateUpdateAsync in DiscordGatewayClient
-[ ] Receive Voice State Update and VoiceServer Update events
+[√] Receive Voice State Update and VoiceServer Update events
 ### Establishing a Voice Websocket Connection
 [ ] 
 ### Establishing a Voice UDP Connection

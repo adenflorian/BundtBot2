@@ -1,22 +1,25 @@
-using BundtBot.Discord.Gateway;
+using System;
+using System.Threading.Tasks;
+using BundtBot;
+using DiscordApiWrapper.Models;
 
 namespace DiscordApiWrapper.Voice
 {
     public class DiscordVoiceClient
     {
-        public void ConnectAsync(DiscordGatewayClient gatewayClient)
+        static readonly MyLogger _logger = new MyLogger(nameof(DiscordVoiceClient));
+
+        readonly ClientWebSocketWrapper _clientWebSocketWrapper;
+
+        public DiscordVoiceClient(VoiceServerInfo voiceServerInfo)
         {
-            gatewayClient.VoiceStateUpdate += (voiceState) =>
-            {
+            _clientWebSocketWrapper = new ClientWebSocketWrapper(new Uri(voiceServerInfo.Endpoint));
+        }
 
-            };
-
-            // gatewayClient.VoiceServerUpdate += (voiceServerInfo) =>
-            // {
-
-            // };
-
-            //await gatewayClient.SendVoiceStateUpdateAsync();
+        public async Task ConnectAsync(VoiceServerInfo voiceServerInfo)
+        {
+            await _clientWebSocketWrapper.ConnectAsync();
+            _logger.LogInfo($"Connected to VoiceServer", ConsoleColor.Green);
         }
     }
 }

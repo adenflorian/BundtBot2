@@ -1,7 +1,7 @@
-var fs = require('fs')
-var inquirer = require('inquirer')
+const fs = require('fs')
+const inquirer = require('inquirer')
 
-var questions = [
+const questions = [
     {
         type: 'input',
         name: 'testusername',

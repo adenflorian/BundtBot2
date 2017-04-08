@@ -36,6 +36,8 @@ namespace BundtCord.Discord
         readonly string _botToken;
         
         DiscordGatewayClient _gatewayClient;
+        VoiceServerInfo _latestVoiceServerInfo;
+        string _sessionId;
 
         public DiscordClient(string botToken)
         {
@@ -99,11 +101,17 @@ namespace BundtCord.Discord
             _gatewayClient.Ready += (readyInfo) =>
             {
                 Me = new User(readyInfo.User, this);
+                _sessionId = readyInfo.SessionId;
             };
 
             _gatewayClient.VoiceStateUpdate += (voiceState) =>
             {
                 ProcessVoiceState(voiceState);
+            };
+            
+            _gatewayClient.VoiceServerUpdate += (voiceServerInfo) =>
+            {
+                _latestVoiceServerInfo = voiceServerInfo;
             };
         }
 
@@ -126,6 +134,8 @@ namespace BundtCord.Discord
                 IsMutedBySelf = muted,
                 IsDeafenedBySelf = deafened
             });
+
+            // Wait for voice server info
         }
 
         public async Task LeaveVoiceChannelInServer(ulong serverId, bool muted = false, bool deafened = false)

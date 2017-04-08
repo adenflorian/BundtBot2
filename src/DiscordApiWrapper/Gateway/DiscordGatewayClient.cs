@@ -29,6 +29,7 @@ namespace BundtBot.Discord.Gateway
         public event GatewayEventHandler<Ready> Ready;
         public event GatewayEventHandler<TypingStart> TypingStart;
         public event GatewayEventHandler<VoiceState> VoiceStateUpdate;
+        public event GatewayEventHandler<VoiceServerInfo> VoiceServerUpdate;
 
         static readonly MyLogger _logger = new MyLogger(nameof(DiscordGatewayClient), ConsoleColor.Cyan);
 
@@ -195,8 +196,6 @@ namespace BundtBot.Discord.Gateway
         #endregion
 
         // TODO Implement these gateway client requests:
-        //case OpCode.StatusUpdate: break;
-        //case OpCode.VoiceStateUpdate: break;
         //case OpCode.VoiceServerPing: break;
         //case OpCode.RequestGuildMembers: break;
 
@@ -254,6 +253,11 @@ namespace BundtBot.Discord.Gateway
                     var voiceStateUpdate = JsonConvert.DeserializeObject<VoiceState>(eventJsonData);
                     LogReceivedEvent("VOICE_STATE_UPDATE", voiceStateUpdate.UserId.ToString());
                     VoiceStateUpdate?.Invoke(voiceStateUpdate);
+                    break;
+                case "VOICE_SERVER_UPDATE":
+                    var voiceServerUpdate = JsonConvert.DeserializeObject<VoiceServerInfo>(eventJsonData);
+                    LogReceivedEvent("VOICE_SERVER_UPDATE", voiceServerUpdate.Endpoint);
+                    VoiceServerUpdate?.Invoke(voiceServerUpdate);
                     break;
                 default:
                     _logger.LogWarning($"Received an Event with no handler: {eventName}");
