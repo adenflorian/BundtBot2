@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using BundtBot.Discord.Models;
 using BundtBot.Discord.Models.Events;
@@ -33,13 +34,13 @@ namespace BundtBot.Discord.Gateway
 
         static readonly MyLogger _logger = new MyLogger(nameof(DiscordGatewayClient), ConsoleColor.Cyan);
 
-        readonly ClientWebSocketWrapper _clientWebSocketWrapper;
+        readonly WebSocketClient _clientWebSocketWrapper;
         readonly string _authToken;
 
-        TimeSpan _heartbeatInterval;
         int _lastSequenceReceived;
         bool _readyEventHasNotBeenProcessed = true;
 		string _sessionId;
+        Timer _heartbeatTimer;
 
         public DiscordGatewayClient(string authToken, Uri gatewayUri)
         {
@@ -47,7 +48,7 @@ namespace BundtBot.Discord.Gateway
 
             var modifiedGatewayUrl = gatewayUri.AddParameter("v", "5").AddParameter("encoding", "'json'");
 
-            _clientWebSocketWrapper = new ClientWebSocketWrapper(modifiedGatewayUrl);
+            _clientWebSocketWrapper = new WebSocketClient(modifiedGatewayUrl, "Gateway-", ConsoleColor.Cyan);
 
             HelloReceived += OnHelloReceivedAsync;
             HeartbackAckReceived += (e, d) => _logger.LogInfo(new LogMessage("HeartbackAck Received ← "), new LogMessage("♥", ConsoleColor.Red));
@@ -63,36 +64,29 @@ namespace BundtBot.Discord.Gateway
             _logger.LogInfo($"Connected to Gateway", ConsoleColor.Green);
         }
 
-        void StartHeartBeatLoop()
-        {
-            Task.Run(async () =>
-            {
-                while (true)
-                {
-                    await SendHeartbeatAsync();
-                    await Task.Delay(_heartbeatInterval);
-                }
-            });
-            _logger.LogInfo($"Heartbeat loop started with interval of {_heartbeatInterval.TotalSeconds} seconds", ConsoleColor.Green);
-        }
-
         #region Handlers
         async void OnHelloReceivedAsync(string eventName, string eventData)
         {
             _logger.LogInfo("Received Hello from Gateway", ConsoleColor.Green);
             var hello = JsonConvert.DeserializeObject<GatewayHello>(eventData.ToString());
-            _heartbeatInterval = hello.HeartbeatInterval;
 
             if (_readyEventHasNotBeenProcessed)
             {
-                StartHeartBeatLoop();
+                StartHeartBeatLoop(hello.HeartbeatInterval);
                 await SendIdentifyAsync();
             }
             else
             {
-                await SendHeartbeatAsync();
+                StartHeartBeatLoop(hello.HeartbeatInterval);
                 await SendResumeAsync();
             }
+        }
+
+        void StartHeartBeatLoop(TimeSpan heartbeatInterval)
+        {
+            _heartbeatTimer?.Dispose();
+            _heartbeatTimer = new Timer(async (o) => await SendHeartbeatAsync(), null, TimeSpan.Zero, heartbeatInterval);
+            _logger.LogInfo($"Heartbeat loop started with interval of {heartbeatInterval.TotalSeconds} seconds", ConsoleColor.Green);
         }
 
         void OnReady(Ready readyInfo)
@@ -112,10 +106,10 @@ namespace BundtBot.Discord.Gateway
 
             switch (payload.GatewayOpCode)
             {
-                case OpCode.Dispatch: InvokeEvent(DispatchReceived, payload); break;
-                case OpCode.HeartbackAck: InvokeEvent(HeartbackAckReceived, payload); break;
-                case OpCode.Hello: InvokeEvent(HelloReceived, payload); break;
-                case OpCode.InvalidSession: InvokeEvent(InvalidSessionReceived, payload); break;
+                case GatewayOpCode.Dispatch: InvokeEvent(DispatchReceived, payload); break;
+                case GatewayOpCode.HeartbackAck: InvokeEvent(HeartbackAckReceived, payload); break;
+                case GatewayOpCode.Hello: InvokeEvent(HelloReceived, payload); break;
+                case GatewayOpCode.InvalidSession: InvokeEvent(InvalidSessionReceived, payload); break;
                 default:
                     _logger.LogWarning($"Received an OpCode with no handler: {payload.GatewayOpCode}");
                     break;
@@ -130,13 +124,13 @@ namespace BundtBot.Discord.Gateway
                 new LogMessage("Sending Heartbeat "),
                 new LogMessage("♥", ConsoleColor.Red),
                 new LogMessage(" →"));
-            await SendOpCodeAsync(OpCode.Heartbeat, _lastSequenceReceived);
+            await SendOpCodeAsync(GatewayOpCode.Heartbeat, _lastSequenceReceived);
         }
 
         public async Task SendIdentifyAsync()
         {
             _logger.LogInfo("Sending GatewayIdentify to Gateway", ConsoleColor.Green);
-            await SendOpCodeAsync(OpCode.Identify, new GatewayIdentify
+            await SendOpCodeAsync(GatewayOpCode.Identify, new GatewayIdentify
             {
                 AuthenticationToken = _authToken,
                 ConnectionProperties = new ConnectionProperties
@@ -155,7 +149,7 @@ namespace BundtBot.Discord.Gateway
         async Task SendResumeAsync()
         {
             _logger.LogInfo($"Sending GatewayResume to Gateway (session_id: {_sessionId})", ConsoleColor.Green);
-            await SendOpCodeAsync(OpCode.Resume, new GatewayResume
+            await SendOpCodeAsync(GatewayOpCode.Resume, new GatewayResume
             {
                 SessionToken = _authToken,
                 SessionId = _sessionId,
@@ -169,7 +163,7 @@ namespace BundtBot.Discord.Gateway
                             $"(idle since: {statusUpdate.IdleSince}, " +
                             $"game: {statusUpdate.Game.Name})",
                             ConsoleColor.Green);
-            await SendOpCodeAsync(OpCode.StatusUpdate, statusUpdate);
+            await SendOpCodeAsync(GatewayOpCode.StatusUpdate, statusUpdate);
         }
 
         public async Task SendVoiceStateUpdateAsync(GatewayVoiceStateUpdate gatewayVoiceStateUpdate)
@@ -178,10 +172,10 @@ namespace BundtBot.Discord.Gateway
                             $"(guild: {gatewayVoiceStateUpdate.GuildId}, " +
                             $"channel: {gatewayVoiceStateUpdate.VoiceChannelId})",
                             ConsoleColor.Green);
-            await SendOpCodeAsync(OpCode.VoiceStateUpdate, gatewayVoiceStateUpdate);
+            await SendOpCodeAsync(GatewayOpCode.VoiceStateUpdate, gatewayVoiceStateUpdate);
         }
 
-        async Task SendOpCodeAsync(OpCode opCode, object eventData)
+        async Task SendOpCodeAsync(GatewayOpCode opCode, object eventData)
         {
             var gatewayPayload = new GatewayPayload(opCode, eventData);
             var jsonGatewayPayload = gatewayPayload.Serialize();
@@ -256,7 +250,7 @@ namespace BundtBot.Discord.Gateway
                     break;
                 case "VOICE_SERVER_UPDATE":
                     var voiceServerUpdate = JsonConvert.DeserializeObject<VoiceServerInfo>(eventJsonData);
-                    LogReceivedEvent("VOICE_SERVER_UPDATE", voiceServerUpdate.Endpoint);
+                    LogReceivedEvent("VOICE_SERVER_UPDATE", voiceServerUpdate.Endpoint.ToString());
                     VoiceServerUpdate?.Invoke(voiceServerUpdate);
                     break;
                 default:

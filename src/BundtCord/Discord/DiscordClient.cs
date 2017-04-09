@@ -9,6 +9,7 @@ using BundtBot.Discord.Models.Gateway;
 using DiscordApiWrapper.Gateway.Models;
 using DiscordApiWrapper.Models;
 using DiscordApiWrapper.RestApi;
+using DiscordApiWrapper.Voice;
 
 namespace BundtCord.Discord
 {
@@ -34,8 +35,9 @@ namespace BundtCord.Discord
         internal Dictionary<ulong, IUser> Users = new Dictionary<ulong, IUser>();
 
         readonly string _botToken;
-        
+
         DiscordGatewayClient _gatewayClient;
+        DiscordVoiceClient _voiceClient;
         VoiceServerInfo _latestVoiceServerInfo;
         string _sessionId;
 
@@ -109,9 +111,11 @@ namespace BundtCord.Discord
                 ProcessVoiceState(voiceState);
             };
             
-            _gatewayClient.VoiceServerUpdate += (voiceServerInfo) =>
+            _gatewayClient.VoiceServerUpdate += async (voiceServerInfo) =>
             {
                 _latestVoiceServerInfo = voiceServerInfo;
+                _voiceClient = new DiscordVoiceClient(voiceServerInfo, Me.Id, _sessionId);
+                await _voiceClient.ConnectAsync();
             };
         }
 

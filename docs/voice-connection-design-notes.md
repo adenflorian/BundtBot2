@@ -1,6 +1,9 @@
 Voice Connection Design Notes
 =============================
 
+## TODO
+[ ] Maybe do one voice client per guild?
+
 Possible Classes:
 [ ] OpusStuff
 
@@ -18,6 +21,7 @@ Possible Classes:
 ### Establishing a Voice Websocket Connection
 [ ] 
 ### Establishing a Voice UDP Connection
+[ ] 
 
 Models:
 [ ] VoiceDataPacket
@@ -53,3 +57,16 @@ Things To Look Into:
     - Real-time Transport Protocol
 
 
+## Questions
+When do I connect to voice server?
+    Whenever I join a voice channel?
+    When I join a voice channel and I don't already have a connection?
+What will the interface look like for sending audio data?
+> DiscordClient.SendAudio?
+Can I be connected to multiple voice servers at once?
+Can I send audio data to multiple voice channels at once?
+What exactly is the session id?
+    Is it for my entire client's session?
+    If I had multiple instances running with the same bot token would they be the same or different ids?
+
+Looks like you have once voice server websocket connection per guild that you want to talk in

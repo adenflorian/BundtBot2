@@ -9,23 +9,24 @@ using Newtonsoft.Json;
 
 namespace BundtBot
 {
-    public class ClientWebSocketWrapper
+    public class WebSocketClient
 	{
 		public delegate void MessageReceivedHandler();
 		public event MessageReceivedHandler MessageReceived;
+
 		public Queue<string> ReceivedMessages = new Queue<string>();
 
-		static readonly MyLogger _logger = new MyLogger(nameof(ClientWebSocketWrapper), ConsoleColor.DarkCyan);
-		
+		readonly MyLogger _logger;
 		readonly UTF8Encoding _utf8Encoding = new UTF8Encoding();
 		readonly Queue<Tuple<string, Action>> _outgoingQueue = new Queue<Tuple<string, Action>>();
 		readonly Uri _serverUri;
 		
 		ClientWebSocket _clientWebSocket = new ClientWebSocket();
 
-		public ClientWebSocketWrapper(Uri serverUri)
+		public WebSocketClient(Uri serverUri, string logPrefix, ConsoleColor prefixColor)
 		{
 			_serverUri = serverUri;
+			_logger = new MyLogger(logPrefix + nameof(WebSocketClient), prefixColor);
 		}
 
 		public async Task ConnectAsync()
@@ -64,7 +65,7 @@ namespace BundtBot
                     _clientWebSocket.Dispose();
                     _clientWebSocket = new ClientWebSocket();
                     var tokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-                    _logger.LogInfo("[Connect Loop] Connecting websocket...");
+                    _logger.LogInfo("[Connect Loop] Connecting websocket... (" + _serverUri + ")");
                     await _clientWebSocket.ConnectAsync(_serverUri, tokenSource.Token);
                     break;
                 }
@@ -101,6 +102,7 @@ namespace BundtBot
 						await Task.Delay(100);
 					}
 
+					// TODO don't let null be enqueued
 					var message = _outgoingQueue.Dequeue();
 
 					while (true)

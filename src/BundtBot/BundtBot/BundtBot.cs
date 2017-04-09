@@ -71,6 +71,19 @@ namespace BundtBot
                 try
                 {
                     await server.TextChannels.First().SendMessageAsync("yo");
+
+                    var voiceChannel = server.VoiceChannels.First();
+
+                    // Join voice channel
+                    await voiceChannel.JoinAsync();
+
+                    await Task.Delay(2000);
+
+                    // Leave voice channel
+                    //await voiceChannel.LeaveAsync();
+
+                    // Play helloworld.opus
+                    // Leave channel
                 }
                 catch (Exception ex)
                 {

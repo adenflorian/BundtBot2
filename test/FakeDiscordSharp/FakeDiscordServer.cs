@@ -61,15 +61,15 @@ namespace FakeDiscordSharp
             app.Run(async (context) =>
             {
                 _logger.LogInfo("Request started!");
-                _logger.LogInfo($"{nameof(GetServerTime)}: {GetServerTime().ToString("hh:mm:ss.fff")}");
-                _logger.LogInfo($"{nameof(reset)}: {reset.ToString("hh:mm:ss.fff")}");
+                _logger.LogDebug($"{nameof(GetServerTime)}: {GetServerTime().ToString("hh:mm:ss.fff")}");
+                _logger.LogDebug($"{nameof(reset)}: {reset.ToString("hh:mm:ss.fff")}");
                 var timeUntilReset = reset - GetServerTime();
-                _logger.LogInfo($"{nameof(timeUntilReset)}: {timeUntilReset.TotalSeconds} seconds");
-                _logger.LogInfo($"{nameof(_resetOffset)}: {_resetOffset}");
-                _logger.LogInfo($"{nameof(_serverTimeOffset)}: {_serverTimeOffset}");
-                _logger.LogInfo($"{nameof(FakeDiscord._resetFakeOffset)}: {FakeDiscord._resetFakeOffset}");
-                _logger.LogInfo($"{nameof(limit)}: {limit}");
-                _logger.LogInfo($"{nameof(remaining)}: {remaining}");
+                _logger.LogDebug($"{nameof(timeUntilReset)}: {timeUntilReset.TotalSeconds} seconds");
+                _logger.LogDebug($"{nameof(_resetOffset)}: {_resetOffset}");
+                _logger.LogDebug($"{nameof(_serverTimeOffset)}: {_serverTimeOffset}");
+                _logger.LogDebug($"{nameof(FakeDiscord._resetFakeOffset)}: {FakeDiscord._resetFakeOffset}");
+                _logger.LogDebug($"{nameof(limit)}: {limit}");
+                _logger.LogDebug($"{nameof(remaining)}: {remaining}");
 
                 remaining--;
 

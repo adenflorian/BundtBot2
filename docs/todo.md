@@ -12,6 +12,10 @@
 
 [ ] !yt
 
+[ ] make a json file to configure what actions bundtbot does on startup
+
+[ ] edit the same message continuously to do a ascii art animation
+
 # BundtBot Web API
 [√] show last logged exception in website
 [ ] make logs accessable from webserver

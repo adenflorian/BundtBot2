@@ -1,5 +1,5 @@
 ﻿namespace DiscordApiWrapper.Gateway {
-	public enum OpCode {
+	enum GatewayOpCode {
 		/// <summary>Dispatches an event</summary>
 		Dispatch = 0,
 

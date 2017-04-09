@@ -4,10 +4,10 @@ using Newtonsoft.Json;
 namespace BundtBot.Discord.Models.Gateway
 {
     [JsonObject]
-	public class GatewayPayload {
+	class GatewayPayload {
 		[JsonRequired]
 		[JsonProperty("op")]
-		public OpCode GatewayOpCode;
+		public GatewayOpCode GatewayOpCode;
 		
 		[JsonProperty("d")]
 		public object EventData;
@@ -24,7 +24,7 @@ namespace BundtBot.Discord.Models.Gateway
 		[JsonProperty("t")]
 		public string EventName;
 
-		public GatewayPayload(OpCode gatewayOpCode, object eventData) {
+		public GatewayPayload(GatewayOpCode gatewayOpCode, object eventData) {
 			GatewayOpCode = gatewayOpCode;
 			EventData = eventData;
 		}
@@ -33,13 +33,6 @@ namespace BundtBot.Discord.Models.Gateway
 			var jsonSerializerSettings = new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore };
 			var jsonGatewayDispatch = JsonConvert.SerializeObject(this, Formatting.Indented, jsonSerializerSettings);
 			return jsonGatewayDispatch;
-		}
-
-		public override string ToString() {
-			return $"{nameof(GatewayOpCode)}: {GatewayOpCode}," +
-			       $"{nameof(EventData)}: {EventData}," +
-			       $"{nameof(SequenceNumber)}:" + $"{SequenceNumber}," +
-			       $"{nameof(EventName)}: {EventName}";
 		}
 	}
 }

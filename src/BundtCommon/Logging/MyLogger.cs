@@ -13,6 +13,7 @@ namespace BundtBot
     // Gateway stuff - Cyan/DarkCyan
     // Rest Api stuff - Magenta/DarkMagenta
     // Web Server stuff - Blue/DarkBlue
+    // Voice Server stuff - DarkGreen
     public class MyLogger
     {
         public const ConsoleColor DefaultColor = ConsoleColor.Gray;
@@ -31,7 +32,6 @@ namespace BundtBot
             _prefix = prefix;
             _prefixColor = prefixColor;
             _supportsAnsiColors = Console.LargestWindowHeight <= 0;
-            LogTrace(nameof(_supportsAnsiColors) + ": " + _supportsAnsiColors);
         }
 
         public async Task LogAndWaitRetryWarningAsync(TimeSpan waitAmount)
