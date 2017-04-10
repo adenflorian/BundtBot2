@@ -2,12 +2,13 @@ using System.Threading.Tasks;
 
 namespace BundtCord.Discord
 {
-    public interface ITextChannel
-	{
+    public interface IVoiceChannel
+    {
         ulong Id { get; }
         string Name { get; }
         ulong ServerId { get; }
 
-        Task<ITextChannelMessage> SendMessageAsync(string content);
+        Task JoinAsync();
+        Task LeaveAsync();
     }
 }

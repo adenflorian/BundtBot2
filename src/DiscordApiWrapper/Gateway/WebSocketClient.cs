@@ -162,7 +162,8 @@ namespace BundtBot
 					{
 						var result = await ReceiveAsync();
 
-						_logger.LogTrace(JsonConvert.SerializeObject(result.Item1, Formatting.Indented));
+                        _logger.LogTrace(JsonConvert.SerializeObject(result.Item1, Formatting.Indented));
+                        _logger.LogTrace(result.Item2);
 
 						message += result.Item2;
 
@@ -230,7 +231,18 @@ namespace BundtBot
 
         async Task OnCloseReceivedAsync(WebSocketReceiveResult result)
         {
-			var logMessage = "Received a message from Gateway with Close Status, will reconnect: " + CloseCodes.Codes[result.CloseStatus.Value.ToString()];
+			var codeString = result.CloseStatus.Value.ToString();
+
+			string logMessage;
+
+			if (CloseCodes.Codes.ContainsKey(codeString))
+			{
+				logMessage = "Received a message from Gateway with Close Status, will reconnect: " + CloseCodes.Codes[codeString];
+			}
+			else
+			{
+                logMessage = "Received a message from Gateway with Close Status, will reconnect: " + codeString;
+			}
 			
 			if (result.CloseStatus.Value.ToString() == "4001")
 			{

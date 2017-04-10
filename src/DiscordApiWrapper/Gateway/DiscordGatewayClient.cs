@@ -115,6 +115,80 @@ namespace BundtBot.Discord.Gateway
                     break;
             }
         }
+
+        void LogMessageReceived(string message, GatewayPayload payload)
+        {
+            _logger.LogDebug($"Message received from gateway (opcode: {payload.GatewayOpCode}, sequence: {payload.SequenceNumber})");
+            _logger.LogTrace(message.Prettify());
+        }
+
+        void StoreSequenceNumberForHeartbeat(GatewayPayload receivedGatewayDispatch)
+        {
+            if (receivedGatewayDispatch.SequenceNumber.HasValue)
+            {
+                _lastSequenceReceived = receivedGatewayDispatch.SequenceNumber.Value;
+            }
+        }
+
+        void InvokeEvent(OperationHandler handler, GatewayPayload payload)
+        {
+            handler?.Invoke(payload.EventName, payload.EventData?.ToString());
+        }
+
+        void OnDispatchReceived(string eventName, string eventJsonData)
+        {
+            _logger.LogDebug("Processing Gateway Event " + eventName);
+
+            switch (eventName)
+            {
+                case "CHANNEL_CREATE":
+                    var channel = JsonConvert.DeserializeObject<Channel>(eventJsonData);
+                    LogReceivedEvent("CHANNEL_CREATE", channel.Id.ToString());
+                    break;
+                case "MESSAGE_CREATE":
+                    var discordMessage = JsonConvert.DeserializeObject<DiscordMessage>(eventJsonData);
+                    LogReceivedEvent("MESSAGE_CREATE", discordMessage.Content);
+                    MessageCreated?.Invoke(discordMessage);
+                    break;
+                case "GUILD_CREATE":
+                    var discordGuild = JsonConvert.DeserializeObject<DiscordGuild>(eventJsonData);
+                    discordGuild.AllChannels.ForEach(x => x.GuildID = discordGuild.Id);
+                    LogReceivedEvent("GUILD_CREATE", discordGuild.Name);
+                    GuildCreated?.Invoke(discordGuild);
+                    break;
+                case "READY":
+                    var ready = JsonConvert.DeserializeObject<Ready>(eventJsonData);
+                    LogReceivedEvent("READY", "Our username is " + ready.User.Username);
+                    Ready?.Invoke(ready);
+                    break;
+                case "TYPING_START":
+                    var typingStart = JsonConvert.DeserializeObject<TypingStart>(eventJsonData);
+                    LogReceivedEvent("TYPING_START", typingStart.UserId.ToString());
+                    TypingStart?.Invoke(typingStart);
+                    break;
+                case "VOICE_STATE_UPDATE":
+                    var voiceStateUpdate = JsonConvert.DeserializeObject<VoiceState>(eventJsonData);
+                    LogReceivedEvent("VOICE_STATE_UPDATE", voiceStateUpdate.UserId.ToString());
+                    VoiceStateUpdate?.Invoke(voiceStateUpdate);
+                    break;
+                case "VOICE_SERVER_UPDATE":
+                    var voiceServerUpdate = JsonConvert.DeserializeObject<VoiceServerInfo>(eventJsonData);
+                    LogReceivedEvent("VOICE_SERVER_UPDATE", voiceServerUpdate.Endpoint.ToString());
+                    VoiceServerUpdate?.Invoke(voiceServerUpdate);
+                    break;
+                default:
+                    _logger.LogWarning($"Received an Event with no handler: {eventName}");
+                    break;
+            }
+        }
+
+        void LogReceivedEvent(string eventName, string eventDataSummary)
+        {
+            _logger.LogInfo(
+                new LogMessage("Received Event: "),
+                new LogMessage(eventName + " ", ConsoleColor.Cyan),
+                new LogMessage(eventDataSummary, ConsoleColor.DarkCyan));
+        }
         #endregion
 
         #region Senders
@@ -192,79 +266,5 @@ namespace BundtBot.Discord.Gateway
         // TODO Implement these gateway client requests:
         //case OpCode.VoiceServerPing: break;
         //case OpCode.RequestGuildMembers: break;
-
-        void LogMessageReceived(string message, GatewayPayload payload)
-        {
-            _logger.LogDebug($"Message received from gateway (opcode: {payload.GatewayOpCode}, sequence: {payload.SequenceNumber})");
-            _logger.LogTrace(message.Prettify());
-        }
-
-        void StoreSequenceNumberForHeartbeat(GatewayPayload receivedGatewayDispatch)
-        {
-            if (receivedGatewayDispatch.SequenceNumber.HasValue)
-            {
-                _lastSequenceReceived = receivedGatewayDispatch.SequenceNumber.Value;
-            }
-        }
-
-        void InvokeEvent(OperationHandler handler, GatewayPayload payload)
-        {
-            handler?.Invoke(payload.EventName, payload.EventData?.ToString());
-        }
-
-        void OnDispatchReceived(string eventName, string eventJsonData)
-        {
-            _logger.LogDebug("Processing Gateway Event " + eventName);
-
-            switch (eventName)
-            {
-                case "CHANNEL_CREATE":
-                    var channel = JsonConvert.DeserializeObject<Channel>(eventJsonData);
-                    LogReceivedEvent("CHANNEL_CREATE", channel.Id.ToString());
-                    break;
-                case "MESSAGE_CREATE":
-                    var discordMessage = JsonConvert.DeserializeObject<DiscordMessage>(eventJsonData);
-                    LogReceivedEvent("MESSAGE_CREATE", discordMessage.Content);
-                    MessageCreated?.Invoke(discordMessage);
-                    break;
-                case "GUILD_CREATE":
-                    var discordGuild = JsonConvert.DeserializeObject<DiscordGuild>(eventJsonData);
-                    discordGuild.AllChannels.ForEach(x => x.GuildID = discordGuild.Id);
-                    LogReceivedEvent("GUILD_CREATE", discordGuild.Name);
-                    GuildCreated?.Invoke(discordGuild);
-                    break;
-                case "READY":
-                    var ready = JsonConvert.DeserializeObject<Ready>(eventJsonData);
-                    LogReceivedEvent("READY", "Our username is " + ready.User.Username);
-                    Ready?.Invoke(ready);
-                    break;
-                case "TYPING_START":
-                    var typingStart = JsonConvert.DeserializeObject<TypingStart>(eventJsonData);
-                    LogReceivedEvent("TYPING_START", typingStart.UserId.ToString());
-                    TypingStart?.Invoke(typingStart);
-                    break;
-                case "VOICE_STATE_UPDATE":
-                    var voiceStateUpdate = JsonConvert.DeserializeObject<VoiceState>(eventJsonData);
-                    LogReceivedEvent("VOICE_STATE_UPDATE", voiceStateUpdate.UserId.ToString());
-                    VoiceStateUpdate?.Invoke(voiceStateUpdate);
-                    break;
-                case "VOICE_SERVER_UPDATE":
-                    var voiceServerUpdate = JsonConvert.DeserializeObject<VoiceServerInfo>(eventJsonData);
-                    LogReceivedEvent("VOICE_SERVER_UPDATE", voiceServerUpdate.Endpoint.ToString());
-                    VoiceServerUpdate?.Invoke(voiceServerUpdate);
-                    break;
-                default:
-                    _logger.LogWarning($"Received an Event with no handler: {eventName}");
-                    break;
-            }
-        }
-
-        void LogReceivedEvent(string eventName, string eventDataSummary)
-        {
-            _logger.LogInfo(
-                new LogMessage("Received Event: "),
-                new LogMessage(eventName + " ", ConsoleColor.Cyan),
-                new LogMessage(eventDataSummary, ConsoleColor.DarkCyan));
-        }
     }
 }

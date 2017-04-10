@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using DiscordApiWrapper.Voice;
 
 namespace BundtCord.Discord
 {
@@ -6,6 +7,8 @@ namespace BundtCord.Discord
     {
         ulong Id { get; }
         IEnumerable<ITextChannel> TextChannels { get; }
-        IEnumerable<VoiceChannel> VoiceChannels { get; }
+        IEnumerable<IVoiceChannel> VoiceChannels { get; }
+        IEnumerable<IServerMember> Members { get; }
+        DiscordVoiceClient VoiceClient { get; }
     }
 }

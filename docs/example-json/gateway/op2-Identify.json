@@ -1,0 +1,15 @@
+{
+    "op": 2,
+    "d": {
+        "token": "MTIyMjA3NjczMjY4MjM1MTQx.wR1C2a.1e99aDPHBVuoIvfgyhIK5dID3Q1",
+        "properties": {
+            "$os": "windows",
+            "$browser": "your_browser",
+            "$device": "your_device",
+            "$referrer": "",
+            "$referring_domain": ""
+        },
+        "compress": false,
+        "large_threshold": 250
+    }
+}

@@ -5,6 +5,8 @@
 [√] handle opcode 9 invalid session
 [√] make LogError and LogCritical use Console.Error.Write
 
+[ ] change trace json log to output raw json
+
 [ ] !hello
   [√] create handler for !hello in BundtBot
   [ ] voice hello world

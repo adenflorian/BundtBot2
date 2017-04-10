@@ -1,0 +1,46 @@
+{
+    "t": "READY",
+    "s": 1,
+    "op": 0,
+    "d": {
+        "v": 5,
+        "user_settings": {},
+        "user": {
+            "verified": true,
+            "username": "bundtbot-dev",
+            "mfa_enabled": false,
+            "id": "123420767326823514",
+            "email": null,
+            "discriminator": "8704",
+            "bot": true,
+            "avatar": null
+        },
+        "session_id": "eef3ef3f1c13794e7a461db975b336bb",
+        "relationships": [],
+        "private_channels": [
+            {
+                "type": "text",
+                "recipient": {
+                    "username": "exampleuser",
+                    "id": "12349125961709021",
+                    "discriminator": "1234",
+                    "avatar": "4fb8b59d50f4fbbf260deadb6ff9cb6d"
+                },
+                "last_message_id": "123421240839709668",
+                "is_private": true,
+                "id": "123420768480877451"
+            }
+        ],
+        "presences": [],
+        "guilds": [
+            {
+                "unavailable": true,
+                "id": "123418877619445432"
+            }
+        ],
+        "_trace": [
+            "discord-gateway-prd-1-17",
+            "discord-sessions-prd-1-5"
+        ]
+    }
+}

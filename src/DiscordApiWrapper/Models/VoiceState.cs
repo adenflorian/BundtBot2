@@ -5,7 +5,7 @@ namespace DiscordApiWrapper.Models
     public class VoiceState
     {
         [JsonProperty("guild_id")]
-		public ulong GuildID;
+		public ulong? GuildID;
 
         [JsonProperty("channel_id")]
         public ulong? ChannelId;

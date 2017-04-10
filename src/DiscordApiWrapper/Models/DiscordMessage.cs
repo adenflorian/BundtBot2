@@ -4,6 +4,10 @@ using Newtonsoft.Json;
 
 namespace BundtBot.Discord.Models
 {
+	/// <summary>
+	/// Could be a message in a Text Channel or a DM.
+	// Should check Channel Id to see which kind of channel.
+	/// </summary>
     public class DiscordMessage
 	{
 		[JsonProperty("id")]

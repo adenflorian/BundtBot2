@@ -1,0 +1,113 @@
+{
+    "t": "GUILD_CREATE",
+    "s": 2,
+    "op": 0,
+    "d": {
+        "voice_states": [
+            {
+                "user_id": "12349125961709021",
+                "suppress": false,
+                "session_id": "ae41a68b4dc264e9a91a6dd06ef021ed",
+                "self_mute": false,
+                "self_deaf": false,
+                "mute": false,
+                "deaf": false,
+                "channel_id": "123418877619445432"
+            }
+        ],
+        "verification_level": 0,
+        "unavailable": false,
+        "splash": null,
+        "roles": [
+            {
+                "position": 0,
+                "permissions": 104324161,
+                "name": "@everyone",
+                "mentionable": false,
+                "managed": false,
+                "id": "123418877619445432",
+                "hoist": false,
+                "color": 0
+            },
+            {
+                "position": 1,
+                "permissions": 70638656,
+                "name": "bundtbot",
+                "mentionable": false,
+                "managed": false,
+                "id": "123419704952493650",
+                "hoist": false,
+                "color": 0
+            }
+        ],
+        "region": "us-south",
+        "presences": [
+            {
+                "user": {
+                    "id": "12349125961715936"
+                },
+                "status": "online",
+                "game": null
+            },
+            {
+                "user": {
+                    "id": "123420768235141122"
+                },
+                "status": "online",
+                "game": null
+            }
+        ],
+        "owner_id": "91259123461709026",
+        "name": "testserver1234",
+        "mfa_level": 0,
+        "members": [
+            {
+                "user": {
+                    "username": "testuser",
+                    "id": "91234125961709036",
+                    "discriminator": "1234",
+                    "avatar": "abf8b59d50f4fbbf260deadb6ff9cb6d"
+                },
+                "roles": [],
+                "nick": "test",
+                "mute": false,
+                "joined_at": "2016-06-04T17:09:12.057-05:00",
+                "deaf": false
+            }
+        ],
+        "member_count": 4,
+        "large": false,
+        "joined_at": "2016-07-26T21:16:59.608-05:00",
+        "id": "123418877619445432",
+        "icon": null,
+        "features": [],
+        "explicit_content_filter": 0,
+        "emojis": [],
+        "default_message_notifications": 0,
+        "channels": [
+            {
+                "type": "text",
+                "topic": "",
+                "position": 0,
+                "permission_overwrites": [],
+                "name": "general",
+                "last_message_id": "123430077539104653",
+                "is_private": false,
+                "id": "188771234619443200"
+            },
+            {
+                "user_limit": 0,
+                "type": "voice",
+                "position": 0,
+                "permission_overwrites": [],
+                "name": "General",
+                "is_private": false,
+                "id": "188771234619443201",
+                "bitrate": 64000
+            }
+        ],
+        "application_id": null,
+        "afk_timeout": 300,
+        "afk_channel_id": null
+    }
+}

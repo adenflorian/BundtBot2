@@ -10,9 +10,9 @@
     - BundtBot
         * DiscordClient
             + DiscordGatewayClient
-                + ClientWebSocketWrapper
+                + WebSocketClient
             + DiscordRestClientProxy
                 + RateLimitedClient
                     + DiscordRestClient
-            + *DiscordVoiceWebSocketClient*
-                + *ClientWebSocketWrapper*
+            + DiscordVoiceClient
+                + WebSocketClient

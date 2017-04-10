@@ -20,11 +20,11 @@ namespace BundtCord.Discord
             _client = client;
         }
 
-        public async Task<IMessage> SendMessageAsync(string content)
+        public async Task<ITextChannelMessage> SendMessageAsync(string content)
         {
             var createMessage = new NewMessageRequest(Id){Content = content};
             var discordMessage = await _client.DiscordRestClient.CreateMessageAsync(createMessage);
-            var message = new Message(discordMessage, _client);
+            var message = new TextChannelMessage(discordMessage, ServerId, _client);
             return message;
         }
     }

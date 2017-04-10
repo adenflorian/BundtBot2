@@ -25,28 +25,28 @@ namespace BundtBot
 
         void RegisterEventHandlers()
         {
-            _client.MessageCreated += async (message) =>
+            _client.TextChannelMessageReceived += async (message) =>
             {
                 try
                 {
-                    if (message.Author.Id == _client.Me.Id) return;
+                    if (message.Author.User.Id == _client.Me.Id) return;
 
                     var messageContent = message.Content;
 
                     if (messageContent.StartsWith("!echo "))
                     {
-                        await message.TextChannel.SendMessageAsync(messageContent.Substring(5));
+                        await message.ReplyAsync(messageContent.Substring(5));
                     }
                     else if (messageContent == "!hello")
                     {
                         // Reject if user is not in a voice channel
                         if (message.Author.VoiceChannel == null)
                         {
-                            await message.TextChannel.SendMessageAsync("You're going to want to be in a voice channel for this...");
+                            await message.ReplyAsync("You're going to want to be in a voice channel for this...");
                             return;
                         }
 
-                        await message.TextChannel.SendMessageAsync("I see you in channel " + message.Author.VoiceChannel.Name);
+                        await message.ReplyAsync("I see you in channel " + message.Author.VoiceChannel.Name);
 
                         // Join voice channel
                         await message.Author.VoiceChannel.JoinAsync();
@@ -62,7 +62,7 @@ namespace BundtBot
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError("Exception thrown while handling event " + nameof(_client.MessageCreated));
+                    _logger.LogError("Exception thrown while handling event " + nameof(_client.TextChannelMessageReceived));
                     _logger.LogError(ex);
                 }
             };

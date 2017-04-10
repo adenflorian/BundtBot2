@@ -42,8 +42,8 @@ namespace DiscordApiWrapper.Voice
             _logger.LogInfo("Received Hello from Voice Server", ConsoleColor.Green);
             var hello = JsonConvert.DeserializeObject<VoiceServerHello>(eventJson.ToString());
 
-            StartHeartBeatLoop(hello.HeartbeatInterval);
             await SendIdentifyAsync();
+            StartHeartBeatLoop(hello.HeartbeatInterval);
         }
 
         void StartHeartBeatLoop(TimeSpan heartbeatInterval)

@@ -3,7 +3,7 @@ using BundtBot.Discord.Models;
 
 namespace BundtCord.Discord
 {
-    public class VoiceChannel
+    class VoiceChannel : IVoiceChannel
     {
         public ulong Id { get; }
         public string Name { get; }
