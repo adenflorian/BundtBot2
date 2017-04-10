@@ -35,6 +35,6 @@
 		Hello = 10,
 
 		/// <summary>Sent immediately following a client heartbeat that was received</summary>
-		HeartbackAck = 11
+		HeartbeatAck = 11
 	}
 }

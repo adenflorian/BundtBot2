@@ -20,6 +20,9 @@ namespace DiscordApiWrapper.Voice
         /// <summary>used to indicate which users are speaking</summary>
         Speaking = 5,
 
+        /// <summary>Sent immediately following a client heartbeat that was received</summary>
+        HeartbeatAck = 6,
+
         Hello = 8
     }
 }

@@ -9,6 +9,7 @@ using DiscordApiWrapper.Gateway;
 using DiscordApiWrapper.Gateway.Models;
 using DiscordApiWrapper.Models;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace BundtBot.Discord.Gateway
 {
@@ -107,7 +108,7 @@ namespace BundtBot.Discord.Gateway
             switch (payload.GatewayOpCode)
             {
                 case GatewayOpCode.Dispatch: InvokeEvent(DispatchReceived, payload); break;
-                case GatewayOpCode.HeartbackAck: InvokeEvent(HeartbackAckReceived, payload); break;
+                case GatewayOpCode.HeartbeatAck: InvokeEvent(HeartbackAckReceived, payload); break;
                 case GatewayOpCode.Hello: InvokeEvent(HelloReceived, payload); break;
                 case GatewayOpCode.InvalidSession: InvokeEvent(InvalidSessionReceived, payload); break;
                 default:
@@ -216,7 +217,8 @@ namespace BundtBot.Discord.Gateway
                     ReferringDomain = "",
                 },
                 SupportsCompression = false,
-                LargeThreshold = Threshold.Maximum
+                LargeThreshold = Threshold.Maximum,
+                Shard = new int[] {0, 1}
             });
         }
 
@@ -251,15 +253,23 @@ namespace BundtBot.Discord.Gateway
 
         async Task SendOpCodeAsync(GatewayOpCode opCode, object eventData)
         {
-            var gatewayPayload = new GatewayPayload(opCode, eventData);
-            var jsonGatewayPayload = gatewayPayload.Serialize();
+            try
+            {
+                var gatewayPayload = new GatewayPayload(opCode, eventData);
 
-            _logger.LogDebug($"Sending opcode {gatewayPayload.GatewayOpCode} to gateway...");
-            _logger.LogTrace("" + jsonGatewayPayload);
+                _logger.LogDebug($"Sending opcode {gatewayPayload.GatewayOpCode} to gateway...");
+                _logger.LogTrace("" + JObject.FromObject(gatewayPayload));
 
-            await _clientWebSocketWrapper.SendMessageUsingQueueAsync(jsonGatewayPayload);
+                var jsonGatewayPayload = JsonConvert.SerializeObject(gatewayPayload);
+                await _clientWebSocketWrapper.SendMessageUsingQueueAsync(jsonGatewayPayload);
 
-            _logger.LogDebug($"Sent {gatewayPayload.GatewayOpCode}");
+                _logger.LogDebug($"Sent {gatewayPayload.GatewayOpCode}");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex);
+                throw;
+            }
         }
         #endregion
 

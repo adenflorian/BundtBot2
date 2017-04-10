@@ -3,9 +3,7 @@ using Newtonsoft.Json;
 
 namespace BundtBot.Discord.Models.Gateway
 {
-    [JsonObject]
 	class GatewayPayload {
-		[JsonRequired]
 		[JsonProperty("op")]
 		public GatewayOpCode GatewayOpCode;
 		
@@ -27,12 +25,6 @@ namespace BundtBot.Discord.Models.Gateway
 		public GatewayPayload(GatewayOpCode gatewayOpCode, object eventData) {
 			GatewayOpCode = gatewayOpCode;
 			EventData = eventData;
-		}
-
-		public string Serialize() {
-			var jsonSerializerSettings = new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore };
-			var jsonGatewayDispatch = JsonConvert.SerializeObject(this, Formatting.Indented, jsonSerializerSettings);
-			return jsonGatewayDispatch;
 		}
 	}
 }

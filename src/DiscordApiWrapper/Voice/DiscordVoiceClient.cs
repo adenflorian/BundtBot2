@@ -5,18 +5,19 @@ using BundtBot;
 using BundtBot.Extensions;
 using DiscordApiWrapper.Models;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace DiscordApiWrapper.Voice
 {
     public class DiscordVoiceClient
     {
         public event Action<string> HelloReceived;
+        public event Action HeartbeatAckReceived;
 
         static readonly MyLogger _logger = new MyLogger(nameof(DiscordVoiceClient), ConsoleColor.DarkGreen);
 
         readonly WebSocketClient _clientWebSocketWrapper;
 
-        int _lastSequenceReceived;
         ulong _guildId;
         string _token;
         string _sessionId;
@@ -60,7 +61,7 @@ namespace DiscordApiWrapper.Voice
                 new LogMessage("Sending Heartbeat "),
                 new LogMessage("♥", ConsoleColor.Red),
                 new LogMessage(" →"));
-            await SendOpCodeAsync(VoiceOpCode.Heartbeat, _lastSequenceReceived);
+            await SendOpCodeAsync(VoiceOpCode.Heartbeat, null);
         }
 
         async Task SendIdentifyAsync()
@@ -78,11 +79,11 @@ namespace DiscordApiWrapper.Voice
         async Task SendOpCodeAsync(VoiceOpCode opCode, object eventData)
         {
             var gatewayPayload = new VoiceServerPayload(opCode, eventData);
-            var jsonGatewayPayload = gatewayPayload.Serialize();
 
             _logger.LogDebug($"Sending opcode {gatewayPayload.VoiceOpCode} to gateway...");
-            _logger.LogTrace("" + jsonGatewayPayload);
+            _logger.LogTrace("" + JObject.FromObject(gatewayPayload));
 
+            var jsonGatewayPayload = JsonConvert.SerializeObject(gatewayPayload);
             await _clientWebSocketWrapper.SendMessageUsingQueueAsync(jsonGatewayPayload);
 
             _logger.LogDebug($"Sent {gatewayPayload.VoiceOpCode}");
@@ -100,13 +101,12 @@ namespace DiscordApiWrapper.Voice
             string message = _clientWebSocketWrapper.ReceivedMessages.Dequeue();
             var payload = JsonConvert.DeserializeObject<VoiceServerPayload>(message);
 
-            StoreSequenceNumberForHeartbeat(payload);
-
             LogMessageReceived(message, payload);
 
             switch (payload.VoiceOpCode)
             {
-                case VoiceOpCode.Hello: InvokeEvent(HelloReceived, payload); break;
+                case VoiceOpCode.Hello: HelloReceived?.Invoke(payload.EventData?.ToString()); break;
+                case VoiceOpCode.HeartbeatAck: HeartbeatAckReceived?.Invoke(); break;
                 default:
                     _logger.LogWarning($"Received an OpCode with no handler: {payload.VoiceOpCode}");
                     break;
@@ -117,19 +117,6 @@ namespace DiscordApiWrapper.Voice
         {
             _logger.LogDebug($"Message received from gateway (opcode: {payload.VoiceOpCode})");
             _logger.LogTrace(message.Prettify());
-        }
-
-        void StoreSequenceNumberForHeartbeat(VoiceServerPayload payload)
-        {
-            if (payload.SequenceNumber.HasValue)
-            {
-                _lastSequenceReceived = payload.SequenceNumber.Value;
-            }
-        }
-
-        void InvokeEvent(Action<string> handler, VoiceServerPayload payload)
-        {
-            handler?.Invoke(payload.EventData?.ToString());
         }
     }
 }

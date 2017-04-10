@@ -5,7 +5,7 @@
 [√] handle opcode 9 invalid session
 [√] make LogError and LogCritical use Console.Error.Write
 
-[ ] change trace json log to output raw json
+[√] change trace json log to output raw json
 
 [ ] !hello
   [√] create handler for !hello in BundtBot
@@ -26,3 +26,4 @@
 [ ] make guilds display on website again
 [ ] lock down website
 [ ] change log level
+[ ] change dog level
