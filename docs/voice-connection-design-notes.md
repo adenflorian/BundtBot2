@@ -3,9 +3,9 @@ Voice Connection Design Notes
 
 ## TODO
 [√] Maybe do one voice client per guild?
-[ ] voice ready handler
-[ ] voice op6 handler
-[ ] don't start heartbeat until after sending identify or summthn
+[√] voice ready handler
+[√] voice op6 handler
+[√] don't start heartbeat until after sending identify or summthn
 
 Possible Classes:
 [ ] OpusStuff

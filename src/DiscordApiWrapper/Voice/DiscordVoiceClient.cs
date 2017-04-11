@@ -11,8 +11,9 @@ namespace DiscordApiWrapper.Voice
 {
     public class DiscordVoiceClient
     {
-        public event Action<string> HelloReceived;
+        public event Action HelloReceived;
         public event Action HeartbeatAckReceived;
+        public event Action<string> ReadyReceived;
 
         static readonly MyLogger _logger = new MyLogger(nameof(DiscordVoiceClient), ConsoleColor.DarkGreen);
 
@@ -36,15 +37,42 @@ namespace DiscordApiWrapper.Voice
             _clientWebSocketWrapper.MessageReceived += OnMessageReceived;
 
             HelloReceived += OnHelloReceivedAsync;
+            ReadyReceived += OnReadyReceivedAsync;
+            HeartbeatAckReceived += OnHeartbeatAckReceived;
         }
 
-        async void OnHelloReceivedAsync(string eventJson)
+        public async Task ConnectAsync()
         {
-            _logger.LogInfo("Received Hello from Voice Server", ConsoleColor.Green);
-            var hello = JsonConvert.DeserializeObject<VoiceServerHello>(eventJson.ToString());
+            await _clientWebSocketWrapper.ConnectAsync();
+            _logger.LogInfo($"Connected to VoiceServer", ConsoleColor.Green);
 
             await SendIdentifyAsync();
-            StartHeartBeatLoop(hello.HeartbeatInterval);
+        }
+
+        /// <summary>
+        /// Discord devs said to ignore this opcode
+        /// </summary>
+        /// <param name="eventJson"></param>
+        void OnHelloReceivedAsync()
+        {
+            _logger.LogInfo("Received Hello from Voice Server and ignoring...", ConsoleColor.Green);
+        }
+
+        /// <summary>
+        /// Discord devs said to ignore this opcode
+        /// </summary>
+        /// <param name="eventJson"></param>
+        void OnHeartbeatAckReceived()
+        {
+            _logger.LogInfo("Received Hello from Voice Server and ignoring...", ConsoleColor.Green);
+        }
+
+        void OnReadyReceivedAsync(string eventJson)
+        {
+            _logger.LogInfo("Received Ready from Voice Server", ConsoleColor.Green);
+            var ready = JsonConvert.DeserializeObject<VoiceServerReady>(eventJson.ToString());
+
+            StartHeartBeatLoop(ready.HeartbeatInterval);
         }
 
         void StartHeartBeatLoop(TimeSpan heartbeatInterval)
@@ -89,12 +117,6 @@ namespace DiscordApiWrapper.Voice
             _logger.LogDebug($"Sent {gatewayPayload.VoiceOpCode}");
         }
         #endregion
-
-        public async Task ConnectAsync()
-        {
-            await _clientWebSocketWrapper.ConnectAsync();
-            _logger.LogInfo($"Connected to VoiceServer", ConsoleColor.Green);
-        }
         
         void OnMessageReceived()
         {
@@ -105,8 +127,9 @@ namespace DiscordApiWrapper.Voice
 
             switch (payload.VoiceOpCode)
             {
-                case VoiceOpCode.Hello: HelloReceived?.Invoke(payload.EventData?.ToString()); break;
+                case VoiceOpCode.Hello: HelloReceived?.Invoke(); break;
                 case VoiceOpCode.HeartbeatAck: HeartbeatAckReceived?.Invoke(); break;
+                case VoiceOpCode.Ready: ReadyReceived?.Invoke(payload.EventData?.ToString()); break;
                 default:
                     _logger.LogWarning($"Received an OpCode with no handler: {payload.VoiceOpCode}");
                     break;
