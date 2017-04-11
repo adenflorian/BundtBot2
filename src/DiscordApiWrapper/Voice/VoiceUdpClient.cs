@@ -16,5 +16,10 @@ namespace DiscordApiWrapper.Voice
             var x = new UdpClient();
             x.SendAsync(null, 0, new IPEndPoint(hostIPAddress1, remotePort));
         }
+
+        void SendIpDiscoveryPacket()
+        {
+            
+        }
     }
 }
