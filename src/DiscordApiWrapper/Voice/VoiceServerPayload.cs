@@ -7,9 +7,9 @@ namespace DiscordApiWrapper.Voice
 		public VoiceOpCode VoiceOpCode;
 		
 		[JsonProperty("d")]
-		public object EventData;
+		public string EventData;
 
-		public VoiceServerPayload(VoiceOpCode voiceOpCode, object eventData) {
+		public VoiceServerPayload(VoiceOpCode voiceOpCode, string eventData) {
 			VoiceOpCode = voiceOpCode;
 			EventData = eventData;
 		}

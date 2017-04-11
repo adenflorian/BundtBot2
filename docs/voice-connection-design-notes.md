@@ -6,6 +6,7 @@ Voice Connection Design Notes
 [√] voice ready handler
 [√] voice op6 handler
 [√] don't start heartbeat until after sending identify or summthn
+[ ] IP Discovery
 
 Possible Classes:
 [ ] OpusStuff

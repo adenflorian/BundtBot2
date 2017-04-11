@@ -126,8 +126,8 @@ namespace BundtCord.Discord
             _gatewayClient.VoiceServerUpdate += async (voiceServerInfo) =>
             {
                 _latestVoiceServerInfo = voiceServerInfo;
-                var voiceClient = new DiscordVoiceClient(voiceServerInfo, Me.Id, _sessionId);
-                await voiceClient.ConnectAsync();
+                var voiceClient = new DiscordVoiceClient();
+                await voiceClient.ConnectAsync(voiceServerInfo, Me.Id, _sessionId);
                 ((Server)Servers[voiceServerInfo.GuildID]).VoiceClient = voiceClient;
             };
 
