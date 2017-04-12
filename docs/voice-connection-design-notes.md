@@ -6,7 +6,10 @@ Voice Connection Design Notes
 [√] voice ready handler
 [√] voice op6 handler
 [√] don't start heartbeat until after sending identify or summthn
-[ ] IP Discovery
+[√] IP Discovery
+[ ] Send Select Protocol to Voice Gateway
+[ ] Receive OP4 Session Description
+[ ] Start encrypting and sending voice data
 
 Possible Classes:
 [ ] OpusStuff
