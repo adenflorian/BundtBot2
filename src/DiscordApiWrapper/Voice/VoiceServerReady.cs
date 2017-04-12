@@ -6,7 +6,7 @@ namespace DiscordApiWrapper.Voice
     public class VoiceServerReady
     {
         [JsonProperty("ssrc")]
-        public int SynchronizationSourceId;
+        public uint SynchronizationSourceId;
 
         [JsonProperty("port")]
         public int Port;

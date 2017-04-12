@@ -82,6 +82,8 @@ namespace BundtBot
 
         public async Task SendMessageUsingQueueAsync(string data)
 		{
+			if (data == null) throw new ArgumentException();
+
 			await Task.Run(async () => {
 				var isDone = false;
 				_outgoingQueue.Enqueue(Tuple.Create<string, Action>(data, () => {
@@ -102,7 +104,6 @@ namespace BundtBot
 						await Task.Delay(100);
 					}
 
-					// TODO don't let null be enqueued
 					var message = _outgoingQueue.Dequeue();
 
 					while (true)

@@ -24,11 +24,12 @@ namespace DiscordApiWrapper.Voice
             await _voiceGatewayClient.ConnectAsync();
         }
 
-        void OnReadyReceivedAsync(VoiceServerReady voiceServerReady)
+        async void OnReadyReceivedAsync(VoiceServerReady voiceServerReady)
         {
             _logger.LogInfo("Received Ready from Voice Server", ConsoleColor.Green);
 
-            //_voiceUdpClient = new VoiceUdpClient(_voiceServerInfo.Endpoint, voiceServerReady.Port);
+            _voiceUdpClient = new VoiceUdpClient(_voiceServerInfo.Endpoint, voiceServerReady.Port, voiceServerReady.SynchronizationSourceId);
+            await _voiceUdpClient.SendIpDiscoveryPacketAsync();
         }
     }
 }

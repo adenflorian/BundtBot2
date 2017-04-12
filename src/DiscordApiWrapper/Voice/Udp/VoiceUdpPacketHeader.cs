@@ -16,11 +16,11 @@ namespace DiscordApiWrapper.Voice
 
         readonly byte Type = 0x80;
         readonly byte Version = 0x78;
-        ushort Sequence;
-        uint Timestamp;
-        uint SynchronizationSourceId;
+        ushort Sequence = 0;
+        uint Timestamp = 0;
+        public uint SynchronizationSourceId;
 
-        public byte[] ToByteArray()
+        public byte[] GetBytes()
         {
             var byteArray = new byte[1 + 1 + 2 + 4 + 4];
             byteArray[0] = Type;

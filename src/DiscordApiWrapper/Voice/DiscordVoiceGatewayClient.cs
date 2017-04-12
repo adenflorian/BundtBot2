@@ -46,16 +46,16 @@ namespace DiscordApiWrapper.Voice
             await _clientWebSocketWrapper.ConnectAsync();
             _logger.LogInfo($"Connected to VoiceServer", ConsoleColor.Green);
 
-            await SendIdentifyAsync();
         }
 
         /// <summary>
         /// Discord devs said to ignore this opcode
         /// </summary>
         /// <param name="eventJson"></param>
-        void OnHelloReceivedAsync()
+        async void OnHelloReceivedAsync()
         {
             _logger.LogInfo("Received Hello from Voice Server and ignoring...", ConsoleColor.Green);
+            await SendIdentifyAsync();
         }
 
         /// <summary>
