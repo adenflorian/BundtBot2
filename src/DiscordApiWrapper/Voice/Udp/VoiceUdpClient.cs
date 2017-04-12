@@ -14,65 +14,42 @@ namespace DiscordApiWrapper.Voice
 
         UdpClient _udpClient;
         IPEndPoint _voiceUdpEndpoint;
-        uint _ssrcId;
+        uint _synchronizationSourceId;
 
-        public VoiceUdpClient(Uri remoteUri, int remotePort, uint ssrcId)
+        public VoiceUdpClient(Uri remoteUri, int remotePort, uint synchronizationSourceId)
         {
-            _ssrcId = ssrcId;
-
-            var task = Dns.GetHostAddressesAsync(remoteUri.Host);
-            task.Wait();
-            Debug.Assert(task.Result.Length > 0);
-            var voiceUdpServerAddress = task.Result[0];
-
             _udpClient = new UdpClient();
-            _voiceUdpEndpoint = new IPEndPoint(voiceUdpServerAddress, remotePort);
+            _voiceUdpEndpoint = UdpUtility.GetEndpointFromInfo(remoteUri, remotePort);
+            _synchronizationSourceId = synchronizationSourceId;
         }
 
         public async Task SendIpDiscoveryPacketAsync()
         {
-            var ipDiscoveryPacket = new VoicePacket();
-            ipDiscoveryPacket.Header.SynchronizationSourceId = _ssrcId;
-            //ipDiscoveryPacket.Body.Initialize();
-            var ipDiscoveryPacketBytes = ipDiscoveryPacket.GetBytes();
+            var ipDiscoveryPacket = new VoicePacket(0, 0, _synchronizationSourceId);
 
-            _logger.LogTrace($"Sending {ipDiscoveryPacketBytes.Length} bytes to {_voiceUdpEndpoint}");
-            var bytesSent = await _udpClient.SendAsync(ipDiscoveryPacketBytes, ipDiscoveryPacketBytes.Length, _voiceUdpEndpoint);
-            _logger.LogTrace($"Send {bytesSent} bytes");
+            await SendAsync(ipDiscoveryPacket.GetBytes());
 
-            var receivedBytes = await ReceiveAsync();
+            var IpDiscoveryResultBytes = await ReceiveAsync();
+            _logger.LogTrace($"IP Discovery Response: {IpDiscoveryResultBytes.Length} bytes: {BitConverter.ToString(IpDiscoveryResultBytes)}");
 
-            // Get ip address and port
-            var ipString = "";
-            var i = 4;
-            while (true)
-            {
-                if (receivedBytes[i] == 0x00) break;
-                ipString += (char)receivedBytes[i];
-                i++;
-            }
+            var IpDiscoveryResult = UdpUtility.GetIpAddressAndPortFromIpDiscoveryResponse(IpDiscoveryResultBytes);
 
-            var port = 0;
+            _logger.LogTrace($"Results of IP Discovery: Public IP Address: {IpDiscoveryResult.Item1}, Port: {IpDiscoveryResult.Item2}", ConsoleColor.Green);
+        }
 
-            if (BitConverter.IsLittleEndian)
-            {
-                var portBytesLittleEndian = new byte[] { receivedBytes[receivedBytes.Length - 2], receivedBytes[receivedBytes.Length - 1] };
-                port = BitConverter.ToUInt16(portBytesLittleEndian, 0);
-            }
-            else
-            {
-                var portBytesBigEndian = new byte[] { receivedBytes[receivedBytes.Length - 1], receivedBytes[receivedBytes.Length - 2] };
-                port = BitConverter.ToUInt16(portBytesBigEndian, 0);
-            }
-
-            _logger.LogTrace($"Results of IP Discovery: Public IP Address: {ipString}, Port: {port}");
+        async Task<int> SendAsync(byte[] bytesToSend)
+        {
+            _logger.LogDebug($"Sending {bytesToSend.Length} bytes to {_voiceUdpEndpoint}");
+            var bytesSent = await _udpClient.SendAsync(bytesToSend, bytesToSend.Length, _voiceUdpEndpoint);
+            _logger.LogDebug($"Sent {bytesSent} bytes");
+            return bytesSent;
         }
 
         async Task<byte[]> ReceiveAsync()
         {
             var udpReceiveResult = await _udpClient.ReceiveAsync();
 
-            _logger.LogTrace($"Received {udpReceiveResult.Buffer.Length} bytes on Voice UDP Socket: {BitConverter.ToString(udpReceiveResult.Buffer)}");
+            _logger.LogDebug($"Received {udpReceiveResult.Buffer.Length} bytes");
 
             return udpReceiveResult.Buffer;
         }
