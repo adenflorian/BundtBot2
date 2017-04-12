@@ -36,18 +36,45 @@ namespace DiscordApiWrapper.Voice
             //ipDiscoveryPacket.Body.Initialize();
             var ipDiscoveryPacketBytes = ipDiscoveryPacket.GetBytes();
 
-            var sendInt = await _udpClient.SendAsync(ipDiscoveryPacketBytes, ipDiscoveryPacketBytes.Length, _voiceUdpEndpoint);
-            _logger.LogTrace("Return valuse of _udpClient.SendAsync(): " + sendInt);
+            _logger.LogTrace($"Sending {ipDiscoveryPacketBytes.Length} bytes to {_voiceUdpEndpoint}");
+            var bytesSent = await _udpClient.SendAsync(ipDiscoveryPacketBytes, ipDiscoveryPacketBytes.Length, _voiceUdpEndpoint);
+            _logger.LogTrace($"Send {bytesSent} bytes");
 
-            await ReceiveAsync();
+            var receivedBytes = await ReceiveAsync();
+
+            // Get ip address and port
+            var ipString = "";
+            var i = 4;
+            while (true)
+            {
+                if (receivedBytes[i] == 0x00) break;
+                ipString += (char)receivedBytes[i];
+                i++;
+            }
+
+            var port = 0;
+
+            if (BitConverter.IsLittleEndian)
+            {
+                var portBytesLittleEndian = new byte[] { receivedBytes[receivedBytes.Length - 2], receivedBytes[receivedBytes.Length - 1] };
+                port = BitConverter.ToUInt16(portBytesLittleEndian, 0);
+            }
+            else
+            {
+                var portBytesBigEndian = new byte[] { receivedBytes[receivedBytes.Length - 1], receivedBytes[receivedBytes.Length - 2] };
+                port = BitConverter.ToUInt16(portBytesBigEndian, 0);
+            }
+
+            _logger.LogTrace($"Results of IP Discovery: Public IP Address: {ipString}, Port: {port}");
         }
 
-        async Task ReceiveAsync()
+        async Task<byte[]> ReceiveAsync()
         {
             var udpReceiveResult = await _udpClient.ReceiveAsync();
 
-            _logger.LogTrace($"Received {udpReceiveResult.Buffer.Length} bytes on Voice UDP Socket");
-            _logger.LogTrace($"Received {udpReceiveResult.Buffer.ToString()} on Voice UDP Socket");
+            _logger.LogTrace($"Received {udpReceiveResult.Buffer.Length} bytes on Voice UDP Socket: {BitConverter.ToString(udpReceiveResult.Buffer)}");
+
+            return udpReceiveResult.Buffer;
         }
     }
 }

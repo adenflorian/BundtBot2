@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
@@ -105,6 +106,7 @@ namespace BundtBot
 					}
 
 					var message = _outgoingQueue.Dequeue();
+					Debug.Assert(message != null);
 
 					while (true)
 					{

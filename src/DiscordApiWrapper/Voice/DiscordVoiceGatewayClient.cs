@@ -46,16 +46,16 @@ namespace DiscordApiWrapper.Voice
             await _clientWebSocketWrapper.ConnectAsync();
             _logger.LogInfo($"Connected to VoiceServer", ConsoleColor.Green);
 
+            await SendIdentifyAsync();
         }
 
         /// <summary>
         /// Discord devs said to ignore this opcode
         /// </summary>
         /// <param name="eventJson"></param>
-        async void OnHelloReceivedAsync()
+        void OnHelloReceivedAsync()
         {
             _logger.LogInfo("Received Hello from Voice Server and ignoring...", ConsoleColor.Green);
-            await SendIdentifyAsync();
         }
 
         /// <summary>
@@ -64,7 +64,7 @@ namespace DiscordApiWrapper.Voice
         /// <param name="eventJson"></param>
         void OnHeartbeatAckReceived()
         {
-            _logger.LogInfo("Received Hello from Voice Server and ignoring...", ConsoleColor.Green);
+            _logger.LogInfo("Received HeartbeatAck from Voice Server and ignoring...", ConsoleColor.Green);
         }
 
         void OnReadyReceivedAsync(VoiceServerReady voiceServerReady)
@@ -105,7 +105,7 @@ namespace DiscordApiWrapper.Voice
 
         async Task SendOpCodeAsync(VoiceOpCode opCode, object eventData)
         {
-            var gatewayPayload = new VoiceServerPayload(opCode, JsonConvert.SerializeObject(eventData));
+            var gatewayPayload = new VoiceServerPayload(opCode, eventData);
 
             _logger.LogDebug($"Sending opcode {gatewayPayload.VoiceOpCode} to gateway...");
             _logger.LogTrace("" + JObject.FromObject(gatewayPayload));

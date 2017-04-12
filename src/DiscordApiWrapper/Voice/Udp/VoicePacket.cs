@@ -2,7 +2,7 @@ namespace DiscordApiWrapper.Voice.Udp
 {
     class VoicePacket
     {
-        public VoiceUdpPacketHeader Header;
+        public VoiceUdpPacketHeader Header = new VoiceUdpPacketHeader();
         public byte[] Body = new byte[58];
 
         public byte[] GetBytes()
