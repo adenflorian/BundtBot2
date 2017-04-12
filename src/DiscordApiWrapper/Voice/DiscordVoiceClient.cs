@@ -9,7 +9,7 @@ namespace DiscordApiWrapper.Voice
     {
         static readonly MyLogger _logger = new MyLogger(nameof(DiscordVoiceClient));
         
-        DiscordVoiceGatewayClient _voiceGatewayClient;
+        VoiceGatewayClient _voiceGatewayClient;
         VoiceUdpClient _voiceUdpClient;
         VoiceServerInfo _voiceServerInfo;
 
@@ -17,7 +17,7 @@ namespace DiscordApiWrapper.Voice
         {
             _voiceServerInfo = voiceServerInfo;
 
-            _voiceGatewayClient = new DiscordVoiceGatewayClient(voiceServerInfo, userId, sessionId);
+            _voiceGatewayClient = new VoiceGatewayClient(voiceServerInfo, userId, sessionId);
 
             _voiceGatewayClient.ReadyReceived += OnReadyReceivedAsync;
 

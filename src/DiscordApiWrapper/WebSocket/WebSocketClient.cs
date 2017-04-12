@@ -5,12 +5,12 @@ using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using DiscordApiWrapper.Gateway;
+using BundtBot;
 using Newtonsoft.Json;
 
-namespace BundtBot
+namespace DiscordApiWrapper.WebSocket
 {
-    public class WebSocketClient
+    partial class WebSocketClient
 	{
 		public delegate void MessageReceivedHandler();
 		public event MessageReceivedHandler MessageReceived;
@@ -34,12 +34,7 @@ namespace BundtBot
 		{
 			await DoConnectLoopAsync();
 
-			_logger.LogInfo(
-				new LogMessage($"Connected to "),
-				new LogMessage($"{_serverUri}", ConsoleColor.Cyan),
-				new LogMessage($" (ClientWebSocket State: "),
-				new LogMessage($"{_clientWebSocket.State}", ConsoleColor.Green),
-				new LogMessage($")"));
+			LogConnected(_logger, _serverUri, _clientWebSocket);
 
 			StartReceiveLoop();
 			StartSendLoop();
@@ -48,13 +43,8 @@ namespace BundtBot
         async Task ReconnectAsync()
         {
 			await DoConnectLoopAsync();
-			
-            _logger.LogInfo(
-                new LogMessage($"Reconnected to "),
-                new LogMessage($"{_serverUri}", ConsoleColor.Cyan),
-                new LogMessage($" (ClientWebSocket State: "),
-                new LogMessage($"{_clientWebSocket.State}", ConsoleColor.Green),
-                new LogMessage($")"));
+
+            LogReconnected(_logger, _serverUri, _clientWebSocket);
         }
 
         async Task DoConnectLoopAsync()
@@ -72,7 +62,6 @@ namespace BundtBot
                 }
                 catch (System.Exception ex)
                 {
-                    _logger.LogError("[Connect Loop] Error while connecting websocket");
                     _logger.LogError(ex, true);
 					var waitAmount = TimeSpan.FromSeconds(5);
                     _logger.LogWarning($"[Connect Loop] Waiting {waitAmount.TotalSeconds} seconds before attempting to reconnect...");
@@ -191,16 +180,8 @@ namespace BundtBot
 					}
 					catch (Exception ex)
 					{
-						_logger.LogError("[Receive Loop] Exception caught in ClientWebSocketWrapper ReceiveLoop.");
-                        _logger.LogError(ex);
-                        _logger.LogWarning($"[Receive Loop] _clientWebSocket.State: {_clientWebSocket.State.ToString()}");
-                        _logger.LogWarning($"[Receive Loop] _clientWebSocket.CloseStatus: {_clientWebSocket.CloseStatus.ToString()}");
-                        _logger.LogWarning($"[Receive Loop] _clientWebSocket.CloseStatusDescription: {_clientWebSocket.CloseStatusDescription}");
-
+						LogReceiveLoopException(_logger, ex, _clientWebSocket);
 						message = "";
-
-						_logger.LogWarning("[Receive Loop] Reconnecting ClientWebSocketWrapper.");
-
 						await ReconnectAsync();
 					}
 				}
@@ -236,25 +217,7 @@ namespace BundtBot
         {
 			var codeString = result.CloseStatus.Value.ToString();
 
-			string logMessage;
-
-			if (CloseCodes.Codes.ContainsKey(codeString))
-			{
-				logMessage = "Received a message from Gateway with Close Status, will reconnect: " + CloseCodes.Codes[codeString];
-			}
-			else
-			{
-                logMessage = "Received a message from Gateway with Close Status, will reconnect: " + codeString;
-			}
-			
-			if (result.CloseStatus.Value.ToString() == "4001")
-			{
-                _logger.LogCritical(logMessage);
-			}
-			else
-			{
-            	_logger.LogError(logMessage);
-			}
+			LogCloseReceived(_logger, codeString);
 
             await ReconnectAsync();
         }

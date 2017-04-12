@@ -4,18 +4,19 @@ using System.Threading.Tasks;
 using BundtBot;
 using BundtBot.Extensions;
 using DiscordApiWrapper.Models;
+using DiscordApiWrapper.WebSocket;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace DiscordApiWrapper.Voice
 {
-    class DiscordVoiceGatewayClient
+    class VoiceGatewayClient
     {
         public event Action HelloReceived;
         public event Action HeartbeatAckReceived;
         public event Action<VoiceServerReady> ReadyReceived;
 
-        static readonly MyLogger _logger = new MyLogger(nameof(DiscordVoiceGatewayClient), ConsoleColor.DarkGreen);
+        static readonly MyLogger _logger = new MyLogger(nameof(VoiceGatewayClient), ConsoleColor.DarkGreen);
 
         readonly WebSocketClient _clientWebSocketWrapper;
 
@@ -25,7 +26,7 @@ namespace DiscordApiWrapper.Voice
         ulong _userId;
         Timer _heartbeatTimer;
 
-        public DiscordVoiceGatewayClient(VoiceServerInfo voiceServerInfo, ulong userId, string sessionId)
+        public VoiceGatewayClient(VoiceServerInfo voiceServerInfo, ulong userId, string sessionId)
         {
             _guildId = voiceServerInfo.GuildID;
             _token = voiceServerInfo.Token;

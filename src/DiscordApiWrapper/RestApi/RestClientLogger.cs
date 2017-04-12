@@ -6,11 +6,11 @@ using BundtBot;
 
 namespace DiscordApiWrapper.RestApi
 {
-    class DiscordRestClientLogger : DelegatingHandler
+    class RestClientLogger : DelegatingHandler
     {
-        static readonly MyLogger _logger = new MyLogger(nameof(DiscordRestClientLogger), ConsoleColor.DarkMagenta);
+        static readonly MyLogger _logger = new MyLogger(nameof(RestClientLogger), ConsoleColor.DarkMagenta);
 
-        public DiscordRestClientLogger(HttpMessageHandler innerHandler) : base(innerHandler)
+        public RestClientLogger(HttpMessageHandler innerHandler) : base(innerHandler)
         {
         }
 

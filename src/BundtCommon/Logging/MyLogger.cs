@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -21,7 +22,7 @@ namespace BundtBot
         public static Exception LastLoggedException;
 
         public bool EnableTimestamps = true;
-        public LogLevel CurrentLogLevel = LogLevel.Information;
+        public LogLevel CurrentLogLevel = LogLevel.Trace;
 
         readonly string _prefix;
         readonly ConsoleColor? _prefixColor;
@@ -174,6 +175,8 @@ namespace BundtBot
         {
             var message = BuildMessage(messageObject, logLevel, logLevelColor, messageColor);
 
+            message = AddThreadId(message);
+
             message = AddTimeStampIfEnabled(message);
 
             message = message.Replace("\n", "\n\t");
@@ -246,10 +249,16 @@ namespace BundtBot
             return spaces;
         }
 
+        string AddThreadId(string message)
+        {
+            return $"T{Thread.CurrentThread.ManagedThreadId.ToString("D2")} {message}";
+        }
+
         string AddTimeStampIfEnabled(string message)
         {
             if (EnableTimestamps == false) return message;
-            var dateTimeString = DateTime.Now.ToString("o");
+            //var dateTimeString = DateTime.Now.ToString("o");
+            var dateTimeString = DateTime.Now.ToString("yyyyMMddTHH:mm:ss.fffK");
             if (_supportsAnsiColors)
             {
                 dateTimeString = AddAnsiColorsToDateTimeString(dateTimeString);

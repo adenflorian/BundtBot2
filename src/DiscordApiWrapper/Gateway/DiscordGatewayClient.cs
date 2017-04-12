@@ -8,6 +8,7 @@ using BundtBot.Extensions;
 using DiscordApiWrapper.Gateway;
 using DiscordApiWrapper.Gateway.Models;
 using DiscordApiWrapper.Models;
+using DiscordApiWrapper.WebSocket;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 

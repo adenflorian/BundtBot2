@@ -17,7 +17,7 @@ namespace BundtBot.Discord
 
         public DiscordRestClient(RestClientConfig config, HttpClient httpClient = null)
         {
-            HttpClient = httpClient ?? new HttpClient(new DiscordRestClientLogger(new HttpClientHandler()));
+            HttpClient = httpClient ?? new HttpClient(new RestClientLogger(new HttpClientHandler()));
             ValidateArguments(config);
             InitializeHttpClient(config);
         }
