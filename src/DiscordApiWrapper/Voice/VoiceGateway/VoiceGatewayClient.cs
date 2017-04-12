@@ -1,9 +1,11 @@
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using BundtBot;
 using BundtBot.Extensions;
 using DiscordApiWrapper.Models;
+using DiscordApiWrapper.Voice.VoiceGateway;
 using DiscordApiWrapper.WebSocket;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -71,7 +73,6 @@ namespace DiscordApiWrapper.Voice
         void OnReadyReceivedAsync(VoiceServerReady voiceServerReady)
         {
             _logger.LogInfo("Received Ready from Voice Server", ConsoleColor.Green);
-
             StartHeartBeatLoop(voiceServerReady.HeartbeatInterval);
         }
 
@@ -101,6 +102,21 @@ namespace DiscordApiWrapper.Voice
                 VoiceServerToken = _token,
                 UserId = _userId,
                 SessionId = _sessionId
+            });
+        }
+
+        public async Task SendSelectProtocolAsync(string clientPublicIpAddress, int clientPort, string encryptionMethod)
+        {
+            _logger.LogInfo("Sending SelectProtocol to Voice Server", ConsoleColor.Green);
+            await SendOpCodeAsync(VoiceOpCode.Select, new VoiceSelectProtocol
+            {
+                Protocol = "udp",
+                Data = new VoiceSelectProtocolData
+                {
+                    ClientPublicIpAddress = clientPublicIpAddress,
+                    ClientPort = clientPort,
+                    EncryptionMethod = encryptionMethod
+                }
             });
         }
 

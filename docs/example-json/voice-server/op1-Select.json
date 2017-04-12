@@ -1,0 +1,11 @@
+{
+    "op": 1,
+    "d": {
+        "protocol": "udp",
+        "data": {
+            "address": "75.167.74.123",
+            "port": 51697,
+            "mode": "xsalsa20_poly1305"
+        }
+    }
+}

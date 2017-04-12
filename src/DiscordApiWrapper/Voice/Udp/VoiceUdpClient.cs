@@ -22,7 +22,7 @@ namespace DiscordApiWrapper.Voice
             _synchronizationSourceId = synchronizationSourceId;
         }
 
-        public async Task SendIpDiscoveryPacketAsync()
+        public async Task<Tuple<string, int>> SendIpDiscoveryPacketAsync()
         {
             var ipDiscoveryPacket = new VoicePacket(0, 0, _synchronizationSourceId);
 
@@ -34,6 +34,8 @@ namespace DiscordApiWrapper.Voice
             var IpDiscoveryResult = UdpUtility.GetIpAddressAndPortFromIpDiscoveryResponse(IpDiscoveryResultBytes);
 
             _logger.LogTrace($"Results of IP Discovery: Public IP Address: {IpDiscoveryResult.Item1}, Port: {IpDiscoveryResult.Item2}", ConsoleColor.Green);
+
+            return IpDiscoveryResult;
         }
 
         async Task<int> SendAsync(byte[] bytesToSend)

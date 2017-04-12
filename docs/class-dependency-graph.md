@@ -15,6 +15,6 @@
                 + RateLimitedClient
                     + DiscordRestClient
             + DiscordVoiceClient
-                + DiscordVoiceGatewayClient
+                + VoiceGatewayClient
                     + WebSocketClient
                 + VoiceUdpClient

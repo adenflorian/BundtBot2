@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using BundtBot;
 using DiscordApiWrapper.Models;
@@ -7,6 +8,8 @@ namespace DiscordApiWrapper.Voice
 {
     public class DiscordVoiceClient
     {
+        const string _desiredEncryptionMethod = "xsalsa20_poly1305";
+
         static readonly MyLogger _logger = new MyLogger(nameof(DiscordVoiceClient));
         
         VoiceGatewayClient _voiceGatewayClient;
@@ -28,8 +31,15 @@ namespace DiscordApiWrapper.Voice
         {
             _logger.LogInfo("Received Ready from Voice Server", ConsoleColor.Green);
 
+            if (voiceServerReady.Modes.ToList().Contains(_desiredEncryptionMethod) == false)
+            {
+                _logger.LogCritical($"Ready payload does not contain {_desiredEncryptionMethod} as voice encryption mode!");
+            }
+
             _voiceUdpClient = new VoiceUdpClient(_voiceServerInfo.Endpoint, voiceServerReady.Port, voiceServerReady.SynchronizationSourceId);
-            await _voiceUdpClient.SendIpDiscoveryPacketAsync();
+            var result = await _voiceUdpClient.SendIpDiscoveryPacketAsync();
+            
+            await _voiceGatewayClient.SendSelectProtocolAsync(result.Item1, result.Item2, _desiredEncryptionMethod);
         }
     }
 }
