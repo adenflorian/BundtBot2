@@ -10,3 +10,6 @@ obj/
 secret.json
 
 *.log
+
+*.opus
+*.wav

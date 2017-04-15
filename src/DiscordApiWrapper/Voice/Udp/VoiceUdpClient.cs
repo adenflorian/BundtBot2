@@ -49,15 +49,6 @@ namespace DiscordApiWrapper.Voice
             return IpDiscoveryResult;
         }
 
-        async Task<int> SendAsync(byte[] bytesToSend)
-        {
-            _logger.LogDebug($"Sending {bytesToSend.Length} bytes to {_voiceUdpEndpoint}");
-            _logger.LogTrace($"Sending {bytesToSend.Length} bytes to {_voiceUdpEndpoint}: {BitConverter.ToString(bytesToSend)}");
-            var bytesSent = await _udpClient.SendAsync(bytesToSend, bytesToSend.Length, _voiceUdpEndpoint);
-            _logger.LogDebug($"Sent {bytesSent} bytes");
-            return bytesSent;
-        }
-
         internal async Task SendAudioAsync(byte[] sodaBytes)
         {
             //await SendVoiceEchoAsync();
@@ -222,29 +213,30 @@ namespace DiscordApiWrapper.Voice
             Stopwatch sw = Stopwatch.StartNew();
             
             var index = 0;
+            var pcmFrame = new short[shortsToRead];
+
+            Debug.Assert(samplesPerFrame == 960);
 
             while (true)
             {
-
-                var pcmFrame = new short[shortsToRead];
-
                 Buffer.BlockCopy(fullSongPcm, index, pcmFrame, 0, shortsToRead);
 
                 index += shortsToRead;
                 if (index > fullSongPcm.Length - shortsToRead)
                 {
+                    _logger.LogInfo($"Ran out of shorts to read, breaking!");
                     break;
                 }
 
                 var compressedBytes = opusEncoder.Compress(pcmFrame);
-
-                var encryptedBytes = new byte[headerSizeInBytes + crytpoTagSizeInBytes + compressedBytes.Length];
 
                 var voicePacket = new VoicePacket(sequence, timestamp, _synchronizationSourceId, compressedBytes);
 
                 // Find out how much time to wait
                 double ticksUntilNextFrame = nextFrameInTicks - sw.ElapsedTicks;
                 int msUntilNextFrame = (int)Math.Floor(ticksUntilNextFrame / ticksPerMillisecond);
+
+                _logger.LogDebug($"msUntilNextFrame {msUntilNextFrame}");
 
                 if (msUntilNextFrame > 0)
                 {
@@ -321,6 +313,15 @@ namespace DiscordApiWrapper.Voice
             }
 
             return pcm;
+        }
+
+        async Task<int> SendAsync(byte[] bytesToSend)
+        {
+            //_logger.LogDebug($"Sending {bytesToSend.Length} bytes to {_voiceUdpEndpoint}");
+            //_logger.LogTrace($"Sending {bytesToSend.Length} bytes to {_voiceUdpEndpoint}: {BitConverter.ToString(bytesToSend)}");
+            var bytesSent = await _udpClient.SendAsync(bytesToSend, bytesToSend.Length, _voiceUdpEndpoint);
+            _logger.LogDebug($"Sent {bytesSent} bytes");
+            return bytesSent;
         }
 
         async Task<byte[]> ReceiveAsync()
