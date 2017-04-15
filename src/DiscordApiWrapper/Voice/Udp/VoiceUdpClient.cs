@@ -13,18 +13,21 @@ namespace DiscordApiWrapper.Voice
 {
     class VoiceUdpClient
     {
-        static readonly MyLogger _logger = new MyLogger(nameof(VoiceUdpClient), ConsoleColor.DarkGreen);
-
-        UdpClient _udpClient;
-        IPEndPoint _voiceUdpEndpoint;
-        uint _synchronizationSourceId;
         public byte[] SecretKey;
-        const int MaxOpusSize = 4000;
-        const int millisecondsInASecond = 1000;
-        readonly byte[] SILENCE_FRAMES = { 0xF8, 0xFF, 0xFE };
-        readonly byte[] KEEP_ALIVE_DATA = { 0xC9, 0, 0, 0, 0, 0, 0, 0, 0 };
-        const int headerSizeInBytes = 12;
-        const int crytpoTagSizeInBytes = 16;
+
+        const int _maxOpusSize = 4000;
+        const int _msPerSecond = 1000;
+        const int _headerSizeInBytes = 12;
+        const int _crytpoTagSizeInBytes = 16;
+
+        static readonly MyLogger _logger = new MyLogger(nameof(VoiceUdpClient), ConsoleColor.DarkGreen);
+        static readonly byte[] _silenceFrames = { 0xF8, 0xFF, 0xFE };
+        static readonly byte[] _keepAliveData = { 0xC9, 0, 0, 0, 0, 0, 0, 0, 0 };
+        static readonly double _ticksPerMillisecond = Stopwatch.Frequency / _msPerSecond;
+
+        readonly UdpClient _udpClient;
+        readonly IPEndPoint _voiceUdpEndpoint;
+        readonly uint _synchronizationSourceId;
 
         public VoiceUdpClient(Uri remoteUri, int remotePort, uint synchronizationSourceId)
         {
@@ -33,7 +36,7 @@ namespace DiscordApiWrapper.Voice
             _synchronizationSourceId = synchronizationSourceId;
         }
 
-        public async Task<Tuple<string, int>> SendIpDiscoveryPacketAsync()
+        public async Task<IpDiscoveryResult> SendIpDiscoveryPacketAsync()
         {
             var ipDiscoveryPacket = new VoicePacket(0, 0, _synchronizationSourceId, new byte[58]);
 
@@ -43,8 +46,7 @@ namespace DiscordApiWrapper.Voice
             _logger.LogTrace($"IP Discovery Response: {IpDiscoveryResultBytes.Length} bytes: {BitConverter.ToString(IpDiscoveryResultBytes)}");
 
             var IpDiscoveryResult = UdpUtility.GetIpAddressAndPortFromIpDiscoveryResponse(IpDiscoveryResultBytes);
-
-            _logger.LogTrace($"Results of IP Discovery: Public IP Address: {IpDiscoveryResult.Item1}, Port: {IpDiscoveryResult.Item2}", ConsoleColor.Green);
+            _logger.LogDebug($"Results of IP Discovery: Public IP Address: {IpDiscoveryResult.IpAddress}, Port: {IpDiscoveryResult.Port}", ConsoleColor.Green);
 
             return IpDiscoveryResult;
         }
@@ -110,7 +112,7 @@ namespace DiscordApiWrapper.Voice
                 var encryptedBytes = new byte[12 + 16 + decryptedBytes.Length];
 
                 var voicePacketHeader = new VoiceUdpPacketHeader(seq, timestamp, _synchronizationSourceId);
-                Buffer.BlockCopy(voicePacketHeader.GetBytes(), 0, encryptedBytes, 0, headerSizeInBytes);
+                Buffer.BlockCopy(voicePacketHeader.GetBytes(), 0, encryptedBytes, 0, _headerSizeInBytes);
 
                 var nonce2 = new byte[24];
 
@@ -127,12 +129,12 @@ namespace DiscordApiWrapper.Voice
 
         async Task SendVoiceNoiseAsync()
         {
-            var opusEncoder = new ConcentusDemo.ConcentusCodec();
+            var opusEncoder = new ConcentusDemo.ConcentusCodec(2);
             var random = new Random();
             int samplingRate = 48000;
             int channels = 2;
             var frameLengthInMs = 20;
-            uint samplesPerFrame = (uint)((samplingRate / millisecondsInASecond) * frameLengthInMs);
+            uint samplesPerFrame = (uint)((samplingRate / _msPerSecond) * frameLengthInMs);
             opusEncoder.SetFrameSize(frameLengthInMs);
             ushort sequence = 0;
             uint timestamp = 0;
@@ -153,7 +155,7 @@ namespace DiscordApiWrapper.Voice
             {
                 var compressedBytes = opusEncoder.Compress(randomNoisePCM);
 
-                var encryptedBytes = new byte[headerSizeInBytes + crytpoTagSizeInBytes + compressedBytes.Length];
+                var encryptedBytes = new byte[_headerSizeInBytes + _crytpoTagSizeInBytes + compressedBytes.Length];
 
                 var voicePacket = new VoicePacket(sequence, timestamp, _synchronizationSourceId, compressedBytes);
 
@@ -183,20 +185,22 @@ namespace DiscordApiWrapper.Voice
 
         async Task SendMusicAsync()
         {
-            var opusEncoder = new ConcentusDemo.ConcentusCodec();
-            var random = new Random();
             int samplingRate = 48000;
             int channels = 2;
             var frameLengthInMs = 20;
-            uint samplesPerFrame = (uint)((samplingRate / millisecondsInASecond) * frameLengthInMs);
-            opusEncoder.SetFrameSize(frameLengthInMs);
+            uint samplesPerFramePerChannel = (uint)((samplingRate / _msPerSecond) * frameLengthInMs);
+            Debug.Assert(samplesPerFramePerChannel == 960);
+
             ushort sequence = 0;
             uint timestamp = 0;
-            int framesToSend = 100;
+            
+            const int framesToSend = 100;
+
+            var opusEncoder = new ConcentusDemo.ConcentusCodec(channels);
+            opusEncoder.SetFrameSize(frameLengthInMs);
 
             // stopwatch
-            double ticksPerMillisecond = Stopwatch.Frequency / 1000.0;
-            double ticksPerFrame = ticksPerMillisecond * frameLengthInMs;
+            double ticksPerFrame = _ticksPerMillisecond * frameLengthInMs;
 
             double nextFrameInTicks = 0;
 
@@ -207,7 +211,7 @@ namespace DiscordApiWrapper.Voice
             var fullSongPcm = wavReader.ReadFile(new FileInfo("ms.wav"));
 
             // read 20ms from song
-            var shortsPerMs = (samplingRate * channels) / millisecondsInASecond;
+            var shortsPerMs = (samplingRate * channels) / _msPerSecond;
             var shortsToRead = 20 * shortsPerMs;
 
             Stopwatch sw = Stopwatch.StartNew();
@@ -215,7 +219,6 @@ namespace DiscordApiWrapper.Voice
             var index = 0;
             var pcmFrame = new short[shortsToRead];
 
-            Debug.Assert(samplesPerFrame == 960);
 
             while (true)
             {
@@ -234,7 +237,7 @@ namespace DiscordApiWrapper.Voice
 
                 // Find out how much time to wait
                 double ticksUntilNextFrame = nextFrameInTicks - sw.ElapsedTicks;
-                int msUntilNextFrame = (int)Math.Floor(ticksUntilNextFrame / ticksPerMillisecond);
+                int msUntilNextFrame = (int)Math.Floor(ticksUntilNextFrame / _ticksPerMillisecond);
 
                 _logger.LogDebug($"msUntilNextFrame {msUntilNextFrame}");
 
@@ -245,12 +248,12 @@ namespace DiscordApiWrapper.Voice
 
                 await SendAsync(voicePacket.GetEncryptedBytes(SecretKey));
 
-                timestamp += samplesPerFrame;
+                timestamp += samplesPerFramePerChannel;
                 sequence++;
                 nextFrameInTicks += ticksPerFrame;
             }
 
-            await SendFiveFramesOfSilence(sequence, timestamp, samplesPerFrame);
+            await SendFiveFramesOfSilence(sequence, timestamp, samplesPerFramePerChannel);
 
             var waitAmountMs = frameLengthInMs * framesToSend;
             _logger.LogInfo($"Waiting for {waitAmountMs} ms");
@@ -260,7 +263,7 @@ namespace DiscordApiWrapper.Voice
 
         async Task SendFiveFramesOfSilence(ushort sequence, uint timestamp, uint samplesPerFrame)
         {
-            var voicePacket2 = new VoicePacket(sequence, timestamp, _synchronizationSourceId, SILENCE_FRAMES);
+            var voicePacket2 = new VoicePacket(sequence, timestamp, _synchronizationSourceId, _silenceFrames);
             await SendAsync(voicePacket2.GetEncryptedBytes(SecretKey));
             timestamp += samplesPerFrame;
             sequence++;
@@ -280,7 +283,7 @@ namespace DiscordApiWrapper.Voice
 
         short[] GenerateSquareWavePcm(int channels, int samplingRate, int lengthInMs)
         {
-            var pcm = new short[((samplingRate * channels) / millisecondsInASecond) * lengthInMs];
+            var pcm = new short[((samplingRate * channels) / _msPerSecond) * lengthInMs];
 
             for (int time = 0; time < pcm.Length / channels; time++)
             {
@@ -302,7 +305,7 @@ namespace DiscordApiWrapper.Voice
 
         short[] GenerateSinWavePcm(int channels, int samplingRate, int lengthInMs)
         {
-            var pcm = new short[((samplingRate * channels) / millisecondsInASecond) * lengthInMs];
+            var pcm = new short[((samplingRate * channels) / _msPerSecond) * lengthInMs];
 
             for (int time = 0; time < pcm.Length / channels; time++)
             {

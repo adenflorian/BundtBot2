@@ -41,9 +41,9 @@ namespace DiscordApiWrapper.Voice
             }
             _ssrcId = voiceServerReady.SynchronizationSourceId;
             _voiceUdpClient = new VoiceUdpClient(_voiceServerInfo.Endpoint, voiceServerReady.Port, voiceServerReady.SynchronizationSourceId);
-            var result = await _voiceUdpClient.SendIpDiscoveryPacketAsync();
+            var ipDiscoveryResult = await _voiceUdpClient.SendIpDiscoveryPacketAsync();
 
-            await _voiceGatewayClient.SendSelectProtocolAsync(result.Item1, result.Item2, _desiredEncryptionMethod);
+            await _voiceGatewayClient.SendSelectProtocolAsync(ipDiscoveryResult.IpAddress, ipDiscoveryResult.Port, _desiredEncryptionMethod);
         }
 
         void OnSessionReceivedAsync(VoiceServerSession voiceServerSession)

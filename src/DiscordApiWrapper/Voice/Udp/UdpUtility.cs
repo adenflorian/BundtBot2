@@ -14,7 +14,14 @@ namespace DiscordApiWrapper.Voice.Udp
             return new IPEndPoint(voiceUdpServerAddress, remotePort);
         }
 
-        public static Tuple<string, int> GetIpAddressAndPortFromIpDiscoveryResponse(byte[] ipDiscoveryResponse)
+        public static IpDiscoveryResult GetIpAddressAndPortFromIpDiscoveryResponse(byte[] ipDiscoveryResponse)
+        {
+            var ipString = GetIpAddressFromIpDiscoveryResponse(ipDiscoveryResponse);
+            var port = GetPortFromIpDiscoveryResponse(ipDiscoveryResponse);
+            return new IpDiscoveryResult(ipString, port);
+        }
+
+        static string GetIpAddressFromIpDiscoveryResponse(byte[] ipDiscoveryResponse)
         {
             var ipString = "";
             var i = 4;
@@ -24,7 +31,11 @@ namespace DiscordApiWrapper.Voice.Udp
                 ipString += (char)ipDiscoveryResponse[i];
                 i++;
             }
+            return ipString;
+        }
 
+        static int GetPortFromIpDiscoveryResponse(byte[] ipDiscoveryResponse)
+        {
             var port = 0;
 
             if (BitConverter.IsLittleEndian)
@@ -38,7 +49,7 @@ namespace DiscordApiWrapper.Voice.Udp
                 port = BitConverter.ToUInt16(portBytesBigEndian, 0);
             }
 
-            return Tuple.Create(ipString, port);
+            return port;
         }
     }
 }

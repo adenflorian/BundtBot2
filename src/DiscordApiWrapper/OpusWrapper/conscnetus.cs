@@ -1,13 +1,12 @@
-
 using System;
 using Concentus.Enums;
 using Concentus.Structs;
-using System.Diagnostics;
 
 namespace ConcentusDemo
 {
     public class ConcentusCodec
     {
+        readonly int _channels = 2;
         private int _bitrate = 64;
         private int _complexity = 5;
         private double _frameSize = 20;
@@ -19,19 +18,17 @@ namespace ConcentusDemo
         private BasicBufferShort _incomingSamples = new BasicBufferShort(48000);
 
         private OpusEncoder _encoder;
-        private CodecStatistics _statistics = new CodecStatistics();
-        private Stopwatch _timer = new Stopwatch();
 
         private byte[] scratchBuffer = new byte[10000];
 
-        public ConcentusCodec()
+        public ConcentusCodec(int channels)
         {
-            _encoder = OpusEncoder.Create(48000, 1, OpusApplication.OPUS_APPLICATION_AUDIO);
+            _channels = channels;
+            _encoder = OpusEncoder.Create(48000, _channels, OpusApplication.OPUS_APPLICATION_AUDIO);
 
             SetBitrate(_bitrate);
             SetComplexity(_complexity);
             SetVBRMode(_vbr, _cvbr);
-            _encoder.EnableAnalysis = true;
         }
 
         public void SetBitrate(int bitrate)
@@ -82,48 +79,22 @@ namespace ConcentusDemo
 
         private int GetFrameSize()
         {
-            return (int)(48000 * _frameSize / 1000);
-        }
-
-        public CodecStatistics GetStatistics()
-        {
-            return _statistics;
+            return (int)(48000 * _channels * _frameSize / 1000);
         }
 
         public byte[] Compress(short[] input)
         {
             int frameSize = GetFrameSize();
 
-            if (input != null)
-            {
-                short[] newData = input;
-                _incomingSamples.Write(newData);
-            }
-            else
-            {
-                // If input is null, assume we are at end of stream and pad the output with zeroes
-                int paddingNeeded = _incomingSamples.Available() % frameSize;
-                if (paddingNeeded > 0)
-                {
-                    _incomingSamples.Write(new short[paddingNeeded]);
-                }
-            }
+            _incomingSamples.Write(input);
 
             int outCursor = 0;
 
             if (_incomingSamples.Available() >= frameSize)
             {
-                _timer.Reset();
-                _timer.Start();
                 short[] nextFrameData = _incomingSamples.Read(frameSize);
-                int thisPacketSize = _encoder.Encode(nextFrameData, 0, frameSize, scratchBuffer, outCursor, scratchBuffer.Length);
+                int thisPacketSize = _encoder.Encode(nextFrameData, 0, frameSize / _channels, scratchBuffer, outCursor, scratchBuffer.Length);
                 outCursor += thisPacketSize;
-                _timer.Stop();
-            }
-
-            if (outCursor > 0)
-            {
-                _statistics.EncodeSpeed = _frameSize / ((double)_timer.ElapsedTicks / Stopwatch.Frequency * 1000);
             }
 
             byte[] finalOutput = new byte[outCursor];
@@ -131,5 +102,4 @@ namespace ConcentusDemo
             return finalOutput;
         }
     }
-
 }

@@ -8,103 +8,104 @@ namespace DiscordApiWrapper.Audio
     {
         static readonly MyLogger _logger = new MyLogger(nameof(WavFileReader));
 
+        /// <summary>
+        /// Will thrown an Exception if the data bytes are not found in the first 1000 bytes,
+        /// meaning it probably isn't a valid wav file.
+        /// </summary>
         public short[] ReadFile(FileInfo fileInfo)
         {
-            // Read all bytes in from a file on the disk.
-            var file = File.ReadAllBytes(fileInfo.FullName);
-            int indexOfSamplesStart = 0;
+            var fileBytes = File.ReadAllBytes(fileInfo.FullName);
 
-            // Create a memory stream from those bytes.
-            using (var memory = new MemoryStream(file))
+            int indexOfSamplesStart = FindSamplesStartingIndex(fileBytes);
+            _logger.LogDebug($"Found starting index of sample data: {indexOfSamplesStart}");
+
+            var sampleBytes = new byte[fileBytes.Length - indexOfSamplesStart];
+
+            Buffer.BlockCopy(fileBytes, indexOfSamplesStart, sampleBytes, 0, sampleBytes.Length);
+
+            // TODO: return byte[] instead
+
+            // TODO: Support mono
+
+            return GetShortArray(sampleBytes);
+        }
+
+        short[] GetShortArray(byte[] sampleBytes)
+        {
+            var shortArray = new short[sampleBytes.Length / 2];
+
+            for (int i = 0; i < shortArray.Length; i++)
             {
-                // Use the memory stream in a binary reader.
-                using (var reader = new BinaryReader(memory))
-                {
-                    int flag = 0;
-                    // Read in each byte from memory.
-                    for (int i = 0; i < file.Length; i++)
-                    {
+                shortArray[i] = BitConverter.ToInt16(new byte[] { sampleBytes[(i * 2)], sampleBytes[(i * 2) + 1] }, 0);
+            }
 
-                        byte result = reader.ReadByte();
-                        _logger.LogDebug(i + " : " + BitConverter.ToString(new byte[] {result}));
-                        if (flag == 0 && result == 0x64)
+            return shortArray;
+        }
+
+        int FindSamplesStartingIndex(byte[] fileBytes)
+        {
+            using (var fileBytesStream = new MemoryStream(fileBytes))
+            using (var fileBytesReader = new BinaryReader(fileBytesStream))
+            {
+                int counter = 0;
+
+                for (int i = 0; i < fileBytes.Length; i++)
+                {
+                    var result = fileBytesReader.ReadByte();
+                    _logger.LogTrace(i + " : " + BitConverter.ToString(new byte[] { result }));
+
+                    if (counter == 0 && result == 'd')
+                    {
+                        counter++;
+                        continue;
+                    }
+
+                    if (counter == 1)
+                    {
+                        if (result == 'a')
                         {
-                            flag++;
+                            counter++;
                             continue;
                         }
-
-                        if (flag == 1)
+                        else
                         {
-                            if (result == 0x61)
-                            {
-                                flag++;
-                                continue;
-                            }
-                            else
-                            {
-                                flag = 0;
-                            }
+                            counter = 0;
                         }
+                    }
 
-                        if (flag == 2)
+                    if (counter == 2)
+                    {
+                        if (result == 't')
                         {
-                            if (result == 0x74)
-                            {
-                                flag++;
-                                continue;
-                            }
-                            else
-                            {
-                                flag = 0;
-                            }
+                            counter++;
+                            continue;
                         }
+                        else
+                        {
+                            counter = 0;
+                        }
+                    }
 
-                        if (flag == 3)
+                    if (counter == 3)
+                    {
+                        if (result == 'a')
                         {
-                            if (result == 0x61)
-                            {
-                                indexOfSamplesStart = i + 5;
-                                break;
-                            }
-                            else
-                            {
-                                flag = 0;
-                            }
+                            return i + 5;
                         }
+                        else
+                        {
+                            counter = 0;
+                        }
+                    }
 
-                        if (i > 100)
-                        {
-                            throw new Exception();
-                        }
+                    if (i > 1000)
+                    {
+                        throw new Exception();
                     }
                 }
             }
 
-            _logger.LogDebug($"Found starting index of sample data: {indexOfSamplesStart}");
-
-
-            var sampleBytes = new byte[file.Length - indexOfSamplesStart];
-
-            Buffer.BlockCopy(file, indexOfSamplesStart, sampleBytes, 0, sampleBytes.Length);
-
-            var shortArray = new short[sampleBytes.Length / 2];
-
-            // read two bytes at a time into a short array
-            for (int i = 0; i < shortArray.Length; i++)
-            {
-                shortArray[i] = BitConverter.ToInt16(new byte[] { sampleBytes[(i * 2)], sampleBytes[(i * 2) + 1] }, 0);
-                // var shorterArray = new short[16];
-                // Buffer.BlockCopy(shortArray, 0, shorterArray, 0, 16);
-
-                // _logger.LogDebug($"After short array:");
-                // for (int j = 0; j < shorterArray.Length; j++)
-                // {
-                //     _logger.LogDebug(shorterArray[j]);
-                // }
-
-            }
-
-            return shortArray;
+            throw new Exception();
         }
     }
 }
