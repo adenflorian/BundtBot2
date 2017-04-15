@@ -8,6 +8,8 @@ using BundtBot;
 using DiscordApiWrapper.Audio;
 using DiscordApiWrapper.Sodium;
 using DiscordApiWrapper.Voice.Udp;
+using FragLabs.Audio.Codecs;
+using FragLabs.Audio.Codecs.Opus;
 
 namespace DiscordApiWrapper.Voice
 {
@@ -191,13 +193,14 @@ namespace DiscordApiWrapper.Voice
             uint samplesPerFramePerChannel = (uint)((samplingRate / _msPerSecond) * frameLengthInMs);
             Debug.Assert(samplesPerFramePerChannel == 960);
 
+            int bytesPerSample = 2;
+
             ushort sequence = 0;
             uint timestamp = 0;
             
             const int framesToSend = 100;
 
-            var opusEncoder = new ConcentusDemo.ConcentusCodec(channels);
-            opusEncoder.SetFrameSize(frameLengthInMs);
+            var opusEncoder = OpusEncoder.Create(samplingRate, channels, Application.Audio);
 
             // stopwatch
             double ticksPerFrame = _ticksPerMillisecond * frameLengthInMs;
@@ -208,16 +211,24 @@ namespace DiscordApiWrapper.Voice
             //var randomNoisePCM = GenerateSinWavePcm(channels, samplingRate, frameLengthInMs);
 
             var wavReader = new WavFileReader();
-            var fullSongPcm = wavReader.ReadFile(new FileInfo("ms.wav"));
+            var fullSongPcm = wavReader.ReadFileBytes(new FileInfo("ms.wav"));
+
+            // make it mono
+            // var monoPcm = new byte[fullSongPcm.Length / 2];
+
+            // for (int i = 0; i < monoPcm.Length; i++)
+            // {
+            //     monoPcm[i] = fullSongPcm[i * 2];
+            // }
 
             // read 20ms from song
-            var shortsPerMs = (samplingRate * channels) / _msPerSecond;
-            var shortsToRead = 20 * shortsPerMs;
+            var samplesPerMs = (samplingRate * channels) / _msPerSecond;
+            var shortsToRead = 20 * samplesPerMs * bytesPerSample;
 
             Stopwatch sw = Stopwatch.StartNew();
             
             var index = 0;
-            var pcmFrame = new short[shortsToRead];
+            var pcmFrame = new byte[shortsToRead];
 
 
             while (true)
@@ -231,9 +242,18 @@ namespace DiscordApiWrapper.Voice
                     break;
                 }
 
-                var compressedBytes = opusEncoder.Compress(pcmFrame);
+                int encodedLength;
 
-                var voicePacket = new VoicePacket(sequence, timestamp, _synchronizationSourceId, compressedBytes);
+
+                _logger.LogInfo($"Encoding pcm frame of {pcmFrame.Length} bytes");
+                var compressedBytes = opusEncoder.Encode(pcmFrame, pcmFrame.Length, out encodedLength);
+                _logger.LogInfo($"encodedLength: {encodedLength}");
+
+
+                var compressedBytesShort = new byte[encodedLength];
+                Buffer.BlockCopy(compressedBytes, 0, compressedBytesShort, 0, encodedLength);
+
+                var voicePacket = new VoicePacket(sequence, timestamp, _synchronizationSourceId, compressedBytesShort);
 
                 // Find out how much time to wait
                 double ticksUntilNextFrame = nextFrameInTicks - sw.ElapsedTicks;
