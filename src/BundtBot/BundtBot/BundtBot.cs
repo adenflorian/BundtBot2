@@ -51,11 +51,6 @@ namespace BundtBot
                         // Join voice channel
                         await message.Author.VoiceChannel.JoinAsync();
 
-                        await Task.Delay(2345);
-
-                        // Leave voice channel
-                        await message.Author.VoiceChannel.LeaveAsync();
-
                         // Play helloworld.opus
                         // Leave channel
                     }
@@ -77,13 +72,14 @@ namespace BundtBot
                     // Join voice channel
                     await voiceChannel.JoinAsync();
 
-                    await Task.Delay(2000);
+                    await Task.Delay(1000);
 
-                    // Leave voice channel
-                    //await voiceChannel.LeaveAsync();
+                    // read file
+                    var sodaBytes = File.ReadAllBytes("marblesoda.opus");
+                    _logger.LogInfo($"Read {sodaBytes.Length} soda bytes :)");
 
-                    // Play helloworld.opus
-                    // Leave channel
+                    // send
+                    await voiceChannel.SendAudioAsync(sodaBytes);
                 }
                 catch (Exception ex)
                 {
@@ -96,9 +92,9 @@ namespace BundtBot
 				_logger.LogInfo("Client is Ready/Connected! ໒( ͡ᵔ ▾ ͡ᵔ )७", ConsoleColor.Green);
 				_logger.LogInfo("Setting game...");
 				_client.SetGame(Assembly.GetEntryAssembly().GetName().Version.ToString());
-			};
+			};*/
 			
-			_client.TextChannelCreated += async (textChannel) => {
+			/*_client.TextChannelCreated += async (textChannel) => {
 				try {
 					await textChannel.SendMessage("less is more");
 					if (!textChannel.Name.ToLower().Contains("bundtbot")) return;

@@ -34,20 +34,48 @@ namespace DiscordApiWrapper.Voice
             byteArray[1] = _version;
 
             var sequenceBytes = BitConverter.GetBytes(_sequence);
-            byteArray[2] = sequenceBytes[0];
-            byteArray[3] = sequenceBytes[1];
+            if (BitConverter.IsLittleEndian)
+            {
+                byteArray[2] = sequenceBytes[1];
+                byteArray[3] = sequenceBytes[0];
+            }
+            else
+            {
+                byteArray[2] = sequenceBytes[0];
+                byteArray[3] = sequenceBytes[1];
+            }
 
             var timestampBytes = BitConverter.GetBytes(_timestamp);
-            byteArray[4] = timestampBytes[0];
-            byteArray[5] = timestampBytes[1];
-            byteArray[6] = timestampBytes[2];
-            byteArray[7] = timestampBytes[3];
+            if (BitConverter.IsLittleEndian)
+            {
+                byteArray[4] = timestampBytes[3];
+                byteArray[5] = timestampBytes[2];
+                byteArray[6] = timestampBytes[1];
+                byteArray[7] = timestampBytes[0];
+            }
+            else
+            {
+                byteArray[4] = timestampBytes[0];
+                byteArray[5] = timestampBytes[1];
+                byteArray[6] = timestampBytes[2];
+                byteArray[7] = timestampBytes[3];
+            }
 
             var ssrcBytes = BitConverter.GetBytes(_synchronizationSourceId);
-            byteArray[8] = ssrcBytes[0];
-            byteArray[9] = ssrcBytes[1];
-            byteArray[10] = ssrcBytes[2];
-            byteArray[11] = ssrcBytes[3];
+            if (BitConverter.IsLittleEndian)
+            {
+                byteArray[8] = ssrcBytes[3];
+                byteArray[9] = ssrcBytes[2];
+                byteArray[10] = ssrcBytes[1];
+                byteArray[11] = ssrcBytes[0];
+            }
+            else
+            {
+                byteArray[8] = ssrcBytes[0];
+                byteArray[9] = ssrcBytes[1];
+                byteArray[10] = ssrcBytes[2];
+                byteArray[11] = ssrcBytes[3];
+            }
 
             return byteArray;
         }

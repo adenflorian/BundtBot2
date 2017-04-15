@@ -9,6 +9,8 @@ namespace BundtCord.Discord
         public string Name { get; }
         public ulong ServerId { get; }
 
+        public IServer Server => _client.Servers[ServerId];
+
         DiscordClient _client;
 
         public VoiceChannel(GuildChannel guildChannel, DiscordClient client)
@@ -27,6 +29,11 @@ namespace BundtCord.Discord
         public async Task LeaveAsync()
         {
             await _client.LeaveVoiceChannelInServer(ServerId);
+        }
+
+        public async Task SendAudioAsync(byte[] sodaBytes)
+        {
+            await Server.VoiceClient.SendAudioAsync(sodaBytes);
         }
     }
 }

@@ -13,6 +13,8 @@
     - bundtbot should join the voice channel of the requesting user and play a clip that says, "Hello, world! This is bundtbot. No relation to the cake"
 
 [ ] !yt
+[ ] !dog
+
 
 [ ] make a json file to configure what actions bundtbot does on startup
 

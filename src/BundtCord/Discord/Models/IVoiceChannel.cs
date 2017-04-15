@@ -10,5 +10,6 @@ namespace BundtCord.Discord
 
         Task JoinAsync();
         Task LeaveAsync();
+        Task SendAudioAsync(byte[] sodaBytes);
     }
 }

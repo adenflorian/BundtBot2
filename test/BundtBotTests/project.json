@@ -7,7 +7,7 @@
   "testRunner": "xunit",
   "dependencies": {
     "Microsoft.NET.Test.Sdk": "15.0.0-preview-20161123-03",
-    "xunit": "2.1.0",
+    "xunit": "2.2.0",
     "System.Runtime.Serialization.Primitives": "4.3.0",
     "Moq": "4.6.38-alpha",
     "BundtBot": "1.0.0",
@@ -18,8 +18,7 @@
   "frameworks": {
     "netcoreapp1.1": {
       "imports": [
-        "dotnet5.6",
-        "portable-net45+win8"
+        "portable-net45+win8+wp8+wpa81"
       ],
       "dependencies": {
         "Microsoft.NETCore.App": {

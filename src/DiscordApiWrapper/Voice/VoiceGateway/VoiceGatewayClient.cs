@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using BundtBot;
@@ -14,9 +13,11 @@ namespace DiscordApiWrapper.Voice
 {
     class VoiceGatewayClient
     {
-        public event Action HelloReceived;
-        public event Action HeartbeatAckReceived;
         public event Action<VoiceServerReady> ReadyReceived;
+        public event Action<VoiceServerSession> SessionReceived;
+        
+        event Action HelloReceived;
+        event Action HeartbeatAckReceived;
 
         static readonly MyLogger _logger = new MyLogger(nameof(VoiceGatewayClient), ConsoleColor.DarkGreen);
 
@@ -93,6 +94,16 @@ namespace DiscordApiWrapper.Voice
             await SendOpCodeAsync(VoiceOpCode.Heartbeat, null);
         }
 
+        internal async Task SendSpeakingAsync(bool isSpeaking, uint ssrcId)
+        {
+            _logger.LogInfo("Sending Speaking to Voice Server", ConsoleColor.Green);
+            await SendOpCodeAsync(VoiceOpCode.Speaking, new VoiceServerSpeakingClient
+            {
+                IsSpeaking = isSpeaking,
+                Delay = 0
+            });
+        }
+
         async Task SendIdentifyAsync()
         {
             _logger.LogInfo("Sending VoiceIdentify to Voice Server", ConsoleColor.Green);
@@ -151,6 +162,9 @@ namespace DiscordApiWrapper.Voice
                     break;
                 case VoiceOpCode.Ready:
                     ReadyReceived?.Invoke(JsonConvert.DeserializeObject<VoiceServerReady>(payload.EventData?.ToString()));
+                    break;
+                case VoiceOpCode.Session:
+                    SessionReceived?.Invoke(JsonConvert.DeserializeObject<VoiceServerSession>(payload.EventData?.ToString()));
                     break;
                 default:
                     _logger.LogWarning($"Received an OpCode with no handler: {payload.VoiceOpCode}");
