@@ -4,13 +4,17 @@
     "debugType": "portable",
     "warningsAsErrors": true,
     "copyToOutput": [
-      "Views/**/*"
+      "Views/**/*",
+      "../../audio/*"
     ],
     "preserveCompilationContext": true,
     "emitEntryPoint": true
   },
-  "publishOptions":{
-    "include": "Views/**/*"
+  "publishOptions": {
+    "include": [
+      "Views/**/*",
+      "../../audio/*"
+    ]
   },
   "dependencies": {
     "Newtonsoft.Json": "9.0.1",

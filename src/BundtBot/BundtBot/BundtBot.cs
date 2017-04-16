@@ -78,12 +78,14 @@ namespace BundtBot
                     // read file
 
                     var wavReader = new WavFileReader();
-                    var fullSongPcm = wavReader.ReadFileBytes(new FileInfo("audio/ms.wav"));
+                    var fullSongPcm = wavReader.ReadFileBytes(new FileInfo("audio/bbhw.wav"));
 
 
 
                     // send
                     await voiceChannel.SendAudioAsync(fullSongPcm);
+
+                    await _client.LeaveVoiceChannelInServer(server.Id);
                 }
                 catch (Exception ex)
                 {

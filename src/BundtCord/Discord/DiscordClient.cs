@@ -168,8 +168,6 @@ namespace BundtCord.Discord
                 IsMutedBySelf = muted,
                 IsDeafenedBySelf = deafened
             });
-
-            // Wait for voice server info
         }
 
         public async Task LeaveVoiceChannelInServer(ulong serverId, bool muted = false, bool deafened = false)
