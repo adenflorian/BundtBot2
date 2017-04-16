@@ -12,24 +12,6 @@ namespace DiscordApiWrapper.Audio
         /// Will thrown an Exception if the data bytes are not found in the first 1000 bytes,
         /// meaning it probably isn't a valid wav file.
         /// </summary>
-        public short[] ReadFileShorts(FileInfo fileInfo)
-        {
-            var fileBytes = File.ReadAllBytes(fileInfo.FullName);
-
-            int indexOfSamplesStart = FindSamplesStartingIndex(fileBytes);
-            _logger.LogDebug($"Found starting index of sample data: {indexOfSamplesStart}");
-
-            var sampleBytes = new byte[fileBytes.Length - indexOfSamplesStart];
-
-            Buffer.BlockCopy(fileBytes, indexOfSamplesStart, sampleBytes, 0, sampleBytes.Length);
-
-            return GetShortArray(sampleBytes);
-        }
-
-        /// <summary>
-        /// Will thrown an Exception if the data bytes are not found in the first 1000 bytes,
-        /// meaning it probably isn't a valid wav file.
-        /// </summary>
         public byte[] ReadFileBytes(FileInfo fileInfo)
         {
             var fileBytes = File.ReadAllBytes(fileInfo.FullName);
@@ -42,18 +24,6 @@ namespace DiscordApiWrapper.Audio
             Buffer.BlockCopy(fileBytes, indexOfSamplesStart, sampleBytes, 0, sampleBytes.Length);
 
             return sampleBytes;
-        }
-
-        short[] GetShortArray(byte[] sampleBytes)
-        {
-            var shortArray = new short[sampleBytes.Length / 2];
-
-            for (int i = 0; i < shortArray.Length; i++)
-            {
-                shortArray[i] = BitConverter.ToInt16(new byte[] { sampleBytes[(i * 2)], sampleBytes[(i * 2) + 1] }, 0);
-            }
-
-            return shortArray;
         }
 
         int FindSamplesStartingIndex(byte[] fileBytes)

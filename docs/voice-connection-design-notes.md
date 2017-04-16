@@ -11,9 +11,9 @@ https://discordapp.com/developers/docs/topics/voice-connections
 [√] IP Discovery
 [√] Send Select Protocol to Voice Gateway
 [√] Receive OP4 Session Description
-[ ] Start encrypting and sending voice data
-    [ ] libsodium
-    [ ] opus
+[√] Start encrypting and sending voice data
+    [√] libsodium
+    [√] opus
 
 ## Class Dependency Tree
 - DiscordVoiceClient
@@ -26,7 +26,7 @@ https://discordapp.com/developers/docs/topics/voice-connections
 - 48Khz
 
 Things To Look Into:
-[ ] RTP Header
+[√] RTP Header
     - RTP Data Transfer Protocol
     - Real-time Transport Protocol
 

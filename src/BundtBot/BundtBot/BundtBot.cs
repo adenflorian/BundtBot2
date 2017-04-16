@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using BundtCord.Discord;
+using DiscordApiWrapper.Audio;
 
 namespace BundtBot
 {
@@ -75,11 +76,14 @@ namespace BundtBot
                     await Task.Delay(1000);
 
                     // read file
-                    var sodaBytes = File.ReadAllBytes("marblesoda.opus");
-                    _logger.LogInfo($"Read {sodaBytes.Length} soda bytes :)");
+
+                    var wavReader = new WavFileReader();
+                    var fullSongPcm = wavReader.ReadFileBytes(new FileInfo("audio/ms.wav"));
+
+
 
                     // send
-                    await voiceChannel.SendAudioAsync(sodaBytes);
+                    await voiceChannel.SendAudioAsync(fullSongPcm);
                 }
                 catch (Exception ex)
                 {

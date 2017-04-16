@@ -15,8 +15,8 @@
 [ ] !yt
 [ ] !dog
 
-
 [ ] make a json file to configure what actions bundtbot does on startup
+  - for running tests and such
 
 [ ] edit the same message continuously to do a ascii art animation
 
@@ -29,3 +29,6 @@
 [ ] lock down website
 [ ] change log level
 [ ] change dog level
+
+# gulp
+[ ] instead of deleting previous version on test server, store it in a previous version folder so we can quickly rollback if need be

@@ -1,7 +1,7 @@
 module.exports = function (grunt) {
 
     var secret = grunt.file.readJSON('secret.json');
-    var bundtbotfile = "bundtbot.tar"
+    var bundtbotfile = 'BundtBot.tar.gz'
     var destinationFolder = "bundtbot"
     var executable = "BundtBot.dll"
     var sshOptions = {
@@ -36,7 +36,7 @@ module.exports = function (grunt) {
                     `rm -rf ${destinationFolder}`,
                     `mkdir ${destinationFolder}`,
                     "echo 'unpacking new app'",
-                    `tar xf ${bundtbotfile} -C ${destinationFolder}`,
+                    `tar xzf ${bundtbotfile} -C ${destinationFolder}`,
                     `chmod +x ${destinationFolder}/${executable}`,
                     "echo 'starting bundtbot service'",
                     "service bundtbot start"
