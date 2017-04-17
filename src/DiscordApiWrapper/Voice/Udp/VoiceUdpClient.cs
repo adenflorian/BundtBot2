@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
+using System.Threading;
 using System.Threading.Tasks;
 using BundtBot;
 using DiscordApiWrapper.Opus;
@@ -75,43 +76,53 @@ namespace DiscordApiWrapper.Voice
             var index = 0;
             var pcmFrame = new byte[bytesToRead];
 
-            while (true)
-            {
-                Buffer.BlockCopy(sodaBytes, index, pcmFrame, 0, bytesToRead);
+            await Task.Run(() => {
 
-                index += bytesToRead;
-                if (index > sodaBytes.Length - bytesToRead)
+                while (true)
                 {
-                    _logger.LogInfo($"Ran out of bytes to read, breaking out of loop");
-                    break;
+                    Buffer.BlockCopy(sodaBytes, index, pcmFrame, 0, bytesToRead);
+
+                    index += bytesToRead;
+                    if (index > sodaBytes.Length - bytesToRead)
+                    {
+                        _logger.LogInfo($"Ran out of bytes to read, breaking out of loop");
+                        break;
+                    }
+
+                    int encodedLength;
+
+                    var compressedBytes = opusEncoder.Encode(pcmFrame, pcmFrame.Length, out encodedLength);
+
+                    var compressedBytesShort = new byte[encodedLength];
+                    Buffer.BlockCopy(compressedBytes, 0, compressedBytesShort, 0, encodedLength);
+
+                    var voicePacket = new VoicePacket(sequence, timestamp, _syncSourceId, compressedBytesShort);
+
+                    // Find out how much time to wait
+                    double ticksUntilNextFrame = nextFrameInTicks - sw.ElapsedTicks;
+                    int msUntilNextFrame = (int)Math.Floor(ticksUntilNextFrame / _ticksPerMillisecond);
+
+                    _logger.LogTrace($"msUntilNextFrame: {msUntilNextFrame}");
+
+                    if (msUntilNextFrame > 0)
+                    {
+                        _logger.LogTrace($"Before Thread.Sleep()");
+                        Thread.Sleep(msUntilNextFrame);
+                        //await Task.Delay(msUntilNextFrame);
+                        _logger.LogTrace($"After Thread.Sleep()");
+                    }
+                    
+                    _logger.LogTrace($"Before SendAsync");
+                    // TODO Maybe check if previous send is still incomplete, and if it is, cancel it?
+                    var task = SendAsync(voicePacket.GetEncryptedBytes(SecretKey));
+                    _logger.LogTrace($"After  SendAsync");
+
+                    timestamp += samplesPerFramePerChannel;
+                    sequence++;
+                    nextFrameInTicks += ticksPerFrame;
                 }
+            });
 
-                int encodedLength;
-
-                var compressedBytes = opusEncoder.Encode(pcmFrame, pcmFrame.Length, out encodedLength);
-
-                var compressedBytesShort = new byte[encodedLength];
-                Buffer.BlockCopy(compressedBytes, 0, compressedBytesShort, 0, encodedLength);
-
-                var voicePacket = new VoicePacket(sequence, timestamp, _syncSourceId, compressedBytesShort);
-
-                // Find out how much time to wait
-                double ticksUntilNextFrame = nextFrameInTicks - sw.ElapsedTicks;
-                int msUntilNextFrame = (int)Math.Floor(ticksUntilNextFrame / _ticksPerMillisecond);
-
-                _logger.LogTrace($"msUntilNextFrame: {msUntilNextFrame}");
-
-                if (msUntilNextFrame > 0)
-                {
-                    await Task.Delay(msUntilNextFrame);
-                }
-
-                await SendAsync(voicePacket.GetEncryptedBytes(SecretKey));
-
-                timestamp += samplesPerFramePerChannel;
-                sequence++;
-                nextFrameInTicks += ticksPerFrame;
-            }
 
             await SendFiveFramesOfSilence(sequence, timestamp, samplesPerFramePerChannel);
         }
