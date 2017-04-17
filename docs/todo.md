@@ -20,6 +20,9 @@
 
 [ ] edit the same message continuously to do a ascii art animation
 
+## Voice
+[ ] put the voice udp client on its own thread
+
 # BundtBot Web API
 [√] show last logged exception in website
 [ ] make logs accessable from webserver
@@ -32,6 +35,12 @@
 
 # gulp
 [ ] instead of deleting previous version on test server, store it in a previous version folder so we can quickly rollback if need be
+[ ] get more logging from node do tar and grunt sftp:deploy
+  - i want to see progress logs
 
 # build system
 [ ] find out how to make a smaller build
+
+# vscode
+[ ] make it so when i hit f5, if the build errors then it doesn't continue to run the previous successful build
+[ ] can't run task because it says a task is running, but i dont see one running
