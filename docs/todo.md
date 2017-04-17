@@ -21,7 +21,8 @@
 [ ] edit the same message continuously to do a ascii art animation
 
 ## Voice
-[ ] put the voice udp client on its own thread
+[√] put the voice udp client on its own thread
+[ ] need to disconnect from voice properly when leaving a voice channel
 
 # BundtBot Web API
 [√] show last logged exception in website
