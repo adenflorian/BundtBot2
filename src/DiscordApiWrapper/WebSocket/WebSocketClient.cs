@@ -12,8 +12,7 @@ namespace DiscordApiWrapper.WebSocket
 {
     partial class WebSocketClient
 	{
-		public delegate void MessageReceivedHandler();
-		public event MessageReceivedHandler MessageReceived;
+		public event Action MessageReceived;
 
 		public Queue<string> ReceivedMessages = new Queue<string>();
 
