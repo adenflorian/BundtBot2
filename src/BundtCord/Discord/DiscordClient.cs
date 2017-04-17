@@ -176,6 +176,8 @@ namespace BundtCord.Discord
 
         public async Task JoinVoiceChannel(VoiceChannel voiceChannel, bool muted = false, bool deafened = false)
         {
+            // Don't return from this method until it is ok to start sending audio data
+
             await _gatewayClient.SendVoiceStateUpdateAsync(new GatewayVoiceStateUpdate
             {
                 GuildId = voiceChannel.ServerId,
@@ -183,6 +185,13 @@ namespace BundtCord.Discord
                 IsMutedBySelf = muted,
                 IsDeafenedBySelf = deafened
             });
+
+            // TODO I don't like this, but can't think of a better way right now
+            while (voiceChannel.Server.VoiceClient == null)
+            {
+                _logger.LogDebug("Waiting for voice client to not be null");
+                await Task.Delay(100);
+            }
         }
 
         public async Task LeaveVoiceChannelInServer(Server server, bool muted = false, bool deafened = false)
@@ -194,6 +203,8 @@ namespace BundtCord.Discord
                 IsMutedBySelf = muted,
                 IsDeafenedBySelf = deafened
             });
+            
+            // TODO Destroy that server's voice client
         }
     }
 }
