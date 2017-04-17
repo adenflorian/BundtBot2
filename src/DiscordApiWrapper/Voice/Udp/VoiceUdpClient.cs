@@ -99,6 +99,8 @@ namespace DiscordApiWrapper.Voice
                 double ticksUntilNextFrame = nextFrameInTicks - sw.ElapsedTicks;
                 int msUntilNextFrame = (int)Math.Floor(ticksUntilNextFrame / _ticksPerMillisecond);
 
+                _logger.LogTrace($"msUntilNextFrame: {msUntilNextFrame}");
+
                 if (msUntilNextFrame > 0)
                 {
                     await Task.Delay(msUntilNextFrame);

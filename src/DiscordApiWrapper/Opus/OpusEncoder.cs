@@ -1,5 +1,4 @@
 using System;
-using System.IO;
 using BundtBot;
 
 namespace DiscordApiWrapper.Opus
@@ -18,9 +17,6 @@ namespace DiscordApiWrapper.Opus
         {
             if (inputSamplingRate != 48000) throw new ArgumentOutOfRangeException("inputSamplingRate - only supports 48000");
             if (inputChannels != 2) throw new ArgumentOutOfRangeException("inputChannels - only supports 2");
-
-
-            _logger.LogInfo("Current working directory: " + Directory.GetCurrentDirectory());
 
             IntPtr error;
             IntPtr encoder = OpusWrapper.opus_encoder_create(inputSamplingRate, inputChannels, (int)application, out error);

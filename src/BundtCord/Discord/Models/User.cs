@@ -2,7 +2,7 @@ using BundtBot.Discord.Models;
 
 namespace BundtCord.Discord
 {
-    public class User : IUser
+    public class User
     {
         public ulong Id { get; }
 

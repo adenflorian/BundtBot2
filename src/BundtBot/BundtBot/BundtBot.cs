@@ -30,31 +30,7 @@ namespace BundtBot
             {
                 try
                 {
-                    if (message.Author.User.Id == _client.Me.Id) return;
-
-                    var messageContent = message.Content;
-
-                    if (messageContent.StartsWith("!echo "))
-                    {
-                        await message.ReplyAsync(messageContent.Substring(5));
-                    }
-                    else if (messageContent == "!hello")
-                    {
-                        // Reject if user is not in a voice channel
-                        if (message.Author.VoiceChannel == null)
-                        {
-                            await message.ReplyAsync("You're going to want to be in a voice channel for this...");
-                            return;
-                        }
-
-                        await message.ReplyAsync("I see you in channel " + message.Author.VoiceChannel.Name);
-
-                        // Join voice channel
-                        await message.Author.VoiceChannel.JoinAsync();
-
-                        // Play helloworld.opus
-                        // Leave channel
-                    }
+                    await ProcessTextMessageAsync(message);
                 }
                 catch (Exception ex)
                 {
@@ -66,26 +42,7 @@ namespace BundtBot
             _client.ServerCreated += async (server) => {
                 try
                 {
-                    await server.TextChannels.First().SendMessageAsync("yo");
-
-                    var voiceChannel = server.VoiceChannels.First();
-
-                    // Join voice channel
-                    await voiceChannel.JoinAsync();
-
-                    await Task.Delay(1000);
-
-                    // read file
-
-                    var wavReader = new WavFileReader();
-                    var fullSongPcm = wavReader.ReadFileBytes(new FileInfo("audio/bbhw.wav"));
-
-
-
-                    // send
-                    await voiceChannel.SendAudioAsync(fullSongPcm);
-
-                    await _client.LeaveVoiceChannelInServer(server.Id);
+                    await server.TextChannels.First().SendMessageAsync("bundtbot online");
                 }
                 catch (Exception ex)
                 {
@@ -109,6 +66,64 @@ namespace BundtBot
 					_logger.LogError(ex);
 				}
 			};*/
+        }
+
+        async Task ProcessTextMessageAsync(TextChannelMessage message)
+        {
+            if (message.Author.User.Id == _client.Me.Id) return;
+
+            var messageContent = message.Content;
+
+            switch (message.Content)
+            {
+                case "!echo ": await EchoCommand(message); break;
+                case "!hello": await HelloCommand(message); break;
+                case "!ms": await MarbleSodaCommand(message); break;
+                default: return;
+            }
+        }
+
+        async Task EchoCommand(TextChannelMessage message)
+        {
+            await message.ReplyAsync(message.Content.Substring(5));
+        }
+
+        async Task HelloCommand(TextChannelMessage message)
+        {
+            var voiceChannel = message.Author.VoiceChannel;
+            if (voiceChannel == null)
+            {
+                await message.ReplyAsync("You're going to want to be in a voice channel for this...");
+                return;
+            }
+
+            await voiceChannel.JoinAsync();
+
+            await Task.Delay(1000);
+
+            var fullSongPcm = new WavFileReader().ReadFileBytes(new FileInfo("audio/bbhw.wav"));
+            await voiceChannel.SendAudioAsync(fullSongPcm);
+
+            await _client.LeaveVoiceChannelInServer(voiceChannel.Server);
+        }
+
+        async Task MarbleSodaCommand(TextChannelMessage message)
+        {
+            var voiceChannel = message.Author.VoiceChannel;
+            if (voiceChannel == null)
+            {
+                await message.ReplyAsync("You're going to want to be in a voice channel for this...");
+                return;
+            }
+
+            await voiceChannel.JoinAsync();
+
+            await Task.Delay(1000);
+
+            var fullSongPcm = new WavFileReader().ReadFileBytes(new FileInfo("audio/ms.wav"));
+            await voiceChannel.SendAudioAsync(fullSongPcm);
+
+            await _client.LeaveVoiceChannelInServer(voiceChannel.Server);
         }
     }
 }

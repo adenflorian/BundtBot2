@@ -3,11 +3,11 @@ using BundtBot.Discord.Models;
 
 namespace BundtCord.Discord
 {
-    public class TextChannelMessage : ITextChannelMessage
+    public class TextChannelMessage
     {
         public string Content { get; }
-        public IServerMember Author => _client.ServerMembers[_serverId][_authorId];
-        public ITextChannel TextChannel => _client.TextChannels[_textChannelId];
+        public ServerMember Author => _client.ServerMembers[_serverId][_authorId];
+        public TextChannel TextChannel => _client.TextChannels[_textChannelId];
 
         readonly ulong _serverId;
         readonly ulong _authorId;

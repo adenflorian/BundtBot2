@@ -3,13 +3,13 @@ using BundtBot.Discord.Models;
 
 namespace BundtCord.Discord
 {
-    class VoiceChannel : IVoiceChannel
+    public class VoiceChannel
     {
         public ulong Id { get; }
         public string Name { get; }
         public ulong ServerId { get; }
 
-        public IServer Server => _client.Servers[ServerId];
+        public Server Server => _client.Servers[ServerId];
 
         DiscordClient _client;
 
@@ -28,7 +28,7 @@ namespace BundtCord.Discord
 
         public async Task LeaveAsync()
         {
-            await _client.LeaveVoiceChannelInServer(ServerId);
+            await _client.LeaveVoiceChannelInServer(Server);
         }
 
         public async Task SendAudioAsync(byte[] sodaBytes)

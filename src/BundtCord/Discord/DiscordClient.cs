@@ -15,22 +15,22 @@ namespace BundtCord.Discord
 {
     public class DiscordClient
     {
-        public const string Name = "bundtbot";
-        public const string Version = "0.0.2";
+        public const string LibraryName = "libundtbot";
+        public const string Version = "0.0.3";
 
-        public IUser Me { get; internal set; }
+        public User Me { get; internal set; }
 
-        public event Action<ITextChannelMessage> TextChannelMessageReceived;
-        public event Action<IServer> ServerCreated;
+        public event Action<TextChannelMessage> TextChannelMessageReceived;
+        public event Action<Server> ServerCreated;
 
         internal IDiscordRestClient DiscordRestClient;
 
-        // This data must be cleared when Invalid Session is received from gateway
-        internal Dictionary<ulong, IServer> Servers = new Dictionary<ulong, IServer>();
-        internal Dictionary<ulong, Dictionary<ulong, IServerMember>> ServerMembers = new Dictionary<ulong, Dictionary<ulong, IServerMember>>();
-        internal Dictionary<ulong, ITextChannel> TextChannels = new Dictionary<ulong, ITextChannel>();
-        internal Dictionary<ulong, IVoiceChannel> VoiceChannels = new Dictionary<ulong, IVoiceChannel>();
-        internal Dictionary<ulong, IUser> Users = new Dictionary<ulong, IUser>();
+        // All of these dictionaries must be cleared when Invalid Session is received from gateway
+        internal Dictionary<ulong, Server> Servers = new Dictionary<ulong, Server>();
+        internal Dictionary<ulong, Dictionary<ulong, ServerMember>> ServerMembers = new Dictionary<ulong, Dictionary<ulong, ServerMember>>();
+        internal Dictionary<ulong, TextChannel> TextChannels = new Dictionary<ulong, TextChannel>();
+        internal Dictionary<ulong, VoiceChannel> VoiceChannels = new Dictionary<ulong, VoiceChannel>();
+        internal Dictionary<ulong, User> Users = new Dictionary<ulong, User>();
 
         static readonly MyLogger _logger = new MyLogger(nameof(DiscordClient));
 
@@ -43,7 +43,7 @@ namespace BundtCord.Discord
         public DiscordClient(string botToken)
         {
             _botToken = botToken;
-            var config = new RestClientConfig(_botToken, Name, Version, new Uri("https://discordapp.com/api/"));
+            var config = new RestClientConfig(_botToken, LibraryName, Version, new Uri("https://discordapp.com/api/"));
             DiscordRestClient = new DiscordRestClientProxy(config);
         }
 
@@ -60,81 +60,96 @@ namespace BundtCord.Discord
 
         void RegisterGatewayEventHandlers()
         {
-            _gatewayClient.GuildCreated += (discordGuild) =>
+            _gatewayClient.GuildCreated += OnGuildCreated;
+            _gatewayClient.InvalidSessionReceived += OnInvalidSessionReceivedAsync;
+            _gatewayClient.MessageCreated += OnMessageCreated;
+            _gatewayClient.Ready += OnReady;
+            _gatewayClient.VoiceServerUpdate += OnVoiceServerUpdateAsync;
+            _gatewayClient.VoiceStateUpdate += OnVoiceStateUpdate;
+        }
+
+        void OnGuildCreated(DiscordGuild discordGuild)
+        {
+            var newServer = new Server(discordGuild, this);
+            Servers.Add(newServer.Id, newServer);
+            ServerMembers[newServer.Id] = new Dictionary<ulong, ServerMember>();
+
+            discordGuild.AllChannels
+                .Where(x => x.Type == GuildChannelType.Text)
+                .Select(x => new TextChannel(x, this))
+                .ToList()
+                .ForEach(x => { TextChannels[x.Id] = x; });
+            discordGuild.AllChannels
+                .Where(x => x.Type == GuildChannelType.Voice)
+                .Select(x => new VoiceChannel(x, this))
+                .ToList()
+                .ForEach(x => { VoiceChannels[x.Id] = x; });
+            discordGuild.Members
+                .Select(x => new User(x.User, this))
+                .ToList()
+                .ForEach(x => { Users[x.Id] = x; });
+            discordGuild.Members
+                .Select(x => new ServerMember(discordGuild.Id, x.User.Id, this) as ServerMember)
+                .ToList()
+                .ForEach(x => { ServerMembers[x.Server.Id][x.User.Id] = x; });
+
+            discordGuild.VoiceStates.ForEach(x => ProcessVoiceState(x));
+
+            ServerCreated?.Invoke(newServer);
+        }
+
+        async void OnInvalidSessionReceivedAsync(string eventName, string eventJsonData)
+        {
+            _logger.LogInfo("Received InvalidSession from Gateway, "
+                + "clearing state data then sending Identify...", ConsoleColor.Red);
+
+            TextChannels.Clear();
+            VoiceChannels.Clear();
+            Users.Clear();
+            Servers.Clear();
+            Me = null;
+
+            await _gatewayClient.SendIdentifyAsync();
+        }
+
+        void OnMessageCreated(DiscordMessage discordMessage)
+        {
+            if (TextChannels.ContainsKey(discordMessage.ChannelId))
             {
-                var newServer = new Server(discordGuild, this);
-                Servers.Add(newServer.Id, newServer);
-                ServerMembers[newServer.Id] = new Dictionary<ulong, IServerMember>();
-
-                discordGuild.AllChannels
-                    .Where(x => x.Type == GuildChannelType.Text)
-                    .Select(x => new TextChannel(x, this))
-                    .ToList().ForEach(x => { TextChannels[x.Id] = x; });
-                discordGuild.AllChannels
-                    .Where(x => x.Type == GuildChannelType.Voice)
-                    .Select(x => new VoiceChannel(x, this))
-                    .ToList().ForEach(x => { VoiceChannels[x.Id] = x; });
-                discordGuild.Members
-                    .Select(x => new User(x.User, this))
-                    .ToList()
-                    .ForEach(x => { Users[x.Id] = x; });
-                discordGuild.Members
-                    .Select(x => new ServerMember(discordGuild.Id, x.User.Id, this) as IServerMember)
-                    .ToList()
-                    .ForEach(x => { ServerMembers[x.Server.Id][x.User.Id] = x; });
-
-                discordGuild.VoiceStates.ForEach(x => ProcessVoiceState(x));
-
-                ServerCreated?.Invoke(newServer);
-            };
-
-            _gatewayClient.InvalidSessionReceived += async (string eventName, string eventJsonData) =>
+                var serverId = TextChannels[discordMessage.ChannelId].ServerId;
+                var message = new TextChannelMessage(discordMessage, serverId, this);
+                TextChannelMessageReceived?.Invoke(message);
+            }
+            else
             {
-                _logger.LogInfo("Received InvalidSession from Gateway, "
-                    + "clearing state data then sending Identify...", ConsoleColor.Red);
+                _logger.LogWarning("Received DM Message but not prepared for it...");
+            }
+        }
 
-                TextChannels.Clear();
-                VoiceChannels.Clear();
-                Users.Clear();
-                Servers.Clear();
-                Me = null;
+        void OnReady(Ready readyInfo)
+        {
+            Me = new User(readyInfo.User, this);
+            _sessionId = readyInfo.SessionId;
+        }
 
-                await _gatewayClient.SendIdentifyAsync();
-            };
+        async void OnVoiceServerUpdateAsync(VoiceServerInfo voiceServerInfo)
+        {
+            // TODO: This is bad
+            _latestVoiceServerInfo = voiceServerInfo;
 
-            _gatewayClient.MessageCreated += (discordMessage) =>
+            var server = ((Server)Servers[voiceServerInfo.GuildID]);
+            
+            if (server.VoiceClient == null)
             {
-                if (TextChannels.ContainsKey(discordMessage.ChannelId))
-                {
-                    var serverId = TextChannels[discordMessage.ChannelId].ServerId;
-                    var message = new TextChannelMessage(discordMessage, serverId, this);
-                    TextChannelMessageReceived?.Invoke(message);
-                }
-                else
-                {
-                    // DM message
-                    _logger.LogWarning("Received DM Message but not prepared for it...");
-                }
-            };
-
-            _gatewayClient.Ready += (readyInfo) =>
-            {
-                Me = new User(readyInfo.User, this);
-                _sessionId = readyInfo.SessionId;
-            };
-
-            _gatewayClient.VoiceServerUpdate += async (voiceServerInfo) =>
-            {
-                _latestVoiceServerInfo = voiceServerInfo;
                 var voiceClient = new DiscordVoiceClient();
                 await voiceClient.ConnectAsync(voiceServerInfo, Me.Id, _sessionId);
-                ((Server)Servers[voiceServerInfo.GuildID]).VoiceClient = voiceClient;
-            };
+                server.VoiceClient = voiceClient;
+            }
+        }
 
-            _gatewayClient.VoiceStateUpdate += (voiceState) =>
-            {
-                ProcessVoiceState(voiceState);
-            };
+        void OnVoiceStateUpdate(VoiceState voiceState)
+        {
+            ProcessVoiceState(voiceState);
         }
 
         void ProcessVoiceState(VoiceState voiceState)
@@ -159,7 +174,7 @@ namespace BundtCord.Discord
             await _gatewayClient.SendStatusUpdateAsync(new StatusUpdate(null, gameName));
         }
 
-        public async Task JoinVoiceChannel(IVoiceChannel voiceChannel, bool muted = false, bool deafened = false)
+        public async Task JoinVoiceChannel(VoiceChannel voiceChannel, bool muted = false, bool deafened = false)
         {
             await _gatewayClient.SendVoiceStateUpdateAsync(new GatewayVoiceStateUpdate
             {
@@ -170,11 +185,11 @@ namespace BundtCord.Discord
             });
         }
 
-        public async Task LeaveVoiceChannelInServer(ulong serverId, bool muted = false, bool deafened = false)
+        public async Task LeaveVoiceChannelInServer(Server server, bool muted = false, bool deafened = false)
         {
             await _gatewayClient.SendVoiceStateUpdateAsync(new GatewayVoiceStateUpdate
             {
-                GuildId = serverId,
+                GuildId = server.Id,
                 VoiceChannelId = null,
                 IsMutedBySelf = muted,
                 IsDeafenedBySelf = deafened

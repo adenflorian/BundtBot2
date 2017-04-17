@@ -96,7 +96,7 @@ namespace DiscordApiWrapper.Voice
 
         internal async Task SendSpeakingAsync(bool isSpeaking, uint ssrcId)
         {
-            _logger.LogInfo("Sending Speaking to Voice Server", ConsoleColor.Green);
+            _logger.LogInfo($"Sending Speaking to Voice Server (isSpeaking: {isSpeaking})", ConsoleColor.Green);
             await SendOpCodeAsync(VoiceOpCode.Speaking, new VoiceServerSpeakingClient
             {
                 IsSpeaking = isSpeaking,

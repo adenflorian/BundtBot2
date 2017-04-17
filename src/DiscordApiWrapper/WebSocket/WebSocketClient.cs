@@ -30,7 +30,7 @@ namespace DiscordApiWrapper.WebSocket
 			_logger = new MyLogger(logPrefix + nameof(WebSocketClient), prefixColor);
 		}
 
-		public async Task ConnectAsync()
+        public async Task ConnectAsync()
 		{
 			await DoConnectLoopAsync();
 

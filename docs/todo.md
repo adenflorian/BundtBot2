@@ -7,10 +7,10 @@
 
 [√] change trace json log to output raw json
 
-[ ] !hello
+[√] hello world voice
   [√] create handler for !hello in BundtBot
-  [ ] voice hello world
-    - bundtbot should join the voice channel of the requesting user and play a clip that says, "Hello, world! This is bundtbot. No relation to the cake"
+  [√] voice hello world
+    - bundtbot should join the voice channel of the requesting user and play a clip that says, "bundtbot said, Hello, world"
 
 [ ] !yt
 [ ] !dog
@@ -32,3 +32,6 @@
 
 # gulp
 [ ] instead of deleting previous version on test server, store it in a previous version folder so we can quickly rollback if need be
+
+# build system
+[ ] find out how to make a smaller build

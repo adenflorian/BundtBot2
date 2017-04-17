@@ -1,10 +1,10 @@
 namespace BundtCord.Discord
 {
-    public class ServerMember : IServerMember
+    public class ServerMember
     {
-        public IServer Server => _client.Servers[_serverId];
-        public IUser User => _client.Users[_userId];
-        public IVoiceChannel VoiceChannel => VoiceChannelId.HasValue ? _client.VoiceChannels[VoiceChannelId.Value] : null;
+        public Server Server => _client.Servers[_serverId];
+        public User User => _client.Users[_userId];
+        public VoiceChannel VoiceChannel => VoiceChannelId.HasValue ? _client.VoiceChannels[VoiceChannelId.Value] : null;
 
         internal ulong? VoiceChannelId;
         

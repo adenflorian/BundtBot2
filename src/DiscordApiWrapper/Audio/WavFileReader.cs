@@ -36,7 +36,6 @@ namespace DiscordApiWrapper.Audio
                 for (int i = 0; i < fileBytes.Length; i++)
                 {
                     var result = fileBytesReader.ReadByte();
-                    _logger.LogTrace(i + " : " + BitConverter.ToString(new byte[] { result }));
 
                     if (counter == 0 && result == 'd')
                     {

@@ -4,7 +4,7 @@ using DiscordApiWrapper.RestApi.RestApiRequests;
 
 namespace BundtCord.Discord
 {
-    public class TextChannel : ITextChannel
+    public class TextChannel
     {
         public ulong Id {get;}
         public string Name {get;}
@@ -20,7 +20,7 @@ namespace BundtCord.Discord
             _client = client;
         }
 
-        public async Task<ITextChannelMessage> SendMessageAsync(string content)
+        public async Task<TextChannelMessage> SendMessageAsync(string content)
         {
             var createMessage = new NewMessageRequest(Id){Content = content};
             var discordMessage = await _client.DiscordRestClient.CreateMessageAsync(createMessage);
