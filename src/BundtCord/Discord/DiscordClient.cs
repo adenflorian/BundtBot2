@@ -137,8 +137,8 @@ namespace BundtCord.Discord
             // TODO: This is bad
             _latestVoiceServerInfo = voiceServerInfo;
 
-            var server = ((Server)Servers[voiceServerInfo.GuildID]);
-            
+            var server = Servers[voiceServerInfo.GuildID];
+
             if (server.VoiceClient == null)
             {
                 var voiceClient = new DiscordVoiceClient();
@@ -160,12 +160,12 @@ namespace BundtCord.Discord
 
                 // get server id for channel
                 var serverId = VoiceChannels[voiceState.ChannelId.Value].ServerId;
-                ((ServerMember)ServerMembers[serverId][voiceState.UserId]).VoiceChannelId = voiceState.ChannelId;
+                ServerMembers[serverId][voiceState.UserId].VoiceChannelId = voiceState.ChannelId;
             }
             else
             {
                 // left channel
-                ((ServerMember)ServerMembers[voiceState.GuildID.Value][voiceState.UserId]).VoiceChannelId = voiceState.ChannelId;
+                ServerMembers[voiceState.GuildID.Value][voiceState.UserId].VoiceChannelId = voiceState.ChannelId;
             }
         }
 
