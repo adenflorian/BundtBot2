@@ -7,7 +7,7 @@ using DiscordApiWrapper.Voice.VoiceGateway;
 
 namespace DiscordApiWrapper.Voice
 {
-    public class DiscordVoiceClient
+    public class DiscordVoiceClient : IDisposable
     {
         const string _desiredEncryptionMethod = "xsalsa20_poly1305";
 
@@ -18,6 +18,7 @@ namespace DiscordApiWrapper.Voice
         VoiceServerInfo _voiceServerInfo;
 
         uint _ssrcId;
+        bool _isDisposed;
 
         public async Task ConnectAsync(VoiceServerInfo voiceServerInfo, ulong userId, string sessionId)
         {
@@ -58,6 +59,25 @@ namespace DiscordApiWrapper.Voice
             await _voiceGatewayClient.SendSpeakingAsync(true, _ssrcId);
             await _voiceUdpClient.SendAudioAsync(sodaBytes);
             await _voiceGatewayClient.SendSpeakingAsync(false, _ssrcId);
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_isDisposed)
+            {
+                if (disposing)
+                {
+                    _voiceGatewayClient.Dispose();
+                    _voiceUdpClient.Dispose();
+                }
+
+                _isDisposed = true;
+            }
         }
     }
 }

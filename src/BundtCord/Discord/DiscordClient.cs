@@ -203,8 +203,9 @@ namespace BundtCord.Discord
                 IsMutedBySelf = muted,
                 IsDeafenedBySelf = deafened
             });
-            
+
             // TODO Destroy that server's voice client properly
+            server.VoiceClient.Dispose();
             server.VoiceClient = null;
         }
     }

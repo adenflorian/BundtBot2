@@ -22,7 +22,9 @@
 
 ## Voice
 [√] put the voice udp client on its own thread
-[ ] need to disconnect from voice properly when leaving a voice channel
+[√] need to get rid of old voice client when leveing voice in server
+  [wip] need to disconnect from voice properly when leaving a voice channel
+  [ ] no exceptions should be thrown when disposing stuff
 
 # BundtBot Web API
 [√] show last logged exception in website

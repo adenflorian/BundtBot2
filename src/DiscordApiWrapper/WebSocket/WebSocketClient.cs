@@ -10,7 +10,7 @@ using Newtonsoft.Json;
 
 namespace DiscordApiWrapper.WebSocket
 {
-    partial class WebSocketClient
+    partial class WebSocketClient : IDisposable
 	{
 		public event Action MessageReceived;
 
@@ -22,8 +22,9 @@ namespace DiscordApiWrapper.WebSocket
 		readonly Uri _serverUri;
 		
 		ClientWebSocket _clientWebSocket = new ClientWebSocket();
+        bool _isDisposed = false;
 
-		public WebSocketClient(Uri serverUri, string logPrefix, ConsoleColor prefixColor)
+        public WebSocketClient(Uri serverUri, string logPrefix, ConsoleColor prefixColor)
 		{
 			_serverUri = serverUri;
 			_logger = new MyLogger(logPrefix + nameof(WebSocketClient), prefixColor);
@@ -50,6 +51,7 @@ namespace DiscordApiWrapper.WebSocket
         {
             while (true)
             {
+                if (_isDisposed) return;
                 try
                 {
                     _clientWebSocket.Dispose();
@@ -79,6 +81,7 @@ namespace DiscordApiWrapper.WebSocket
 					isDone = true;
 				}));
 				while (isDone == false) {
+                    if (_isDisposed) return;
 					await Task.Delay(10);
 				}
 			});
@@ -88,6 +91,7 @@ namespace DiscordApiWrapper.WebSocket
 		{
 			Task.Run(async () => {
 				while (true) {
+                    if (_isDisposed) return;
 					while (_outgoingQueue.Count == 0)
 					{
 						await Task.Delay(100);
@@ -98,6 +102,7 @@ namespace DiscordApiWrapper.WebSocket
 
 					while (true)
 					{
+                        if (_isDisposed) return;
 						try
 						{
                             _logger.LogInfo($"[Send Loop] Sending message on websocket... ({message.Item1.GetHashCode()})");
@@ -149,6 +154,7 @@ namespace DiscordApiWrapper.WebSocket
 			Task.Run(async () => {
 				var message = "";
 				while (_clientWebSocket.State == WebSocketState.Open) {
+                    if (_isDisposed) return;
 					try
 					{
 						var result = await ReceiveAsync();
@@ -219,6 +225,25 @@ namespace DiscordApiWrapper.WebSocket
 			LogCloseReceived(_logger, codeString);
 
             await ReconnectAsync();
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_isDisposed)
+            {
+                if (disposing)
+                {
+					_clientWebSocket.Dispose();
+                }
+
+				ReceivedMessages = null;
+                _isDisposed = true;
+            }
         }
     }
 }

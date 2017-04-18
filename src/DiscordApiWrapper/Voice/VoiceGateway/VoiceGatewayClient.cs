@@ -11,7 +11,7 @@ using Newtonsoft.Json.Linq;
 
 namespace DiscordApiWrapper.Voice
 {
-    class VoiceGatewayClient
+    class VoiceGatewayClient : IDisposable
     {
         public event Action<VoiceServerReady> ReadyReceived;
         public event Action<VoiceServerSession> SessionReceived;
@@ -21,13 +21,14 @@ namespace DiscordApiWrapper.Voice
 
         static readonly MyLogger _logger = new MyLogger(nameof(VoiceGatewayClient), ConsoleColor.DarkGreen);
 
-        readonly WebSocketClient _clientWebSocketWrapper;
+        readonly WebSocketClient _webSocketClient;
 
         ulong _guildId;
         string _token;
         string _sessionId;
         ulong _userId;
         Timer _heartbeatTimer;
+        bool _isDisposed;
 
         public VoiceGatewayClient(VoiceServerInfo voiceServerInfo, ulong userId, string sessionId)
         {
@@ -37,8 +38,8 @@ namespace DiscordApiWrapper.Voice
             _sessionId = sessionId;
 
             var modifiedUrl = voiceServerInfo.Endpoint.AddParameter("v", "5").AddParameter("encoding", "'json'");
-            _clientWebSocketWrapper = new WebSocketClient(modifiedUrl, "Voice-", ConsoleColor.DarkGreen);
-            _clientWebSocketWrapper.MessageReceived += OnMessageReceived;
+            _webSocketClient = new WebSocketClient(modifiedUrl, "Voice-", ConsoleColor.DarkGreen);
+            _webSocketClient.MessageReceived += OnMessageReceived;
 
             HelloReceived += OnHelloReceivedAsync;
             ReadyReceived += OnReadyReceivedAsync;
@@ -47,7 +48,7 @@ namespace DiscordApiWrapper.Voice
 
         public async Task ConnectAsync()
         {
-            await _clientWebSocketWrapper.ConnectAsync();
+            await _webSocketClient.ConnectAsync();
             _logger.LogInfo($"Connected to VoiceServer", ConsoleColor.Green);
 
             await SendIdentifyAsync();
@@ -139,7 +140,7 @@ namespace DiscordApiWrapper.Voice
             _logger.LogTrace("" + JObject.FromObject(gatewayPayload));
 
             var jsonGatewayPayload = JsonConvert.SerializeObject(gatewayPayload);
-            await _clientWebSocketWrapper.SendMessageUsingQueueAsync(jsonGatewayPayload);
+            await _webSocketClient.SendMessageUsingQueueAsync(jsonGatewayPayload);
 
             _logger.LogDebug($"Sent {gatewayPayload.VoiceOpCode}");
         }
@@ -147,7 +148,7 @@ namespace DiscordApiWrapper.Voice
         
         void OnMessageReceived()
         {
-            string message = _clientWebSocketWrapper.ReceivedMessages.Dequeue();
+            string message = _webSocketClient.ReceivedMessages.Dequeue();
             var payload = JsonConvert.DeserializeObject<VoiceServerPayload>(message);
 
             LogMessageReceived(message, payload);
@@ -176,6 +177,25 @@ namespace DiscordApiWrapper.Voice
         {
             _logger.LogDebug($"Message received from gateway (opcode: {payload.VoiceOpCode})");
             _logger.LogTrace(message.Prettify());
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_isDisposed)
+            {
+                if (disposing)
+                {
+                    _webSocketClient.Dispose();
+                    _heartbeatTimer.Dispose();
+                }
+
+                _isDisposed = true;
+            }
         }
     }
 }

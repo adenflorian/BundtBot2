@@ -10,7 +10,7 @@ using DiscordApiWrapper.Voice.Udp;
 
 namespace DiscordApiWrapper.Voice
 {
-    class VoiceUdpClient
+    class VoiceUdpClient : IDisposable
     {
         public byte[] SecretKey;
 
@@ -18,6 +18,8 @@ namespace DiscordApiWrapper.Voice
         const int _msPerSecond = 1000;
         const int _headerSizeInBytes = 12;
         const int _crytpoTagSizeInBytes = 16;
+        const int _samplingRate = 48000;
+        const int _channels = 2;
 
         static readonly MyLogger _logger = new MyLogger(nameof(VoiceUdpClient), ConsoleColor.DarkGreen);
         static readonly byte[] _silenceFrames = { 0xF8, 0xFF, 0xFE };
@@ -26,7 +28,10 @@ namespace DiscordApiWrapper.Voice
 
         readonly UdpClient _udpClient;
         readonly IPEndPoint _voiceUdpEndpoint;
+        readonly OpusEncoder _opusEncoder = OpusEncoder.Create(_samplingRate, _channels, Application.Audio);
         readonly uint _syncSourceId;
+
+        bool _isDisposed = false;
 
         public VoiceUdpClient(Uri remoteUri, int remotePort, uint synchronizationSourceId)
         {
@@ -52,10 +57,8 @@ namespace DiscordApiWrapper.Voice
 
         internal async Task SendAudioAsync(byte[] sodaBytes)
         {
-            var samplingRate = 48000;
-            var channels = 2;
             var frameLengthInMs = 20;
-            uint samplesPerFramePerChannel = (uint)((samplingRate / _msPerSecond) * frameLengthInMs);
+            uint samplesPerFramePerChannel = (uint)((_samplingRate / _msPerSecond) * frameLengthInMs);
 
             var bitDepth = 16;
             var bytesPerSample = bitDepth / 8;
@@ -63,12 +66,10 @@ namespace DiscordApiWrapper.Voice
             ushort sequence = 0;
             uint timestamp = 0;
 
-            var opusEncoder = OpusEncoder.Create(samplingRate, channels, Application.Audio);
-
             double ticksPerFrame = _ticksPerMillisecond * frameLengthInMs;
             double nextFrameInTicks = 0;
 
-            var samplesPerMs = (samplingRate * channels) / _msPerSecond;
+            var samplesPerMs = (_samplingRate * _channels) / _msPerSecond;
             var bytesToRead = 20 * samplesPerMs * bytesPerSample;
 
             Stopwatch sw = Stopwatch.StartNew();
@@ -80,6 +81,7 @@ namespace DiscordApiWrapper.Voice
 
                 while (true)
                 {
+                    if (_isDisposed) return;
                     Buffer.BlockCopy(sodaBytes, index, pcmFrame, 0, bytesToRead);
 
                     index += bytesToRead;
@@ -91,7 +93,7 @@ namespace DiscordApiWrapper.Voice
 
                     int encodedLength;
 
-                    var compressedBytes = opusEncoder.Encode(pcmFrame, pcmFrame.Length, out encodedLength);
+                    var compressedBytes = _opusEncoder.Encode(pcmFrame, pcmFrame.Length, out encodedLength);
 
                     var compressedBytesShort = new byte[encodedLength];
                     Buffer.BlockCopy(compressedBytes, 0, compressedBytesShort, 0, encodedLength);
@@ -125,6 +127,7 @@ namespace DiscordApiWrapper.Voice
 
 
             await SendFiveFramesOfSilence(sequence, timestamp, samplesPerFramePerChannel);
+            
         }
 
         async Task SendFiveFramesOfSilence(ushort sequence, uint timestamp, uint samplesPerFrame)
@@ -148,6 +151,25 @@ namespace DiscordApiWrapper.Voice
         {
             var udpReceiveResult = await _udpClient.ReceiveAsync();
             return udpReceiveResult.Buffer;
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_isDisposed)
+            {
+                if (disposing)
+                {
+                    _udpClient.Dispose();
+                    _opusEncoder.Dispose();
+                }
+
+                _isDisposed = true;
+            }
         }
     }
 }
