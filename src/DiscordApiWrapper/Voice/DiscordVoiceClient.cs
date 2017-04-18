@@ -52,6 +52,7 @@ namespace DiscordApiWrapper.Voice
             _voiceUdpClient.SecretKey = voiceServerSession.SecretKey;
         }
 
+        // TODO Handle this being called while already sending audio data
         public async Task SendAudioAsync(byte[] sodaBytes)
         {
             await _voiceGatewayClient.SendSpeakingAsync(true, _ssrcId);

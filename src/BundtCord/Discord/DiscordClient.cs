@@ -6,6 +6,7 @@ using BundtBot;
 using BundtBot.Discord.Gateway;
 using BundtBot.Discord.Models;
 using BundtBot.Discord.Models.Gateway;
+using BundtCommon;
 using DiscordApiWrapper.Gateway.Models;
 using DiscordApiWrapper.Models;
 using DiscordApiWrapper.RestApi;
@@ -16,7 +17,7 @@ namespace BundtCord.Discord
     public class DiscordClient
     {
         public const string LibraryName = "libundtbot";
-        public const string Version = "0.0.3";
+        public const string Version = "0.0.4";
 
         public User Me { get; internal set; }
 
@@ -174,10 +175,11 @@ namespace BundtCord.Discord
             await _gatewayClient.SendStatusUpdateAsync(new StatusUpdate(null, gameName));
         }
 
+        /// <summary>
+        /// Won't return until it is ok to send voice to this channel
+        /// </summary>
         public async Task JoinVoiceChannel(VoiceChannel voiceChannel, bool muted = false, bool deafened = false)
         {
-            // Don't return from this method until it is ok to start sending audio data
-
             await _gatewayClient.SendVoiceStateUpdateAsync(new GatewayVoiceStateUpdate
             {
                 GuildId = voiceChannel.ServerId,
@@ -186,12 +188,10 @@ namespace BundtCord.Discord
                 IsDeafenedBySelf = deafened
             });
 
-            // TODO I don't like this, but can't think of a better way right now
-            while (voiceChannel.Server.VoiceClient == null)
-            {
-                _logger.LogDebug("Waiting for voice client to not be null");
-                await Task.Delay(100);
-            }
+            await Wait.Until(() => voiceChannel.Server.VoiceClient == null)
+                .CheckingEvery(TimeEx._100ms)
+                .For(TimeEx._5seconds)
+                .StartAsync();
         }
 
         public async Task LeaveVoiceChannelInServer(Server server, bool muted = false, bool deafened = false)
@@ -204,7 +204,8 @@ namespace BundtCord.Discord
                 IsDeafenedBySelf = deafened
             });
             
-            // TODO Destroy that server's voice client
+            // TODO Destroy that server's voice client properly
+            server.VoiceClient = null;
         }
     }
 }
