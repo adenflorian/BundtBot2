@@ -238,6 +238,7 @@ namespace DiscordApiWrapper.WebSocket
             {
                 if (disposing)
                 {
+					_clientWebSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "closing", CancellationToken.None).Wait();
 					_clientWebSocket.Dispose();
                 }
 
