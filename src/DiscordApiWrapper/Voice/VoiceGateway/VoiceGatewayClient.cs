@@ -179,6 +179,11 @@ namespace DiscordApiWrapper.Voice
             _logger.LogTrace(message.Prettify());
         }
 
+        ~VoiceGatewayClient()
+        {
+            Dispose();
+        }
+
         public void Dispose()
         {
             Dispose(true);
@@ -190,6 +195,7 @@ namespace DiscordApiWrapper.Voice
             {
                 if (disposing)
                 {
+                    _logger.LogDebug("Disposing");
                     _webSocketClient.Dispose();
                     _heartbeatTimer.Dispose();
                 }

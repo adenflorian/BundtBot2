@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using BundtBot;
@@ -188,7 +189,7 @@ namespace BundtCord.Discord
                 IsDeafenedBySelf = deafened
             });
 
-            await Wait.Until(() => voiceChannel.Server.VoiceClient == null)
+            await Wait.Until(() => voiceChannel.Server.VoiceClient != null && voiceChannel.Server.VoiceClient.IsReady)
                 .CheckingEvery(TimeEx._100ms)
                 .For(TimeEx._5seconds)
                 .StartAsync();

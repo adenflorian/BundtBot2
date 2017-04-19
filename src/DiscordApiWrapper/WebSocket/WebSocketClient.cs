@@ -22,7 +22,8 @@ namespace DiscordApiWrapper.WebSocket
 		readonly Uri _serverUri;
 		
 		ClientWebSocket _clientWebSocket = new ClientWebSocket();
-        bool _isDisposed = false;
+        bool _isDisposed;
+		bool _isDisposing;
 
         public WebSocketClient(Uri serverUri, string logPrefix, ConsoleColor prefixColor)
 		{
@@ -51,7 +52,7 @@ namespace DiscordApiWrapper.WebSocket
         {
             while (true)
             {
-                if (_isDisposed) return;
+                if (_isDisposing) return;
                 try
                 {
                     _clientWebSocket.Dispose();
@@ -77,11 +78,12 @@ namespace DiscordApiWrapper.WebSocket
 
 			await Task.Run(async () => {
 				var isDone = false;
+				_logger.LogDebug($"Enqueueing {data.Substring(0, Math.Min(data.Length, 20))}...");
 				_outgoingQueue.Enqueue(Tuple.Create<string, Action>(data, () => {
 					isDone = true;
 				}));
 				while (isDone == false) {
-                    if (_isDisposed) return;
+                    if (_isDisposing) return;
 					await Task.Delay(10);
 				}
 			});
@@ -91,18 +93,21 @@ namespace DiscordApiWrapper.WebSocket
 		{
 			Task.Run(async () => {
 				while (true) {
-                    if (_isDisposed) return;
+                    if (_isDisposing) return;
 					while (_outgoingQueue.Count == 0)
 					{
 						await Task.Delay(100);
 					}
 
+                    // FIXME How is message ever null here?
+                    // Was null enqueued?
+                    Debug.Assert(_outgoingQueue.Count > 0);
 					var message = _outgoingQueue.Dequeue();
 					Debug.Assert(message != null);
 
 					while (true)
 					{
-                        if (_isDisposed) return;
+                        if (_isDisposing) return;
 						try
 						{
                             _logger.LogInfo($"[Send Loop] Sending message on websocket... ({message.Item1.GetHashCode()})");
@@ -112,6 +117,7 @@ namespace DiscordApiWrapper.WebSocket
 						}
 						catch (System.Exception ex)
 						{
+                            if (_isDisposing) return;
                             _logger.LogError($"[Send Loop] Error while sending message on websocket ({message.Item1.GetHashCode()})");
                             _logger.LogError(ex);
 
@@ -154,7 +160,7 @@ namespace DiscordApiWrapper.WebSocket
 			Task.Run(async () => {
 				var message = "";
 				while (_clientWebSocket.State == WebSocketState.Open) {
-                    if (_isDisposed) return;
+                    if (_isDisposing) return;
 					try
 					{
 						var result = await ReceiveAsync();
@@ -185,6 +191,7 @@ namespace DiscordApiWrapper.WebSocket
 					}
 					catch (Exception ex)
 					{
+						if (_isDisposing) return;
 						LogReceiveLoopException(_logger, ex, _clientWebSocket);
 						message = "";
 						await ReconnectAsync();
@@ -196,6 +203,7 @@ namespace DiscordApiWrapper.WebSocket
 		async Task<Tuple<WebSocketReceiveResult, string>> ReceiveAsync()
 		{
 			var receiveBuffer = CreateReceiveBuffer();
+			
 			var receiveResult = await _clientWebSocket.ReceiveAsync(receiveBuffer, CancellationToken.None);
 
 			_logger.LogDebug($"Received {receiveResult.Count} bytes on ClientWebSocket" +
@@ -227,6 +235,11 @@ namespace DiscordApiWrapper.WebSocket
             await ReconnectAsync();
         }
 
+        ~WebSocketClient()
+        {
+            Dispose();
+        }
+
         public void Dispose()
         {
             Dispose(true);
@@ -234,10 +247,12 @@ namespace DiscordApiWrapper.WebSocket
 
         protected virtual void Dispose(bool disposing)
         {
+            _isDisposing = true;
             if (!_isDisposed)
             {
                 if (disposing)
                 {
+                    _logger.LogDebug("Disposing");
 					_clientWebSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "closing", CancellationToken.None).Wait();
 					_clientWebSocket.Dispose();
                 }

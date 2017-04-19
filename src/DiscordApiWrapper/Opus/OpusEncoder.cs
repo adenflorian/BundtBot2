@@ -70,6 +70,8 @@ namespace DiscordApiWrapper.Opus
         public void Dispose()
         {
             if (_disposed) return;
+            
+            _logger.LogDebug("Disposing");
 
             GC.SuppressFinalize(this);
 

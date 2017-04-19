@@ -57,6 +57,8 @@ namespace DiscordApiWrapper.Voice
 
         internal async Task SendAudioAsync(byte[] sodaBytes)
         {
+            if (SecretKey == null) throw new InvalidOperationException("Secret Key is still null");
+
             var frameLengthInMs = 20;
             uint samplesPerFramePerChannel = (uint)((_samplingRate / _msPerSecond) * frameLengthInMs);
 
@@ -125,9 +127,7 @@ namespace DiscordApiWrapper.Voice
                 }
             });
 
-
             await SendFiveFramesOfSilence(sequence, timestamp, samplesPerFramePerChannel);
-            
         }
 
         async Task SendFiveFramesOfSilence(ushort sequence, uint timestamp, uint samplesPerFrame)
@@ -153,6 +153,11 @@ namespace DiscordApiWrapper.Voice
             return udpReceiveResult.Buffer;
         }
 
+        ~VoiceUdpClient()
+        {
+            Dispose();
+        }
+
         public void Dispose()
         {
             Dispose(true);
@@ -164,6 +169,7 @@ namespace DiscordApiWrapper.Voice
             {
                 if (disposing)
                 {
+                    _logger.LogDebug("Disposing");
                     _udpClient.Dispose();
                     _opusEncoder.Dispose();
                 }

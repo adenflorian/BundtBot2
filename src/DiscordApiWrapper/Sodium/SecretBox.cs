@@ -1,3 +1,4 @@
+using System;
 using System.Runtime.InteropServices;
 
 namespace DiscordApiWrapper.Sodium
@@ -16,11 +17,25 @@ namespace DiscordApiWrapper.Sodium
 
         public static int Encrypt(byte[] input, long inputLength, byte[] output, int outputOffset, byte[] nonce, byte[] secret)
         {
+            if (input == null) throw new ArgumentNullException();
+            if (inputLength < 1) throw new ArgumentException();
+            if (output == null) throw new ArgumentNullException();
+            if (outputOffset < 0) throw new ArgumentException();
+            if (nonce == null) throw new ArgumentNullException();
+            if (secret == null) throw new ArgumentNullException();
+
             fixed (byte* outPtr = output)
                 return SafeNativeMethods.SecretBoxEasy(outPtr + outputOffset, input, inputLength, nonce, secret);
         }
         public static int Decrypt(byte[] input, int inputOffset, long inputLength, byte[] output, byte[] nonce, byte[] secret)
         {
+            if (input == null) throw new ArgumentNullException();
+            if (inputOffset < 0) throw new ArgumentException();
+            if (inputLength < 1) throw new ArgumentException();
+            if (output == null) throw new ArgumentNullException();
+            if (nonce == null) throw new ArgumentNullException();
+            if (secret == null) throw new ArgumentNullException();
+
             fixed (byte* inPtr = input)
                 return SafeNativeMethods.SecretBoxOpenEasy(output, inPtr + inputOffset, inputLength, nonce, secret);
         }

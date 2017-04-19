@@ -29,14 +29,14 @@ namespace DiscordApiWrapper.WebSocket
 
         static void LogReceiveLoopException(MyLogger logger, Exception ex, ClientWebSocket clientWebSocket)
         {
-            logger.LogError("[Receive Loop] Exception caught in ClientWebSocketWrapper ReceiveLoop.");
+            logger.LogError("[Receive Loop] Exception caught in ReceiveLoop.");
             logger.LogError(ex);
 
             logger.LogWarning($"[Receive Loop] _clientWebSocket.State: {clientWebSocket.State.ToString()}");
             logger.LogWarning($"[Receive Loop] _clientWebSocket.CloseStatus: {clientWebSocket.CloseStatus.ToString()}");
             logger.LogWarning($"[Receive Loop] _clientWebSocket.CloseStatusDescription: {clientWebSocket.CloseStatusDescription}");
 
-            logger.LogWarning("[Receive Loop] Reconnecting ClientWebSocketWrapper.");
+            logger.LogWarning("[Receive Loop] Reconnecting.");
         }
 
         static void LogCloseReceived(MyLogger logger, string codeString)

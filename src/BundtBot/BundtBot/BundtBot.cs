@@ -43,6 +43,7 @@ namespace BundtBot
                 try
                 {
                     await server.TextChannels.First().SendMessageAsync("bundtbot online");
+                    await SayHello(server);
                 }
                 catch (Exception ex)
                 {
@@ -99,8 +100,6 @@ namespace BundtBot
 
             await voiceChannel.JoinAsync();
 
-            await Task.Delay(1000);
-
             var fullSongPcm = new WavFileReader().ReadFileBytes(new FileInfo("audio/bbhw.wav"));
             await voiceChannel.SendAudioAsync(fullSongPcm);
 
@@ -118,9 +117,21 @@ namespace BundtBot
 
             await voiceChannel.JoinAsync();
 
-            await Task.Delay(1000);
-
             var fullSongPcm = new WavFileReader().ReadFileBytes(new FileInfo("audio/ms.wav"));
+            await voiceChannel.SendAudioAsync(fullSongPcm);
+
+            await _client.LeaveVoiceChannelInServer(voiceChannel.Server);
+        }
+
+        async Task SayHello(Server server)
+        {
+            if (server.VoiceChannels.Count() == 0) return;
+
+            var voiceChannel = server.VoiceChannels.First();
+
+            await voiceChannel.JoinAsync();
+
+            var fullSongPcm = new WavFileReader().ReadFileBytes(new FileInfo("audio/bbhw.wav"));
             await voiceChannel.SendAudioAsync(fullSongPcm);
 
             await _client.LeaveVoiceChannelInServer(voiceChannel.Server);

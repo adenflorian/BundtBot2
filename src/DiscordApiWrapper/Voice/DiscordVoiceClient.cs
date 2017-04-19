@@ -9,6 +9,8 @@ namespace DiscordApiWrapper.Voice
 {
     public class DiscordVoiceClient : IDisposable
     {
+        public bool IsReady;
+
         const string _desiredEncryptionMethod = "xsalsa20_poly1305";
 
         static readonly MyLogger _logger = new MyLogger(nameof(DiscordVoiceClient));
@@ -51,6 +53,7 @@ namespace DiscordApiWrapper.Voice
         {
             _logger.LogInfo("Received Session from Voice Server", ConsoleColor.Green);
             _voiceUdpClient.SecretKey = voiceServerSession.SecretKey;
+            IsReady = true;
         }
 
         // TODO Handle this being called while already sending audio data
@@ -59,6 +62,11 @@ namespace DiscordApiWrapper.Voice
             await _voiceGatewayClient.SendSpeakingAsync(true, _ssrcId);
             await _voiceUdpClient.SendAudioAsync(sodaBytes);
             await _voiceGatewayClient.SendSpeakingAsync(false, _ssrcId);
+        }
+
+        ~DiscordVoiceClient()
+        {
+            Dispose();
         }
 
         public void Dispose()
@@ -72,6 +80,7 @@ namespace DiscordApiWrapper.Voice
             {
                 if (disposing)
                 {
+                    _logger.LogDebug("Disposing");
                     _voiceGatewayClient.Dispose();
                     _voiceUdpClient.Dispose();
                 }
