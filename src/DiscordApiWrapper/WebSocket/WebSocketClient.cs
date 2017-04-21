@@ -93,7 +93,6 @@ namespace DiscordApiWrapper.WebSocket
 		{
 			Task.Run(async () => {
 				while (true) {
-                    if (_isDisposing) return;
 					while (_outgoingQueue.Count == 0)
 					{
 						await Task.Delay(100);
@@ -107,7 +106,6 @@ namespace DiscordApiWrapper.WebSocket
 
 					while (true)
 					{
-                        if (_isDisposing) return;
 						try
 						{
                             _logger.LogInfo($"[Send Loop] Sending message on websocket... ({message.Item1.GetHashCode()})");
@@ -121,6 +119,7 @@ namespace DiscordApiWrapper.WebSocket
                             _logger.LogError($"[Send Loop] Error while sending message on websocket ({message.Item1.GetHashCode()})");
                             _logger.LogError(ex);
 
+							// TODO Refactor
 							while (true)
 							{
 								if (_clientWebSocket.State == WebSocketState.Open) break;
@@ -160,7 +159,6 @@ namespace DiscordApiWrapper.WebSocket
 			Task.Run(async () => {
 				var message = "";
 				while (_clientWebSocket.State == WebSocketState.Open) {
-                    if (_isDisposing) return;
 					try
 					{
 						var result = await ReceiveAsync();

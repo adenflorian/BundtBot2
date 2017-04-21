@@ -55,7 +55,7 @@ namespace DiscordApiWrapper.Voice
             return IpDiscoveryResult;
         }
 
-        internal async Task SendAudioAsync(byte[] sodaBytes)
+        internal async Task SendAudioAsync(byte[] pcmAudioBytes)
         {
             if (SecretKey == null) throw new InvalidOperationException("Secret Key is still null");
 
@@ -84,10 +84,10 @@ namespace DiscordApiWrapper.Voice
                 while (true)
                 {
                     if (_isDisposed) return;
-                    Buffer.BlockCopy(sodaBytes, index, pcmFrame, 0, bytesToRead);
+                    Buffer.BlockCopy(pcmAudioBytes, index, pcmFrame, 0, bytesToRead);
 
                     index += bytesToRead;
-                    if (index > sodaBytes.Length - bytesToRead)
+                    if (index > pcmAudioBytes.Length - bytesToRead)
                     {
                         _logger.LogInfo($"Ran out of bytes to read, breaking out of loop");
                         break;

@@ -12,6 +12,8 @@
   [√] voice hello world
     - bundtbot should join the voice channel of the requesting user and play a clip that says, "bundtbot said, Hello, world"
 
+[ ] Create a SoundManager for queueing audio
+
 [ ] !yt
 [ ] !dog
 
@@ -23,8 +25,10 @@
 ## Voice
 [√] put the voice udp client on its own thread
 [√] need to get rid of old voice client when leveing voice in server
-  [wip] need to disconnect from voice properly when leaving a voice channel
-  [ ] no exceptions should be thrown when disposing stuff
+  [√] need to disconnect from voice properly when leaving a voice channel
+  [√] no exceptions should be thrown when disposing stuff
+  - I'm still not entirley comfortable with how I handling the disposal, but it's not terrible I think
+  - Will ask for others to look it over
 
 # BundtBot Web API
 [√] show last logged exception in website
