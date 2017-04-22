@@ -12,10 +12,13 @@
   [√] voice hello world
     - bundtbot should join the voice channel of the requesting user and play a clip that says, "bundtbot said, Hello, world"
 
+[] refactor WebSocketClient
+
 [ ] Create a SoundManager for queueing audio
 
 [ ] !yt
 [ ] !dog
+[ ] !uploaddog
 
 [ ] make a json file to configure what actions bundtbot does on startup
   - for running tests and such

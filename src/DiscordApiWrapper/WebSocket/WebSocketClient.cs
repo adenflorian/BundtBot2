@@ -93,10 +93,7 @@ namespace DiscordApiWrapper.WebSocket
 		{
 			Task.Run(async () => {
 				while (true) {
-					while (_outgoingQueue.Count == 0)
-					{
-						await Task.Delay(100);
-					}
+					while (_outgoingQueue.Count == 0) await Task.Delay(100);
 
                     // FIXME How is message ever null here?
                     // Was null enqueued?
