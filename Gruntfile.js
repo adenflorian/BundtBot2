@@ -43,6 +43,14 @@ module.exports = function (grunt) {
                 ],
                 options: sshOptions
             },
+            restart: {
+                command: [
+                    "pwd",
+                    "echo 'restarting bundtbot service'",
+                    "service bundtbot restart"
+                ],
+                options: sshOptions
+            },
             setup: {
                 command: [
                     'apt-get update',

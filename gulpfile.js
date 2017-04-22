@@ -120,6 +120,8 @@ gulp.task('rlogs', shell.task(
 
 gulp.task('setup-server', shell.task('grunt sshexec:setup', { verbose: true }))
 
+gulp.task('restart-remote', shell.task('grunt sshexec:restart', { verbose: true }))
+
 function cleanTar(cb)
 {
 	fs.unlink(`${projectName}.tar.gz`, function (err) {
