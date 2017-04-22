@@ -45,14 +45,12 @@ module.exports = function (grunt) {
             },
             setup: {
                 command: [
-                    'apt-get update; apt-get upgrade -y',
+                    'apt-get update',
+                    'apt-get upgrade -y',
                     'echo "Storage=persistent" >> /etc/systemd/journald.conf',
                     'echo "SystemMaxUse=100M" >> /etc/systemd/journald.conf',
                     'echo "ForwardToSyslog=no" >> /etc/systemd/journald.conf',
-                    'echo "deb [arch=amd64] https://apt-mo.trafficmanager.net/repos/dotnet-release/ xenial main" > /etc/apt/sources.list.d/dotnetdev.list',
-                    'apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 417A0893',
-                    'apt-get update',
-                    'apt-get install -y dotnet-dev-1.0.0-preview2.1-003177',
+                    'apt-get install -y dotnet-dev-1.0.1',
                     'apt-get install -y nginx',
                     'curl -o /etc/nginx/sites-available/bundtbot https://raw.githubusercontent.com/AdenFlorian/BundtBotBeta/master/nginx/sites/bundtbot',
                     'service nginx start'

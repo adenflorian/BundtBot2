@@ -101,7 +101,7 @@ gulp.task('cleantar', function (cb) {
 
 gulp.task('sshdeploy', ['sftpdeploy'], shell.task('grunt sshexec:deploy', { verbose: true }))
 
-gulp.task('deploy', ['publish', 'tar', 'sftpdeploy', 'cleantar', 'sshdeploy'], function () {
+gulp.task('deploy', ['publish', 'tar', 'sftpdeploy', 'sshdeploy'], function (cb) {
 	cleanTar(cb)
 })
 
