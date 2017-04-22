@@ -143,30 +143,20 @@ namespace DiscordApiWrapper.WebSocket
 				while (_clientWebSocket.State == WebSocketState.Open) {
 					try
 					{
-						var result = await ReceiveAsync();
+						var receivedData = await ReceiveAsync();
 
-                        _logger.LogTrace(JsonConvert.SerializeObject(result.Item1, Formatting.Indented));
-                        _logger.LogTrace(result.Item2);
+						message += receivedData.Data;
 
-						message += result.Item2;
+						if (receivedData.Result.EndOfMessage == false) continue;
 
-						if (result.Item1.EndOfMessage == false)
-						{
-							continue;
-						}
-						else if (result.Item1.CloseStatus.HasValue)
-						{
-                            await OnCloseReceivedAsync(result.Item1);
-						}
-						else if (message.Length == 0)
+                        if (receivedData.Result.CloseStatus.HasValue)
                         {
-                            _logger.LogWarning("Received 0 length message from Gateway, will not invoke MessageReceived");
+                            await OnCloseReceivedAsync(receivedData.Result);
+                            message = "";
+							continue;
                         }
-						else
-						{
-							OnMessageReceived(message);
-						}
-						
+
+						OnMessageReceived(message);
 						message = "";
 					}
 					catch (Exception ex)
@@ -180,29 +170,42 @@ namespace DiscordApiWrapper.WebSocket
 			});
 		}
 
-		async Task<Tuple<WebSocketReceiveResult, string>> ReceiveAsync()
+        async Task<ReceivedData> ReceiveAsync()
+        {
+            var receiveBuffer = CreateReceiveBuffer();
+
+            var receiveResult = await _clientWebSocket.ReceiveAsync(receiveBuffer, CancellationToken.None);
+            LogReceiveResult(receiveResult);
+
+            var receivedString = new UTF8Encoding().GetString(receiveBuffer.Array, 0, receiveResult.Count);
+            _logger.LogTrace(receivedString);
+
+			return new ReceivedData(receiveResult, receivedString);
+        }
+
+        void OnMessageReceived(string message)
 		{
-			var receiveBuffer = CreateReceiveBuffer();
-			
-			var receiveResult = await _clientWebSocket.ReceiveAsync(receiveBuffer, CancellationToken.None);
+			if (message.Length == 0)
+            {
+                _logger.LogWarning("Received 0 length message from Gateway, will not invoke MessageReceived");
+            }
+            else
+            {
+                MessageReceived?.Invoke(message);
+            }
+		}
 
-			_logger.LogDebug($"Received {receiveResult.Count} bytes on ClientWebSocket" +
-								$"(EndOfMessage: {receiveResult.EndOfMessage})");
-
-			var receivedString = new UTF8Encoding().GetString(receiveBuffer.Array, 0, receiveResult.Count);
-
-			return Tuple.Create(receiveResult, receivedString);
+		void LogReceiveResult(WebSocketReceiveResult result)
+		{
+            _logger.LogDebug($"Received {result.Count} bytes on ClientWebSocket" +
+                                $"(EndOfMessage: {result.EndOfMessage})");
+            _logger.LogTrace(JsonConvert.SerializeObject(result, Formatting.Indented));
 		}
 
 		static ArraySegment<byte> CreateReceiveBuffer()
 		{
 			const int arbitraryBufferSize = 8192;
 			return new ArraySegment<byte>(new byte[arbitraryBufferSize]);
-		}
-
-		void OnMessageReceived(string message)
-		{
-			MessageReceived?.Invoke(message);
 		}
 
         async Task OnCloseReceivedAsync(WebSocketReceiveResult result)
@@ -213,5 +216,17 @@ namespace DiscordApiWrapper.WebSocket
 
             await ReconnectAsync();
         }
+
+		struct ReceivedData
+		{
+			public readonly WebSocketReceiveResult Result;
+			public readonly string Data;
+
+			public ReceivedData(WebSocketReceiveResult result, string data)
+			{
+				Result = result;
+				Data = data;
+			}
+		}
     }
 }
