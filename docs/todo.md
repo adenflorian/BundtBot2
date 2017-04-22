@@ -11,8 +11,8 @@
   [√] create handler for !hello in BundtBot
   [√] voice hello world
     - bundtbot should join the voice channel of the requesting user and play a clip that says, "bundtbot said, Hello, world"
-
-[] refactor WebSocketClient
+[√] move to csproj
+[ ] refactor WebSocketClient
 
 [ ] Create a SoundManager for queueing audio
 

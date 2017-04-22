@@ -14,7 +14,7 @@ const secretFilePath = './secret.json'
 
 const projectName = 'BundtBot'
 const projectFolder = `src/${projectName}`
-const projectFileName = `project.json`
+const projectFileName = `${projectName}.csproj`
 const projectFilePath = `${projectFolder}/${projectFileName}`
 
 const buildOutputFolder = `${projectFolder}/bin/debug/netcoreapp1.1`
@@ -101,12 +101,10 @@ gulp.task('deploy', ['publish', 'tar', 'sftpdeploy', 'sshdeploy'])
 
 // Start test commands
 
-gulp.task('test', shell.task('dotnet test test/BundtBotTests/project.json',
+gulp.task('test', shell.task('dotnet test test/BundtBotTests/BundtBotTests.csproj',
 	{ verbose: true }))
 
-gulp.task('integration-tests', () => shelljs.exec('dotnet test test/IntegrationTests/project.json'))
-
-gulp.task('rate-limiter-tests', () => shelljs.exec(`dotnet test ${rateLimitTestsProjectFolder}/project.json`))
+gulp.task('rate-limiter-tests', () => shelljs.exec(`dotnet test ${rateLimitTestsProjectFolder}/${rateLimitTestsProjectName}.csproj`))
 
 // Start remote server commands
 
