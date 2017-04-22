@@ -97,9 +97,8 @@ namespace BundtBot.Discord.Gateway
             _sessionId = readyInfo.SessionId;
         }
 
-        void OnMessageReceived()
+        void OnMessageReceived(string message)
         {
-            string message = _clientWebSocketWrapper.ReceivedMessages.Dequeue();
             var payload = JsonConvert.DeserializeObject<GatewayPayload>(message);
 
             StoreSequenceNumberForHeartbeat(payload);

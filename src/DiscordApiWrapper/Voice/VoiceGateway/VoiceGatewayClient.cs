@@ -146,9 +146,8 @@ namespace DiscordApiWrapper.Voice
         }
         #endregion
         
-        void OnMessageReceived()
+        void OnMessageReceived(string message)
         {
-            string message = _webSocketClient.ReceivedMessages.Dequeue();
             var payload = JsonConvert.DeserializeObject<VoiceServerPayload>(message);
 
             LogMessageReceived(message, payload);

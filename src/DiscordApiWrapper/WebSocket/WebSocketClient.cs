@@ -12,12 +12,9 @@ namespace DiscordApiWrapper.WebSocket
 {
     partial class WebSocketClient : IDisposable
 	{
-		public event Action MessageReceived;
-
-		public Queue<string> ReceivedMessages = new Queue<string>();
+		public event Action<string> MessageReceived;
 
 		readonly MyLogger _logger;
-		readonly UTF8Encoding _utf8Encoding = new UTF8Encoding();
 		readonly Queue<Tuple<string, Action>> _outgoingQueue = new Queue<Tuple<string, Action>>();
 		readonly Uri _serverUri;
 		
@@ -146,7 +143,7 @@ namespace DiscordApiWrapper.WebSocket
 
 		ArraySegment<byte> CreateSendBuffer(string data)
 		{
-			var bytes = _utf8Encoding.GetBytes(data);
+			var bytes = new UTF8Encoding().GetBytes(data);
 			var sendBuffer = new ArraySegment<byte>(bytes);
 			return sendBuffer;
 		}
@@ -204,7 +201,7 @@ namespace DiscordApiWrapper.WebSocket
 			_logger.LogDebug($"Received {receiveResult.Count} bytes on ClientWebSocket" +
 								$"(EndOfMessage: {receiveResult.EndOfMessage})");
 
-			var receivedString = _utf8Encoding.GetString(receiveBuffer.Array, 0, receiveResult.Count);
+			var receivedString = new UTF8Encoding().GetString(receiveBuffer.Array, 0, receiveResult.Count);
 
 			return Tuple.Create(receiveResult, receivedString);
 		}
@@ -217,8 +214,7 @@ namespace DiscordApiWrapper.WebSocket
 
 		void OnMessageReceived(string message)
 		{
-			ReceivedMessages.Enqueue(message);
-			MessageReceived?.Invoke();
+			MessageReceived?.Invoke(message);
 		}
 
         async Task OnCloseReceivedAsync(WebSocketReceiveResult result)
@@ -251,8 +247,6 @@ namespace DiscordApiWrapper.WebSocket
 					_clientWebSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "closing", CancellationToken.None).Wait();
 					_clientWebSocket.Dispose();
                 }
-
-				ReceivedMessages = null;
                 _isDisposed = true;
             }
         }
