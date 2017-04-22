@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using BundtBot;
 
 namespace BundtCommon
 {
@@ -8,7 +9,13 @@ namespace BundtCommon
     {
         Func<bool> _condition;
         TimeSpan _checkInterval = TimeEx._100ms;
-        TimeSpan _timeout = TimeEx._5seconds;
+        TimeSpan _timeout = TimeSpan.MaxValue;
+
+        public static async Task AndLogAsync(TimeSpan waitAmount, MyLogger logger)
+        {
+            logger.LogInfo($"Waiting {waitAmount.TotalSeconds} seconds...");
+            await Task.Delay(waitAmount);
+        }
 
         /// <summary>
         /// Will wait until the condition returns true, or the timeout is reached

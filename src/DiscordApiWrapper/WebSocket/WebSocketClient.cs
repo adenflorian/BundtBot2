@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using BundtBot;
+using BundtCommon;
 using Newtonsoft.Json;
 
 namespace DiscordApiWrapper.WebSocket
@@ -28,20 +29,45 @@ namespace DiscordApiWrapper.WebSocket
 			_logger = new MyLogger(logPrefix + nameof(WebSocketClient), prefixColor);
 		}
 
+        ~WebSocketClient() => Dispose();
+
+        public void Dispose()
+        {
+			_isDisposing = true;
+            if (_isDisposed == false)
+            {
+                _logger.LogDebug("Disposing");
+                _clientWebSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "closing", CancellationToken.None).Wait();
+                _clientWebSocket.Dispose();
+                _isDisposed = true;
+            }
+        }
+
         public async Task ConnectAsync()
 		{
 			await DoConnectLoopAsync();
-
 			LogConnected(_logger, _serverUri, _clientWebSocket);
-
 			StartReceiveLoop();
 			StartSendLoop();
 		}
 
+        public async Task SendMessageUsingQueueAsync(string data)
+        {
+            if (data == null) throw new ArgumentException();
+
+			var isDone = false;
+			_logger.LogDebug($"Enqueueing {data.Substring(0, Math.Min(data.Length, 20))}...");
+			_outgoingQueue.Enqueue(Tuple.Create<string, Action>(data, () => { isDone = true; }));
+			while (isDone == false)
+			{
+				if (_isDisposing) throw new OperationCanceledException();
+				await Task.Delay(10);
+			}
+        }
+
         async Task ReconnectAsync()
         {
 			await DoConnectLoopAsync();
-
             LogReconnected(_logger, _serverUri, _clientWebSocket);
         }
 
@@ -49,103 +75,65 @@ namespace DiscordApiWrapper.WebSocket
         {
             while (true)
             {
-                if (_isDisposing) return;
                 try
                 {
-                    _clientWebSocket.Dispose();
-                    _clientWebSocket = new ClientWebSocket();
-                    var tokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-                    _logger.LogInfo("[Connect Loop] Connecting websocket... (" + _serverUri + ")");
-                    await _clientWebSocket.ConnectAsync(_serverUri, tokenSource.Token);
+                    _logger.LogInfo($"Connecting websocket to {_serverUri}");
+                    await _clientWebSocket.ConnectAsync(_serverUri, new CancellationTokenSource(TimeEx._5seconds).Token);
                     break;
                 }
                 catch (System.Exception ex)
                 {
+                    if (_isDisposing) return;
                     _logger.LogError(ex, true);
-					var waitAmount = TimeSpan.FromSeconds(5);
-                    _logger.LogWarning($"[Connect Loop] Waiting {waitAmount.TotalSeconds} seconds before attempting to reconnect...");
-					await Task.Delay(waitAmount);
+					await Wait.AndLogAsync(TimeEx._5seconds, _logger);
+                    _clientWebSocket.Dispose();
+                    _clientWebSocket = new ClientWebSocket();
                 }
             }
         }
-
-        public async Task SendMessageUsingQueueAsync(string data)
-		{
-			if (data == null) throw new ArgumentException();
-
-			await Task.Run(async () => {
-				var isDone = false;
-				_logger.LogDebug($"Enqueueing {data.Substring(0, Math.Min(data.Length, 20))}...");
-				_outgoingQueue.Enqueue(Tuple.Create<string, Action>(data, () => {
-					isDone = true;
-				}));
-				while (isDone == false) {
-                    if (_isDisposing) return;
-					await Task.Delay(10);
-				}
-			});
-		}
 
 		void StartSendLoop()
 		{
 			Task.Run(async () => {
 				while (true) {
-					while (_outgoingQueue.Count == 0) await Task.Delay(100);
+					await WaitForSomethingToBeInQueue();
 
-                    // FIXME How is message ever null here?
-                    // Was null enqueued?
-                    Debug.Assert(_outgoingQueue.Count > 0);
 					var message = _outgoingQueue.Dequeue();
 					Debug.Assert(message != null);
 
-					while (true)
-					{
-						try
-						{
-                            _logger.LogInfo($"[Send Loop] Sending message on websocket... ({message.Item1.GetHashCode()})");
-							await SendAsync(message.Item1);
-                            _logger.LogInfo($"[Send Loop] Sent! ({message.Item1.GetHashCode()})");
-							break;
-						}
-						catch (System.Exception ex)
-						{
-                            if (_isDisposing) return;
-                            _logger.LogError($"[Send Loop] Error while sending message on websocket ({message.Item1.GetHashCode()})");
-                            _logger.LogError(ex);
-
-							// TODO Refactor
-							while (true)
-							{
-								if (_clientWebSocket.State == WebSocketState.Open) break;
-								var secondsToWait = 5;
-                                _logger.LogWarning($"[Send Loop] WebSocket is not Open, waiting for {secondsToWait} seconds then checking again... (State: {_clientWebSocket.State})");
-								await Task.Delay(TimeSpan.FromSeconds(secondsToWait));
-							}
-
-                            _logger.LogWarning($"[Send Loop] Waiting for 1 second then retrying send... ({message.Item1.GetHashCode()})");
-							await Task.Delay(TimeSpan.FromSeconds(1));
-						}
-					}
+					await Try.ForeverAsync(async () => await TrySendAsync(message.Item1), TimeEx._1second);
 					
 					message.Item2.Invoke();
 				}
 			});
 		}
 
-		async Task SendAsync(string data)
-		{
-			var sendBuffer = CreateSendBuffer(data);
+        async Task WaitForSomethingToBeInQueue()
+        {
+            while (_outgoingQueue.Count == 0) await Task.Delay(100);
+        }
 
-			await _clientWebSocket.SendAsync(sendBuffer, WebSocketMessageType.Text, true, CancellationToken.None);
-
-			_logger.LogDebug($"Sent {sendBuffer.Count} bytes (ClientWebSocket State: {_clientWebSocket.State})");
-		}
+        async Task<bool> TrySendAsync(string messageToSend)
+        {
+            try
+            {
+                _logger.LogDebug($"Sending message... ({messageToSend.GetHashCode()})");
+                await _clientWebSocket.SendAsync(CreateSendBuffer(messageToSend), WebSocketMessageType.Text, true, CancellationToken.None);
+                _logger.LogDebug($"Sent! ({messageToSend.GetHashCode()})");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                if (_isDisposing) return true;
+                _logger.LogError(ex);
+                return false;
+            }
+        }
 
 		ArraySegment<byte> CreateSendBuffer(string data)
 		{
 			var bytes = new UTF8Encoding().GetBytes(data);
-			var sendBuffer = new ArraySegment<byte>(bytes);
-			return sendBuffer;
+			return new ArraySegment<byte>(bytes);
 		}
 
 		void StartReceiveLoop()
@@ -224,31 +212,6 @@ namespace DiscordApiWrapper.WebSocket
 			LogCloseReceived(_logger, codeString);
 
             await ReconnectAsync();
-        }
-
-        ~WebSocketClient()
-        {
-            Dispose();
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            _isDisposing = true;
-            if (!_isDisposed)
-            {
-                if (disposing)
-                {
-                    _logger.LogDebug("Disposing");
-					_clientWebSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "closing", CancellationToken.None).Wait();
-					_clientWebSocket.Dispose();
-                }
-                _isDisposed = true;
-            }
         }
     }
 }
