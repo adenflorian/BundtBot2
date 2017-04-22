@@ -95,9 +95,15 @@ gulp.task('tar', ['publish', 'copytokentest'], shell.task('node do tar', { verbo
 
 gulp.task('sftpdeploy', ['tar'], shell.task('grunt sftp:deploy', { verbose: true }))
 
+gulp.task('cleantar', function (cb) {
+	cleanTar(cb)
+})
+
 gulp.task('sshdeploy', ['sftpdeploy'], shell.task('grunt sshexec:deploy', { verbose: true }))
 
-gulp.task('deploy', ['publish', 'tar', 'sftpdeploy', 'sshdeploy'])
+gulp.task('deploy', ['publish', 'tar', 'sftpdeploy', 'cleantar', 'sshdeploy'], function () {
+	cleanTar(cb)
+})
 
 // Start test commands
 
@@ -113,3 +119,11 @@ gulp.task('rlogs', shell.task(
 	{ verbose: true }))
 
 gulp.task('setup-server', shell.task('grunt sshexec:setup', { verbose: true }))
+
+function cleanTar(cb)
+{
+	fs.unlink(`${projectName}.tar.gz`, function (err) {
+		if (err) console.log(err)
+		cb()
+	})
+}
