@@ -12,6 +12,7 @@
   [√] voice hello world
     - bundtbot should join the voice channel of the requesting user and play a clip that says, "bundtbot said, Hello, world"
 [√] move to csproj
+[ ] upgrade xunit
 [ ] refactor WebSocketClient
 
 [ ] Create a SoundManager for queueing audio
