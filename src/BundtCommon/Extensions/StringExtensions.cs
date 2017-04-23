@@ -22,5 +22,10 @@ namespace BundtBot.Extensions {
 		{
 			return JsonConvert.DeserializeObject<T>(@this);
 		}
+
+		public static bool DoesNotStartWith(this string @this, string value)
+		{
+			return @this.StartsWith(value) == false;
+		}
 	}
 }

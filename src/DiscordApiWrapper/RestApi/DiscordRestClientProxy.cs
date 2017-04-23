@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using BundtBot.Discord;
 using BundtBot.Discord.Models;
@@ -20,11 +21,12 @@ namespace DiscordApiWrapper.RestApi
         }
         
         /// <summary>
-        /// /// TODO Requires the 'SEND_MESSAGES' permission to be present on the current user.
+        /// TODO Requires the 'SEND_MESSAGES' permission to be present on the current user.
         /// </summary>
-        public async Task<DiscordMessage> CreateMessageAsync(NewMessageRequest createMessage)
+        public async Task<DiscordMessage> CreateMessageAsync(ulong channelId, string content)
         {
-            return await DoRequestAsync<DiscordMessage>(createMessage, _createMessageClient);
+            if (content == null) throw new ArgumentNullException("Content must not be null", nameof(content));
+            return await DoRequestAsync<DiscordMessage>(new NewMessageRequest(channelId){Content = content}, _createMessageClient);
         }
 
         public async Task<Uri> GetGatewayUrlAsync()

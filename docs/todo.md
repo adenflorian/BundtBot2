@@ -16,6 +16,7 @@
 [√] refactor WebSocketClient
 
 [√] Create a SoundManager for queueing audio
+[√] New way to manage commands
 
 [ ] !yt
 [ ] !dog
@@ -25,6 +26,7 @@
   - for running tests and such
 
 [ ] edit the same message continuously to do a ascii art animation
+[ ] allow multiple different text responses to certain events
 
 ## DJ
 [√] enqueue audio to play

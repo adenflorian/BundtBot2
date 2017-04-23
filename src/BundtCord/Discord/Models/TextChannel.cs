@@ -22,8 +22,7 @@ namespace BundtCord.Discord
 
         public async Task<TextChannelMessage> SendMessageAsync(string content)
         {
-            var createMessage = new NewMessageRequest(Id){Content = content};
-            var discordMessage = await _client.DiscordRestClient.CreateMessageAsync(createMessage);
+            var discordMessage = await _client.DiscordRestClient.CreateMessageAsync(Id, content);
             var message = new TextChannelMessage(discordMessage, ServerId, _client);
             return message;
         }

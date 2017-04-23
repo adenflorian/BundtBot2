@@ -14,12 +14,14 @@ namespace BundtBot
 
         DiscordClient _client;
         DJ _dj = new DJ();
+        CommandManager _commandManager = new CommandManager();
 
         public async Task StartAsync()
         {
             _client = new DiscordClient(File.ReadAllText("bottoken"));
 
             RegisterEventHandlers();
+            RegisterCommands();
             _dj.Start();
 
             await _client.ConnectAsync();
@@ -31,7 +33,12 @@ namespace BundtBot
             {
                 try
                 {
-                    await ProcessTextMessageAsync(message);
+                    if (message.Author.User.Id == _client.Me.Id) return;
+                    _commandManager.ProcessTextMessage(message);
+                }
+                catch (CommandException ce)
+                {
+                    await message.ReplyAsync(ce.Message);
                 }
                 catch (Exception ex)
                 {
@@ -39,12 +46,14 @@ namespace BundtBot
                     _logger.LogError(ex);
                 }
             };
-
             _client.ServerCreated += async (server) => {
                 try
                 {
                     await server.TextChannels.First().SendMessageAsync("bundtbot online");
-                    SayHello(server);
+                    if (server.VoiceChannels.Count() == 0) return;
+                    var voiceChannel = server.VoiceChannels.First();
+                    var fullSongPcm = new WavFileReader().ReadFileBytes(new FileInfo("audio/bbhw.wav"));
+                    _dj.EnqueueAudio(fullSongPcm, voiceChannel);
                 }
                 catch (Exception ex)
                 {
@@ -52,7 +61,6 @@ namespace BundtBot
                     _logger.LogError(ex);
                 }
 			};
-
             _client.Ready += async (ready) => {
                 try
                 {
@@ -65,7 +73,6 @@ namespace BundtBot
                     _logger.LogError(ex);
                 }
 			};
-			
 			_client.TextChannelCreated += async (textChannel) => {
 				try {
 					await textChannel.SendMessageAsync("less is more");
@@ -75,111 +82,88 @@ namespace BundtBot
 			};
         }
 
-        async Task ProcessTextMessageAsync(TextChannelMessage message)
+        void RegisterCommands()
         {
-            if (message.Author.User.Id == _client.Me.Id) return;
-
-            var messageContent = message.Content;
-
-            switch (message.Content)
+            _commandManager.CommandPrefix = "!";
+            _commandManager.Commands.Add(new TextCommand("hi", async (message, receivedCommand) =>
             {
-                case "!echo ": await EchoCommand(message); break;
-                case "!hello": await HelloCommand(message); break;
-                case "!ms": await MarbleSodaCommand(message); break;
-                case "!pause": await PauseCommand(message); break;
-                case "!resume": await ResumeCommandAsync(message); break;
-                case "!stop": await StopCommandAsync(message); break;
-                case "!next": await NextCommandAsync(message); break;
-                //case "!yt": await NextCommandAsync(message); break;
-                default: return;
-            }
-        }
-
-        async Task NextCommandAsync(TextChannelMessage message)
-        {
-            try
+                await message.ReplyAsync("hi...");
+            }));
+            _commandManager.Commands.Add(new TextCommand("help", async (message, receivedCommand) =>
             {
-                _dj.Next();
-                await message.ReplyAsync("Yea, I wasn't a huge fan of that song either :track_next:");
-            }
-            catch (DJException dje) { await message.ReplyAsync(dje.Message); }
-            catch (Exception ex) { _logger.LogError(ex); }
-        }
-
-        async Task StopCommandAsync(TextChannelMessage message)
-        {
-            try
+                var helpMessage = "";
+                _commandManager.Commands.ForEach(x => helpMessage += $"`{x.Name}` ");
+                await message.ReplyAsync("help me help you: " + helpMessage);
+            }));
+            _commandManager.Commands.Add(new TextCommand("next", async (message, receivedCommand) =>
             {
-                _dj.StopAudioAsync();
-                await message.ReplyAsync("Please don't :stop_button: the music :frowning:");
-            }
-            catch (DJException dje) { await message.ReplyAsync(dje.Message); }
-            catch (Exception ex) { _logger.LogError(ex); }
-        }
-
-        async Task ResumeCommandAsync(TextChannelMessage message)
-        {
-            try
+                try
+                {
+                    _dj.Next();
+                    await message.ReplyAsync("Yea, I wasn't a huge fan of that song either :track_next:");
+                }
+                catch (DJException dje) { await message.ReplyAsync(dje.Message); }
+                catch (Exception ex) { _logger.LogError(ex); }
+            }));
+            _commandManager.Commands.Add(new TextCommand("stop", async (message, receivedCommand) =>
             {
-                _dj.ResumeAudio();
-                await message.ReplyAsync("Green light! :arrow_forward:");
-            }
-            catch (DJException dje) { await message.ReplyAsync(dje.Message); }
-            catch (Exception ex) { _logger.LogError(ex); }
-        }
-
-        async Task PauseCommand(TextChannelMessage message)
-        {
-            try
+                try
+                {
+                    _dj.StopAudioAsync();
+                    await message.ReplyAsync("Please don't :stop_button: the music :frowning:");
+                }
+                catch (DJException dje) { await message.ReplyAsync(dje.Message); }
+                catch (Exception ex) { _logger.LogError(ex); }
+            }));
+            _commandManager.Commands.Add(new TextCommand("resume", async (message, receivedCommand) =>
             {
-                await _dj.PauseAudioAsync();
-                await message.ReplyAsync("Red Light! :rotating_light:");
-            }
-            catch (DJException dje) { await message.ReplyAsync(dje.Message); }
-            catch (Exception ex) { _logger.LogError(ex); }
-        }
-
-        async Task EchoCommand(TextChannelMessage message)
-        {
-            await message.ReplyAsync(message.Content.Substring(5));
-        }
-
-        async Task HelloCommand(TextChannelMessage message)
-        {
-            var voiceChannel = message.Author.VoiceChannel;
-            if (voiceChannel == null)
+                try
+                {
+                    _dj.ResumeAudio();
+                    await message.ReplyAsync("Green light! :arrow_forward:");
+                }
+                catch (DJException dje) { await message.ReplyAsync(dje.Message); }
+                catch (Exception ex) { _logger.LogError(ex); }
+            }));
+            _commandManager.Commands.Add(new TextCommand("pause", async (message, receivedCommand) =>
             {
-                await message.ReplyAsync("You're going to want to be in a voice channel for this...");
-                return;
-            }
-
-            var fullSongPcm = new WavFileReader().ReadFileBytes(new FileInfo("audio/bbhw.wav"));
-            _dj.EnqueueAudio(fullSongPcm, voiceChannel);
-            await message.ReplyAsync("Hello added to queue");
-        }
-
-        async Task MarbleSodaCommand(TextChannelMessage message)
-        {
-            var voiceChannel = message.Author.VoiceChannel;
-            if (voiceChannel == null)
+                try
+                {
+                    await _dj.PauseAudioAsync();
+                    await message.ReplyAsync("Red Light! :rotating_light:");
+                }
+                catch (DJException dje) { await message.ReplyAsync(dje.Message); }
+                catch (Exception ex) { _logger.LogError(ex); }
+            }));
+            _commandManager.Commands.Add(new TextCommand("ms", async (message, receivedCommand) =>
             {
-                await message.ReplyAsync("You're going to want to be in a voice channel for this...");
-                return;
-            }
+                var voiceChannel = message.Author.VoiceChannel;
+                if (voiceChannel == null)
+                {
+                    await message.ReplyAsync("You're going to want to be in a voice channel for this...");
+                    return;
+                }
+                var fullSongPcm = new WavFileReader().ReadFileBytes(new FileInfo("audio/ms.wav"));
+                _dj.EnqueueAudio(fullSongPcm, voiceChannel);
+                await message.ReplyAsync("Marble Soda Best Soda added to queue");
+            }));
+            _commandManager.Commands.Add(new TextCommand("hello", async (message, receivedCommand) =>
+            {
+                var voiceChannel = message.Author.VoiceChannel;
+                if (voiceChannel == null)
+                {
+                    await message.ReplyAsync("You're going to want to be in a voice channel for this...");
+                    return;
+                }
 
-            var fullSongPcm = new WavFileReader().ReadFileBytes(new FileInfo("audio/ms.wav"));
-            _dj.EnqueueAudio(fullSongPcm, voiceChannel);
-            await message.ReplyAsync("Marble Soda Best Soda added to queue");
-        }
-
-        void SayHello(Server server)
-        {
-            if (server.VoiceChannels.Count() == 0) return;
-
-            var voiceChannel = server.VoiceChannels.First();
-
-            var fullSongPcm = new WavFileReader().ReadFileBytes(new FileInfo("audio/bbhw.wav"));
-            _dj.EnqueueAudio(fullSongPcm, voiceChannel);
+                var fullSongPcm = new WavFileReader().ReadFileBytes(new FileInfo("audio/bbhw.wav"));
+                _dj.EnqueueAudio(fullSongPcm, voiceChannel);
+                await message.ReplyAsync("Hello added to queue");
+            }));
+            _commandManager.Commands.Add(new TextCommand("echo", async (message, receivedCommand) =>
+            {
+                await message.ReplyAsync(receivedCommand.ArgsString);
+            }, minimumArgCount: 1));
         }
     }
 }

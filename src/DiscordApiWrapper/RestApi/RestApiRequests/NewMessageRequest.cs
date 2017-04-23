@@ -16,9 +16,9 @@ namespace DiscordApiWrapper.RestApi.RestApiRequests
 
         /// <summary>
         /// The message contents (up to 2000 characters).
-        /// Required.
         /// </summary>
         [JsonProperty("content")]
+        [JsonRequired]
         public string Content;
 
         /// <summary>
