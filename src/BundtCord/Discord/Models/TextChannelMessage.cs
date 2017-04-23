@@ -8,6 +8,7 @@ namespace BundtCord.Discord
         public string Content { get; }
         public ServerMember Author => _client.ServerMembers[_serverId][_authorId];
         public TextChannel TextChannel => _client.TextChannels[_textChannelId];
+        public Server Server => TextChannel.Server;
 
         readonly ulong _serverId;
         readonly ulong _authorId;

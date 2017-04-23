@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -163,6 +164,37 @@ namespace BundtBot
             _commandManager.Commands.Add(new TextCommand("echo", async (message, receivedCommand) =>
             {
                 await message.ReplyAsync(receivedCommand.ArgsString);
+            }, minimumArgCount: 1));
+            _commandManager.Commands.Add(new TextCommand("yt", async (message, receivedCommand) =>
+            {
+                // Check if arg is a url
+                if (Uri.IsWellFormedUriString(receivedCommand.ArgsString, UriKind.Absolute) == false)
+                {
+                    await message.ReplyAsync("Only URL's are accepted for thee moment");
+                    return;
+                }
+
+                var uri = new Uri(receivedCommand.ArgsString);
+
+                // TODO Allow more URLs
+                if (uri.Host != "www.youtube.com")
+                {
+                    await message.ReplyAsync("Only youtube URL's are accepted for the moment");
+                    return;
+                }
+
+                // Use youtube-dl to download url as wav
+
+                var outputfolder = new DirectoryInfo("audio");
+                if (outputfolder.Exists == false) outputfolder.Create();
+
+                var youtubeOutput = await new YoutubeDownloader().YoutubeDownloadAndConvertAsync(message, uri.ToString(), outputfolder);
+
+
+                var fullSongPcm = new WavFileReader().ReadFileBytes(youtubeOutput);
+                _dj.EnqueueAudio(fullSongPcm, message.Server.VoiceChannels.First());
+                await message.ReplyAsync(uri.ToString() + " added to queue");
+
             }, minimumArgCount: 1));
         }
     }

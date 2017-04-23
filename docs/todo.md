@@ -18,7 +18,7 @@
 [√] Create a SoundManager for queueing audio
 [√] New way to manage commands
 
-[ ] !yt
+[√] !yt
 [ ] !dog
 [ ] !uploaddog
 [ ] !setloglevel
@@ -29,6 +29,7 @@
 [ ] edit the same message continuously to do a ascii art animation
 [ ] allow multiple different text responses to certain events
 
+
 ## DJ
 [√] enqueue audio to play
 [√] !pause
@@ -37,6 +38,7 @@
 [√] !next
 [ ] !fastforward
 [ ] !slomo
+[ ] change the Playing Game filed to song name
 
 ## Voice
 [√] put the voice udp client on its own thread

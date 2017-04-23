@@ -33,6 +33,8 @@ const libopus64linux = 'bin/opus/linux-1.1.2-x86-64/libopus.so.0.5.2'
 const libopus64windows = 'bin/opus/windows-1.1.2-x86-64/opus.dll'
 const libsodium64linux = 'bin/libsodium/linux-1.0.12-x86-64/libsodium.so.18.2.0'
 const libsodium64windows = 'bin/libsodium/windows-1.0.12-x86-64/libsodium.dll'
+const youtubedlwindows = 'bin/youtube-dl/windows/youtube-dl.exe'
+const youtubedllinux = 'bin/youtube-dl/linux/youtube-dl.exe'
 
 var secret;
 
@@ -72,11 +74,13 @@ gulp.task('run', ['build', 'copyviews', 'copytokendev'], shell.task(`dotnet Bund
 function copywindowsbinsbuild() {
 	fs.createReadStream(libopus64windows).pipe(fs.createWriteStream(buildOutputFolder + '/libopus.dll'));
 	fs.createReadStream(libsodium64windows).pipe(fs.createWriteStream(buildOutputFolder + '/libsodium.dll'));
+	fs.createReadStream(youtubedlwindows).pipe(fs.createWriteStream(buildOutputFolder + '/youtube-dl.exe'));
 }
 
 function copylinuxbinspublish() {
 	fs.createReadStream(libopus64linux).pipe(fs.createWriteStream(publishFolder + '/libopus.dll'));
 	fs.createReadStream(libsodium64linux).pipe(fs.createWriteStream(publishFolder + '/libsodium.dll'));
+	fs.createReadStream(youtubedllinux).pipe(fs.createWriteStream(publishFolder + '/youtube-dl.exe'));
 }
 
 gulp.task('publish', function (cb) {

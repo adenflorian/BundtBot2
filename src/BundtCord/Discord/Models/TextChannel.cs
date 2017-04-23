@@ -6,9 +6,10 @@ namespace BundtCord.Discord
 {
     public class TextChannel
     {
-        public ulong Id {get;}
-        public string Name {get;}
-        public ulong ServerId {get;}
+        public ulong Id { get; }
+        public string Name { get; }
+        public ulong ServerId { get; }
+        public Server Server => _client.Servers[ServerId];
 
         DiscordClient _client;
 
