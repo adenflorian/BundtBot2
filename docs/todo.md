@@ -13,9 +13,9 @@
     - bundtbot should join the voice channel of the requesting user and play a clip that says, "bundtbot said, Hello, world"
 [√] move to csproj
 [√] upgrade xunit
-[ ] refactor WebSocketClient
+[√] refactor WebSocketClient
 
-[ ] Create a SoundManager for queueing audio
+[√] Create a SoundManager for queueing audio
 
 [ ] !yt
 [ ] !dog
@@ -25,6 +25,11 @@
   - for running tests and such
 
 [ ] edit the same message continuously to do a ascii art animation
+
+## DJ
+[√] enqueue audio to play
+[ ] !stop
+[ ] !pause
 
 ## Voice
 [√] put the voice udp client on its own thread

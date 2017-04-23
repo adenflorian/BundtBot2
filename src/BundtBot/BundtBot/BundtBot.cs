@@ -9,17 +9,17 @@ namespace BundtBot
 {
     public class BundtBot
     {
-        DiscordClient _client;
-
         static readonly MyLogger _logger = new MyLogger(nameof(BundtBot));
 
-        //internal static Dictionary<Guild, TextChannel> TextChannelOverrides = new Dictionary<Guild, TextChannel>();
+        DiscordClient _client;
+        DJ _dj = new DJ();
 
         public async Task StartAsync()
         {
             _client = new DiscordClient(File.ReadAllText("bottoken"));
 
             RegisterEventHandlers();
+            _dj.Start();
 
             await _client.ConnectAsync();
         }
@@ -43,7 +43,7 @@ namespace BundtBot
                 try
                 {
                     await server.TextChannels.First().SendMessageAsync("bundtbot online");
-                    await SayHello(server);
+                    SayHello(server);
                 }
                 catch (Exception ex)
                 {
@@ -98,12 +98,8 @@ namespace BundtBot
                 return;
             }
 
-            await voiceChannel.JoinAsync();
-
             var fullSongPcm = new WavFileReader().ReadFileBytes(new FileInfo("audio/bbhw.wav"));
-            await voiceChannel.SendAudioAsync(fullSongPcm);
-
-            await _client.LeaveVoiceChannelInServer(voiceChannel.Server);
+            _dj.EnqueueAudio(fullSongPcm, voiceChannel);
         }
 
         async Task MarbleSodaCommand(TextChannelMessage message)
@@ -115,26 +111,18 @@ namespace BundtBot
                 return;
             }
 
-            await voiceChannel.JoinAsync();
-
             var fullSongPcm = new WavFileReader().ReadFileBytes(new FileInfo("audio/ms.wav"));
-            await voiceChannel.SendAudioAsync(fullSongPcm);
-
-            await _client.LeaveVoiceChannelInServer(voiceChannel.Server);
+            _dj.EnqueueAudio(fullSongPcm, voiceChannel);
         }
 
-        async Task SayHello(Server server)
+        void SayHello(Server server)
         {
             if (server.VoiceChannels.Count() == 0) return;
 
             var voiceChannel = server.VoiceChannels.First();
 
-            await voiceChannel.JoinAsync();
-
             var fullSongPcm = new WavFileReader().ReadFileBytes(new FileInfo("audio/bbhw.wav"));
-            await voiceChannel.SendAudioAsync(fullSongPcm);
-
-            await _client.LeaveVoiceChannelInServer(voiceChannel.Server);
+            _dj.EnqueueAudio(fullSongPcm, voiceChannel);
         }
     }
 }

@@ -15,6 +15,7 @@ namespace BundtCommon
                 await Task.Delay(interval);
             }
         }
+        
         public static async Task ForeverAsync(Func<Task<bool>> thingToTry, TimeSpan interval)
         {
             while (true)
