@@ -205,7 +205,7 @@ namespace BundtCord.Discord
             });
 
             // TODO Destroy that server's voice client properly
-            server.VoiceClient.Dispose();
+            server.VoiceClient?.Dispose();
             server.VoiceClient = null;
         }
     }

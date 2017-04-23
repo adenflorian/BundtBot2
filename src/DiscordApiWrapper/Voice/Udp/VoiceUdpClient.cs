@@ -38,8 +38,9 @@ namespace DiscordApiWrapper.Voice
         readonly OpusEncoder _opusEncoder = OpusEncoder.Create(_samplingRate, _channels, Application.Audio);
         readonly uint _syncSourceId;
 
-        bool _isDisposed = false;
-        bool _isPaused = false;
+        bool _isDisposing;
+        bool _isDisposed;
+        bool _isPaused;
         Stopwatch stopwatch;
 
         public VoiceUdpClient(Uri remoteUri, int remotePort, uint synchronizationSourceId)
@@ -92,7 +93,7 @@ namespace DiscordApiWrapper.Voice
             await Task.Run(() => {
                 while (true)
                 {
-                    if (_isDisposed) return;
+                    if (_isDisposing) return;
                     if (_isPaused) { Thread.Sleep(100); continue; }
 
                     Buffer.BlockCopy(pcmAudioBytes, index, pcmFrame, 0, _bytesPer20Ms);
@@ -154,12 +155,14 @@ namespace DiscordApiWrapper.Voice
 
         async Task<int> SendAsync(byte[] bytesToSend)
         {
+            if (_isDisposing) return 0;
             var bytesSent = await _udpClient.SendAsync(bytesToSend, bytesToSend.Length, _voiceUdpEndpoint);
             return bytesSent;
         }
 
         async Task<byte[]> ReceiveAsync()
         {
+            if (_isDisposing) return null;
             var udpReceiveResult = await _udpClient.ReceiveAsync();
             return udpReceiveResult.Buffer;
         }
@@ -171,6 +174,7 @@ namespace DiscordApiWrapper.Voice
 
         public void Dispose()
         {
+            _isDisposing = true;
             if (_isDisposed == false)
             {
                 _logger.LogDebug("Disposing");

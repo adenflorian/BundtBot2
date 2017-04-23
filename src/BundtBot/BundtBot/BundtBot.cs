@@ -82,8 +82,20 @@ namespace BundtBot
                 case "!ms": await MarbleSodaCommand(message); break;
                 case "!pause": await PauseCommand(message); break;
                 case "!resume": await ResumeCommandAsync(message); break;
+                case "!stop": await StopCommandAsync(message); break;
                 default: return;
             }
+        }
+
+        async Task StopCommandAsync(TextChannelMessage message)
+        {
+            try
+            {
+                _dj.StopAudioAsync();
+                await message.ReplyAsync("Stopped :(");
+            }
+            catch (DJException dje) { await message.ReplyAsync(dje.Message); }
+            catch (Exception ex) { _logger.LogError(ex); }
         }
 
         async Task ResumeCommandAsync(TextChannelMessage message)
@@ -91,11 +103,10 @@ namespace BundtBot
             try
             {
                 _dj.ResumeAudio();
+                await message.ReplyAsync("Resumed :)");
             }
-            catch (Exception ex)
-            {
-                await message.ReplyAsync(ex.Message);
-            }
+            catch (DJException dje) { await message.ReplyAsync(dje.Message); }
+            catch (Exception ex) { _logger.LogError(ex); }
         }
 
         async Task PauseCommand(TextChannelMessage message)
@@ -103,11 +114,10 @@ namespace BundtBot
             try
             {
                 await _dj.PauseAudioAsync();
+                await message.ReplyAsync("Paused :/");
             }
-            catch (Exception ex)
-            {
-                await message.ReplyAsync(ex.Message);
-            }
+            catch (DJException dje) { await message.ReplyAsync(dje.Message); }
+            catch (Exception ex) { _logger.LogError(ex); }
         }
 
         async Task EchoCommand(TextChannelMessage message)
@@ -126,6 +136,7 @@ namespace BundtBot
 
             var fullSongPcm = new WavFileReader().ReadFileBytes(new FileInfo("audio/bbhw.wav"));
             _dj.EnqueueAudio(fullSongPcm, voiceChannel);
+            await message.ReplyAsync("Hello added to queue");
         }
 
         async Task MarbleSodaCommand(TextChannelMessage message)
@@ -139,6 +150,7 @@ namespace BundtBot
 
             var fullSongPcm = new WavFileReader().ReadFileBytes(new FileInfo("audio/ms.wav"));
             _dj.EnqueueAudio(fullSongPcm, voiceChannel);
+            await message.ReplyAsync("Marble Soda Best Soda added to queue");
         }
 
         void SayHello(Server server)
