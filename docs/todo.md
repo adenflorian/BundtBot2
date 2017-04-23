@@ -21,6 +21,7 @@
 [ ] !yt
 [ ] !dog
 [ ] !uploaddog
+[ ] !setloglevel
 
 [ ] make a json file to configure what actions bundtbot does on startup
   - for running tests and such

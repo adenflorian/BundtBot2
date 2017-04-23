@@ -21,7 +21,7 @@ namespace BundtBot.Discord.Models.Gateway
 
 	    public StatusUpdate(DateTime? idleSince, string currentlyPlaying)
 	    {
-		    IdleSince = idleSince.HasValue ? ((int)idleSince.Value.Ticks).ToString() : "";
+		    IdleSince = idleSince.HasValue ? ((int)idleSince.Value.Ticks).ToString() : null;
 			Game = new Game{Name = currentlyPlaying};
 	    }
 	}
