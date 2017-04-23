@@ -28,9 +28,10 @@
 
 ## DJ
 [√] enqueue audio to play
-[ ] !stop
 [√] !pause
 [√] !resume
+[ ] !stop
+[ ] !next
 [ ] !fastforward
 [ ] !slomo
 

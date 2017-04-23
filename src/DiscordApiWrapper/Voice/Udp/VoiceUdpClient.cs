@@ -20,11 +20,18 @@ namespace DiscordApiWrapper.Voice
         const int _crytpoTagSizeInBytes = 16;
         const int _samplingRate = 48000;
         const int _channels = 2;
+        const int _frameLengthInMs = 20;
+        const int _bitDepth = 16;
+        const int _bytesPerSample = _bitDepth / 8;
+        const uint _samplesPerFramePerChannel = (uint)((_samplingRate / _msPerSecond) * _frameLengthInMs);
+        const int _samplesPerMs = (_samplingRate * _channels) / _msPerSecond;
+        const int _bytesPer20Ms = 20 * _samplesPerMs * _bytesPerSample;
 
         static readonly MyLogger _logger = new MyLogger(nameof(VoiceUdpClient), ConsoleColor.DarkGreen);
         static readonly byte[] _silenceFrames = { 0xF8, 0xFF, 0xFE };
         static readonly byte[] _keepAliveData = { 0xC9, 0, 0, 0, 0, 0, 0, 0, 0 };
         static readonly double _ticksPerMillisecond = Stopwatch.Frequency / _msPerSecond;
+        static readonly double _ticksPerFrame = _ticksPerMillisecond * _frameLengthInMs;
 
         readonly UdpClient _udpClient;
         readonly IPEndPoint _voiceUdpEndpoint;
@@ -33,7 +40,7 @@ namespace DiscordApiWrapper.Voice
 
         bool _isDisposed = false;
         bool _isPaused = false;
-        Stopwatch sw;
+        Stopwatch stopwatch;
 
         public VoiceUdpClient(Uri remoteUri, int remotePort, uint synchronizationSourceId)
         {
@@ -57,98 +64,81 @@ namespace DiscordApiWrapper.Voice
             return IpDiscoveryResult;
         }
 
-        internal async Task PauseAsync()
+        public async Task PauseAsync()
         {
             _isPaused = true;
-            sw.Stop();
+            stopwatch.Stop();
             await SendFiveFramesOfSilence(0, 0, 0);
         }
 
-        internal void Resume()
+        public void Resume()
         {
             _isPaused = false;
-            sw.Start();
+            stopwatch.Start();
         }
 
-        internal async Task SendAudioAsync(byte[] pcmAudioBytes)
+        public async Task SendAudioAsync(byte[] pcmAudioBytes)
         {
             if (SecretKey == null) throw new InvalidOperationException("Secret Key is still null");
 
-            var frameLengthInMs = 20;
-            uint samplesPerFramePerChannel = (uint)((_samplingRate / _msPerSecond) * frameLengthInMs);
-
-            var bitDepth = 16;
-            var bytesPerSample = bitDepth / 8;
-
             ushort sequence = 0;
             uint timestamp = 0;
-
-            double ticksPerFrame = _ticksPerMillisecond * frameLengthInMs;
             double nextFrameInTicks = 0;
-
-            var samplesPerMs = (_samplingRate * _channels) / _msPerSecond;
-            var bytesToRead = 20 * samplesPerMs * bytesPerSample;
-
-            sw = Stopwatch.StartNew();
-            
             var index = 0;
-            var pcmFrame = new byte[bytesToRead];
+            var pcmFrame = new byte[_bytesPer20Ms];
+
+            stopwatch = Stopwatch.StartNew();
 
             await Task.Run(() => {
-
                 while (true)
                 {
                     if (_isDisposed) return;
-                    if (_isPaused)
-                    {
-                        Thread.Sleep(100);
-                        continue;
-                    }
+                    if (_isPaused) { Thread.Sleep(100); continue; }
 
-                    Buffer.BlockCopy(pcmAudioBytes, index, pcmFrame, 0, bytesToRead);
+                    Buffer.BlockCopy(pcmAudioBytes, index, pcmFrame, 0, _bytesPer20Ms);
 
-                    index += bytesToRead;
-                    if (index > pcmAudioBytes.Length - bytesToRead)
-                    {
-                        _logger.LogInfo($"Ran out of bytes to read, breaking out of loop");
-                        break;
-                    }
+                    index += _bytesPer20Ms;
+
+                    if (IsAtEndOfAudio(index, pcmAudioBytes.Length)) break;
 
                     int encodedLength;
-
                     var compressedBytes = _opusEncoder.Encode(pcmFrame, pcmFrame.Length, out encodedLength);
 
                     var compressedBytesShort = new byte[encodedLength];
                     Buffer.BlockCopy(compressedBytes, 0, compressedBytesShort, 0, encodedLength);
 
                     var voicePacket = new VoicePacket(sequence, timestamp, _syncSourceId, compressedBytesShort);
+                    var encryptedVoicePacketBytes = voicePacket.GetEncryptedBytes(SecretKey);
 
-                    // Find out how much time to wait
-                    double ticksUntilNextFrame = nextFrameInTicks - sw.ElapsedTicks;
-                    int msUntilNextFrame = (int)Math.Floor(ticksUntilNextFrame / _ticksPerMillisecond);
-
-                    _logger.LogTrace($"msUntilNextFrame: {msUntilNextFrame}");
-
-                    if (msUntilNextFrame > 0)
-                    {
-                        _logger.LogTrace($"Before Thread.Sleep()");
-                        Thread.Sleep(msUntilNextFrame);
-                        //await Task.Delay(msUntilNextFrame);
-                        _logger.LogTrace($"After Thread.Sleep()");
-                    }
+                    int msUntilNextFrame = FindOutHowLongToWait(nextFrameInTicks);
+                    if (msUntilNextFrame > 0) Thread.Sleep(msUntilNextFrame);
                     
-                    _logger.LogTrace($"Before SendAsync");
-                    // TODO Maybe check if previous send is still incomplete, and if it is, cancel it?
-                    var task = SendAsync(voicePacket.GetEncryptedBytes(SecretKey));
-                    _logger.LogTrace($"After  SendAsync");
+                    var task = SendAsync(encryptedVoicePacketBytes);
 
-                    timestamp += samplesPerFramePerChannel;
+                    timestamp += _samplesPerFramePerChannel;
                     sequence++;
-                    nextFrameInTicks += ticksPerFrame;
+                    nextFrameInTicks += _ticksPerFrame;
                 }
             });
 
-            await SendFiveFramesOfSilence(sequence, timestamp, samplesPerFramePerChannel);
+            await SendFiveFramesOfSilence(sequence, timestamp, _samplesPerFramePerChannel);
+        }
+
+        bool IsAtEndOfAudio(int index, int pcmAudioBytesLength)
+        {
+            // TODO This is inaccurate
+            if (index > pcmAudioBytesLength - _bytesPer20Ms)
+            {
+                _logger.LogInfo($"Ran out of bytes to read, breaking out of loop");
+                return true;
+            }
+            return false;
+        }
+
+        int FindOutHowLongToWait(double nextFrameInTicks)
+        {
+            double ticksUntilNextFrame = nextFrameInTicks - stopwatch.ElapsedTicks;
+            return (int)Math.Floor(ticksUntilNextFrame / _ticksPerMillisecond);
         }
 
         async Task SendFiveFramesOfSilence(ushort sequence, uint timestamp, uint samplesPerFrame)
@@ -181,20 +171,11 @@ namespace DiscordApiWrapper.Voice
 
         public void Dispose()
         {
-            Dispose(true);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!_isDisposed)
+            if (_isDisposed == false)
             {
-                if (disposing)
-                {
-                    _logger.LogDebug("Disposing");
-                    _udpClient.Dispose();
-                    _opusEncoder.Dispose();
-                }
-
+                _logger.LogDebug("Disposing");
+                _udpClient.Dispose();
+                _opusEncoder.Dispose();
                 _isDisposed = true;
             }
         }
