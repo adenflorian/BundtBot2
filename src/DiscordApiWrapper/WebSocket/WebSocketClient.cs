@@ -17,7 +17,7 @@ namespace DiscordApiWrapper.WebSocket
 
 		readonly MyLogger _logger;
 		readonly Uri _serverUri;
-		readonly Queue<Tuple<string, Action>> _outgoingQueue = new Queue<Tuple<string, Action>>();
+		readonly Queue<OutgoingMessage> _outgoingQueue = new Queue<OutgoingMessage>();
 		
 		ClientWebSocket _clientWebSocket = new ClientWebSocket();
         bool _isDisposed;
@@ -29,24 +29,10 @@ namespace DiscordApiWrapper.WebSocket
 			_logger = new MyLogger(logPrefix + nameof(WebSocketClient), prefixColor);
 		}
 
-        ~WebSocketClient() => Dispose();
-
-        public void Dispose()
-        {
-			_isDisposing = true;
-            if (_isDisposed == false)
-            {
-                _logger.LogDebug("Disposing");
-                _clientWebSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "closing", CancellationToken.None).Wait();
-                _clientWebSocket.Dispose();
-                _isDisposed = true;
-            }
-        }
-
         public async Task ConnectAsync()
 		{
 			await DoConnectLoopAsync();
-			LogConnected(_serverUri, _clientWebSocket);
+			LogConnected(_serverUri);
 			StartReceiveLoop();
 			StartSendLoop();
 		}
@@ -57,7 +43,7 @@ namespace DiscordApiWrapper.WebSocket
 
 			var isDone = false;
 			_logger.LogDebug($"Enqueueing {data.Substring(0, Math.Min(data.Length, 20))}...");
-			_outgoingQueue.Enqueue(Tuple.Create<string, Action>(data, () => { isDone = true; }));
+			_outgoingQueue.Enqueue(new OutgoingMessage{Content = data, Callback = () => { isDone = true; }});
 			while (isDone == false)
 			{
 				if (_isDisposing) throw new OperationCanceledException();
@@ -68,7 +54,7 @@ namespace DiscordApiWrapper.WebSocket
         async Task ReconnectAsync()
         {
 			await DoConnectLoopAsync();
-            LogReconnected(_serverUri, _clientWebSocket);
+            LogReconnected(_serverUri);
         }
 
         async Task DoConnectLoopAsync()
@@ -89,6 +75,20 @@ namespace DiscordApiWrapper.WebSocket
                     _clientWebSocket.Dispose();
                     _clientWebSocket = new ClientWebSocket();
                 }
+            }
+        }
+
+        ~WebSocketClient() => Dispose();
+
+        public void Dispose()
+        {
+            _isDisposing = true;
+            if (_isDisposed == false)
+            {
+                _logger.LogDebug("Disposing");
+                _clientWebSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "closing", CancellationToken.None).Wait();
+                _clientWebSocket.Dispose();
+                _isDisposed = true;
             }
         }
     }

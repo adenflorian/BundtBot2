@@ -9,75 +9,78 @@ namespace DiscordApiWrapper.WebSocket
 {
     partial class WebSocketClient
     {
+        struct ReceivedMessage
+        {
+            public String Content;
+            public bool IsCompleted;
+        }
+
         struct ReceivedData
         {
-            public readonly WebSocketReceiveResult Result;
-            public readonly string Data;
-
+            public WebSocketReceiveResult Result;
+            public string Data;
             public bool IsCloseRequested => Result.CloseStatus.HasValue;
-
-            public ReceivedData(WebSocketReceiveResult result, string data)
-            {
-                Result = result;
-                Data = data;
-            }
         }
-        
+
         void StartReceiveLoop()
         {
             Task.Run(async () =>
             {
-                var completedMessage = "";
-                while (_clientWebSocket.State == WebSocketState.Open)
+                while (true)
                 {
                     try
                     {
-                        var receivedData = await ReceiveAsync();
-
-                        if (receivedData.IsCloseRequested)
-                        {
-                            LogCloseReceived(receivedData.Result.CloseStatus.Value.ToString());
-                            await ReconnectAsync();
-                            completedMessage = "";
-                            continue;
-                        }
-
-                        completedMessage += receivedData.Data;
-
-                        if (receivedData.Result.EndOfMessage)
-                        {
-                            OnMessageReceived(completedMessage);
-                            completedMessage = "";
-                        }
+                        await ReceiveMessageAsync();
                     }
                     catch (Exception ex)
                     {
                         if (_isDisposing) return;
-                        LogReceiveLoopException(ex, _clientWebSocket);
-                        completedMessage = "";
+                        LogReceiveLoopException(ex);
                         await ReconnectAsync();
                     }
                 }
             });
         }
 
-        async Task<ReceivedData> ReceiveAsync()
+        async Task ReceiveMessageAsync()
         {
-            var receiveBuffer = CreateReceiveBuffer();
+            var completedMessage = new ReceivedMessage();
+            ReceivedData receivedData;
 
-            var receiveResult = await _clientWebSocket.ReceiveAsync(receiveBuffer, CancellationToken.None);
-            LogReceiveResult(receiveResult);
+            while (completedMessage.IsCompleted == false)
+            {
+                receivedData = await ReceiveAsync(_clientWebSocket);
 
-            var receivedString = new UTF8Encoding().GetString(receiveBuffer.Array, 0, receiveResult.Count);
-            _logger.LogTrace(receivedString);
+                ThrowIfCloseStatus(receivedData.Result.CloseStatus);
 
-            return new ReceivedData(receiveResult, receivedString);
+                completedMessage.Content += receivedData.Data;
+                completedMessage.IsCompleted = receivedData.Result.EndOfMessage;
+            }
+            
+            OnMessageReceived(completedMessage.Content);
         }
 
-        static ArraySegment<byte> CreateReceiveBuffer()
+        async Task<ReceivedData> ReceiveAsync(ClientWebSocket _clientWebSocket)
         {
-            const int arbitraryBufferSize = 8192;
-            return new ArraySegment<byte>(new byte[arbitraryBufferSize]);
+            // 8192 is an arbitrary number
+            var receiveBuffer = new ArraySegment<byte>(new byte[8192]);
+
+            var receiveResult = await _clientWebSocket.ReceiveAsync(receiveBuffer, CancellationToken.None);
+
+            var receivedString = new UTF8Encoding().GetString(receiveBuffer.Array, 0, receiveResult.Count);
+
+            LogReceived(receiveResult, receivedString);
+
+            return new ReceivedData { Result = receiveResult, Data = receivedString };
+        }
+
+        void ThrowIfCloseStatus(WebSocketCloseStatus? closeStatus)
+        {
+            if (closeStatus.HasValue)
+            {
+                LogCloseReceived(closeStatus.Value.ToString());
+                throw new WebSocketClosedException(closeStatus.Value);
+            }
         }
 
         void OnMessageReceived(string message)

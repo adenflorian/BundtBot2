@@ -36,7 +36,7 @@ namespace BundtBot.Discord.Gateway
 
         static readonly MyLogger _logger = new MyLogger(nameof(DiscordGatewayClient), ConsoleColor.Cyan);
 
-        readonly WebSocketClient _clientWebSocketWrapper;
+        readonly WebSocketClient _webSocketClient;
         readonly string _authToken;
 
         int _lastSequenceReceived;
@@ -50,19 +50,19 @@ namespace BundtBot.Discord.Gateway
 
             var modifiedGatewayUrl = gatewayUri.AddParameter("v", "5").AddParameter("encoding", "'json'");
 
-            _clientWebSocketWrapper = new WebSocketClient(modifiedGatewayUrl, "Gateway-", ConsoleColor.Cyan);
+            _webSocketClient = new WebSocketClient(modifiedGatewayUrl, "Gateway-", ConsoleColor.Cyan);
 
             HelloReceived += OnHelloReceivedAsync;
             HeartbackAckReceived += (e, d) => _logger.LogInfo(new LogMessage("HeartbackAck Received ← "), new LogMessage("♥", ConsoleColor.Red));
             Ready += OnReady;
             DispatchReceived += OnDispatchReceived;
             
-            _clientWebSocketWrapper.MessageReceived += OnMessageReceived;
+            _webSocketClient.MessageReceived += OnMessageReceived;
         }
 
         public async Task ConnectAsync()
         {
-            await _clientWebSocketWrapper.ConnectAsync();
+            await _webSocketClient.ConnectAsync();
             _logger.LogInfo($"Connected to Gateway", ConsoleColor.Green);
         }
 
@@ -261,7 +261,7 @@ namespace BundtBot.Discord.Gateway
                 _logger.LogTrace("" + JObject.FromObject(gatewayPayload));
 
                 var jsonGatewayPayload = JsonConvert.SerializeObject(gatewayPayload);
-                await _clientWebSocketWrapper.SendMessageUsingQueueAsync(jsonGatewayPayload);
+                await _webSocketClient.SendMessageUsingQueueAsync(jsonGatewayPayload);
 
                 _logger.LogDebug($"Sent {gatewayPayload.GatewayOpCode}");
             }
