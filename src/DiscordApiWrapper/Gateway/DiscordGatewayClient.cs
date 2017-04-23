@@ -33,6 +33,8 @@ namespace BundtBot.Discord.Gateway
         public event GatewayEventHandler<TypingStart> TypingStart;
         public event GatewayEventHandler<VoiceState> VoiceStateUpdate;
         public event GatewayEventHandler<VoiceServerInfo> VoiceServerUpdate;
+        public event GatewayEventHandler<DmChannel> DmChannelCreated;
+        public event GatewayEventHandler<GuildChannel> GuildChannelCreated;
 
         static readonly MyLogger _logger = new MyLogger(nameof(DiscordGatewayClient), ConsoleColor.Cyan);
 
@@ -145,6 +147,16 @@ namespace BundtBot.Discord.Gateway
                 case "CHANNEL_CREATE":
                     var channel = JsonConvert.DeserializeObject<Channel>(eventJsonData);
                     LogReceivedEvent("CHANNEL_CREATE", channel.Id.ToString());
+                    if (channel.IsPrivate)
+                    {
+                        var dmChannel = JsonConvert.DeserializeObject<DmChannel>(eventJsonData);
+                        DmChannelCreated?.Invoke(dmChannel);
+                    }
+                    else
+                    {
+                        var guildChannel = JsonConvert.DeserializeObject<GuildChannel>(eventJsonData);
+                        GuildChannelCreated?.Invoke(guildChannel);
+                    }
                     break;
                 case "MESSAGE_CREATE":
                     var discordMessage = JsonConvert.DeserializeObject<DiscordMessage>(eventJsonData);

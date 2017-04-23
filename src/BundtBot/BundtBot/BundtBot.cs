@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using BundtCord.Discord;
 using DiscordApiWrapper.Audio;
@@ -52,21 +53,26 @@ namespace BundtBot
                 }
 			};
 
-            /*_client.Ready += (ready) => {
-				_logger.LogInfo("Client is Ready/Connected! ໒( ͡ᵔ ▾ ͡ᵔ )७", ConsoleColor.Green);
-				_logger.LogInfo("Setting game...");
-				_client.SetGame(Assembly.GetEntryAssembly().GetName().Version.ToString());
-			};*/
+            _client.Ready += async (ready) => {
+                try
+                {
+                    _logger.LogInfo("Client is Ready/Connected! ໒( ͡ᵔ ▾ ͡ᵔ )७", ConsoleColor.Green);
+                    _logger.LogInfo("Setting game...");
+                    await _client.SetGameAsync(Assembly.GetEntryAssembly().GetName().Version.ToString());
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex);
+                }
+			};
 			
-			/*_client.TextChannelCreated += async (textChannel) => {
+			_client.TextChannelCreated += async (textChannel) => {
 				try {
-					await textChannel.SendMessage("less is more");
-					if (!textChannel.Name.ToLower().Contains("bundtbot")) return;
-					TextChannelOverrides[textChannel.Guild] = textChannel;
+					await textChannel.SendMessageAsync("less is more");
 				} catch (Exception ex) {
 					_logger.LogError(ex);
 				}
-			};*/
+			};
         }
 
         async Task ProcessTextMessageAsync(TextChannelMessage message)
@@ -84,6 +90,7 @@ namespace BundtBot
                 case "!resume": await ResumeCommandAsync(message); break;
                 case "!stop": await StopCommandAsync(message); break;
                 case "!next": await NextCommandAsync(message); break;
+                //case "!yt": await NextCommandAsync(message); break;
                 default: return;
             }
         }

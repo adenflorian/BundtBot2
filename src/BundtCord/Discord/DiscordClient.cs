@@ -23,6 +23,9 @@ namespace BundtCord.Discord
 
         public event Action<TextChannelMessage> TextChannelMessageReceived;
         public event Action<Server> ServerCreated;
+        public event Action<Ready> Ready;
+        public event Action<TextChannel> TextChannelCreated;
+        public event Action<VoiceChannel> VoiceChannelCreated;
 
         internal IDiscordRestClient DiscordRestClient;
 
@@ -67,6 +70,30 @@ namespace BundtCord.Discord
             _gatewayClient.Ready += OnReady;
             _gatewayClient.VoiceServerUpdate += OnVoiceServerUpdateAsync;
             _gatewayClient.VoiceStateUpdate += OnVoiceStateUpdate;
+            _gatewayClient.DmChannelCreated += OnDmChannelCreated;
+            _gatewayClient.GuildChannelCreated += OnGuildChannelCreated;
+        }
+
+        void OnGuildChannelCreated(GuildChannel guildChannel)
+        {
+            if (guildChannel.Type == GuildChannelType.Text)
+            {
+                var textChannel = new TextChannel(guildChannel, this);
+                TextChannels[textChannel.Id] = textChannel;
+                TextChannelCreated?.Invoke(textChannel);
+            }
+            else if (guildChannel.Type == GuildChannelType.Voice)
+            {
+                var voiceChannel = new VoiceChannel(guildChannel, this);
+                VoiceChannels[voiceChannel.Id] = voiceChannel;
+                VoiceChannelCreated?.Invoke(voiceChannel);
+            }
+        }
+
+        void OnDmChannelCreated(DmChannel newChannel)
+        {
+            // TODO
+            _logger.LogWarning("DmChannel created, but not being handled yet");
         }
 
         void OnGuildCreated(DiscordGuild discordGuild)
@@ -131,6 +158,7 @@ namespace BundtCord.Discord
         {
             Me = new User(readyInfo.User, this);
             _sessionId = readyInfo.SessionId;
+            Ready?.Invoke(readyInfo);
         }
 
         async void OnVoiceServerUpdateAsync(VoiceServerInfo voiceServerInfo)
@@ -170,7 +198,7 @@ namespace BundtCord.Discord
             }
         }
 
-        public async void SetGameAsync(string gameName)
+        public async Task SetGameAsync(string gameName)
         {
             await _gatewayClient.SendStatusUpdateAsync(new StatusUpdate(null, gameName));
         }
