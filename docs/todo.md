@@ -30,8 +30,8 @@
 [√] enqueue audio to play
 [√] !pause
 [√] !resume
-[ ] !stop
-[ ] !next
+[√] !stop
+[√] !next
 [ ] !fastforward
 [ ] !slomo
 

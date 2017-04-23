@@ -19,6 +19,7 @@ namespace BundtBot
         ConcurrentQueue<AudioRequest> _audioQueue = new ConcurrentQueue<AudioRequest>();
         AudioRequest _currentlyPlayingRequest;
         bool _isStopRequested;
+        bool _isNextRequested;
 
         public void EnqueueAudio(byte[] pcmAudio, VoiceChannel voiceChannel)
         {
@@ -48,6 +49,11 @@ namespace BundtBot
                             if (_isStopRequested)
                             {
                                 _isStopRequested = false;
+                                break;
+                            }
+                            if (_isNextRequested)
+                            {
+                                _isNextRequested = false;
                                 break;
                             }
                             if (task.IsCompleted) break;
@@ -84,6 +90,12 @@ namespace BundtBot
             if (_currentlyPlayingRequest == null) throw new DJException("Nothing is playing, nothing to stop");
             _audioQueue = new ConcurrentQueue<AudioRequest>();
             _isStopRequested = true;
+        }
+
+        internal void Next()
+        {
+            if (_currentlyPlayingRequest == null) throw new DJException("Nothing is playing, nothing to next");
+            _isNextRequested = true;
         }
     }
 }

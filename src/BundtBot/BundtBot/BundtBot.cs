@@ -83,8 +83,20 @@ namespace BundtBot
                 case "!pause": await PauseCommand(message); break;
                 case "!resume": await ResumeCommandAsync(message); break;
                 case "!stop": await StopCommandAsync(message); break;
+                case "!next": await NextCommandAsync(message); break;
                 default: return;
             }
+        }
+
+        async Task NextCommandAsync(TextChannelMessage message)
+        {
+            try
+            {
+                _dj.Next();
+                await message.ReplyAsync("Yea, I wasn't a huge fan of that song either :track_next:");
+            }
+            catch (DJException dje) { await message.ReplyAsync(dje.Message); }
+            catch (Exception ex) { _logger.LogError(ex); }
         }
 
         async Task StopCommandAsync(TextChannelMessage message)
@@ -92,7 +104,7 @@ namespace BundtBot
             try
             {
                 _dj.StopAudioAsync();
-                await message.ReplyAsync("Stopped :(");
+                await message.ReplyAsync("Please don't :stop_button: the music :frowning:");
             }
             catch (DJException dje) { await message.ReplyAsync(dje.Message); }
             catch (Exception ex) { _logger.LogError(ex); }
@@ -103,7 +115,7 @@ namespace BundtBot
             try
             {
                 _dj.ResumeAudio();
-                await message.ReplyAsync("Resumed :)");
+                await message.ReplyAsync("Green light! :arrow_forward:");
             }
             catch (DJException dje) { await message.ReplyAsync(dje.Message); }
             catch (Exception ex) { _logger.LogError(ex); }
@@ -114,7 +126,7 @@ namespace BundtBot
             try
             {
                 await _dj.PauseAudioAsync();
-                await message.ReplyAsync("Paused :/");
+                await message.ReplyAsync("Red Light! :rotating_light:");
             }
             catch (DJException dje) { await message.ReplyAsync(dje.Message); }
             catch (Exception ex) { _logger.LogError(ex); }
