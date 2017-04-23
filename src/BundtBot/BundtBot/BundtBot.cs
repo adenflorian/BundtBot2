@@ -80,7 +80,33 @@ namespace BundtBot
                 case "!echo ": await EchoCommand(message); break;
                 case "!hello": await HelloCommand(message); break;
                 case "!ms": await MarbleSodaCommand(message); break;
+                case "!pause": await PauseCommand(message); break;
+                case "!resume": await ResumeCommandAsync(message); break;
                 default: return;
+            }
+        }
+
+        async Task ResumeCommandAsync(TextChannelMessage message)
+        {
+            try
+            {
+                _dj.ResumeAudio();
+            }
+            catch (Exception ex)
+            {
+                await message.ReplyAsync(ex.Message);
+            }
+        }
+
+        async Task PauseCommand(TextChannelMessage message)
+        {
+            try
+            {
+                await _dj.PauseAudioAsync();
+            }
+            catch (Exception ex)
+            {
+                await message.ReplyAsync(ex.Message);
             }
         }
 

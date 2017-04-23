@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -7,13 +8,14 @@ namespace BundtBot
 {
     public class DJ
     {
-        struct AudioRequest
+        class AudioRequest
         {
             public VoiceChannel VoiceChannel;
             public byte[] Audio;
         }
 
         ConcurrentQueue<AudioRequest> _audioQueue = new ConcurrentQueue<AudioRequest>();
+        AudioRequest _currentlyPlayingRequest;
 
         public void EnqueueAudio(byte[] pcmAudio, VoiceChannel voiceChannel)
         {
@@ -30,6 +32,7 @@ namespace BundtBot
 
                     AudioRequest audioRequest;
                     if (_audioQueue.TryDequeue(out audioRequest) == false) continue;
+                    _currentlyPlayingRequest = audioRequest;
 
                     await audioRequest.VoiceChannel.JoinAsync();
                     await audioRequest.VoiceChannel.SendAudioAsync(audioRequest.Audio);
@@ -37,6 +40,20 @@ namespace BundtBot
                     await audioRequest.VoiceChannel.Server.LeaveVoice();
                 }
             });
+        }
+
+        public async Task PauseAudioAsync()
+        {
+            if (_currentlyPlayingRequest == null) throw new InvalidOperationException("Nothing is playing, nothing to pause");
+
+            await _currentlyPlayingRequest.VoiceChannel.Server.VoiceClient.PauseAsync();
+        }
+
+        public void ResumeAudio()
+        {
+            if (_currentlyPlayingRequest == null) throw new InvalidOperationException("Nothing is playing, nothing to resume");
+
+            _currentlyPlayingRequest.VoiceChannel.Server.VoiceClient.Resume();
         }
     }
 }

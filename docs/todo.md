@@ -29,7 +29,10 @@
 ## DJ
 [√] enqueue audio to play
 [ ] !stop
-[ ] !pause
+[√] !pause
+[√] !resume
+[ ] !fastforward
+[ ] !slomo
 
 ## Voice
 [√] put the voice udp client on its own thread

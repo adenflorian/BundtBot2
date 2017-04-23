@@ -32,6 +32,8 @@ namespace DiscordApiWrapper.Voice
         readonly uint _syncSourceId;
 
         bool _isDisposed = false;
+        bool _isPaused = false;
+        Stopwatch sw;
 
         public VoiceUdpClient(Uri remoteUri, int remotePort, uint synchronizationSourceId)
         {
@@ -55,6 +57,19 @@ namespace DiscordApiWrapper.Voice
             return IpDiscoveryResult;
         }
 
+        internal async Task PauseAsync()
+        {
+            _isPaused = true;
+            sw.Stop();
+            await SendFiveFramesOfSilence(0, 0, 0);
+        }
+
+        internal void Resume()
+        {
+            _isPaused = false;
+            sw.Start();
+        }
+
         internal async Task SendAudioAsync(byte[] pcmAudioBytes)
         {
             if (SecretKey == null) throw new InvalidOperationException("Secret Key is still null");
@@ -74,7 +89,7 @@ namespace DiscordApiWrapper.Voice
             var samplesPerMs = (_samplingRate * _channels) / _msPerSecond;
             var bytesToRead = 20 * samplesPerMs * bytesPerSample;
 
-            Stopwatch sw = Stopwatch.StartNew();
+            sw = Stopwatch.StartNew();
             
             var index = 0;
             var pcmFrame = new byte[bytesToRead];
@@ -84,6 +99,12 @@ namespace DiscordApiWrapper.Voice
                 while (true)
                 {
                     if (_isDisposed) return;
+                    if (_isPaused)
+                    {
+                        Thread.Sleep(100);
+                        continue;
+                    }
+
                     Buffer.BlockCopy(pcmAudioBytes, index, pcmFrame, 0, bytesToRead);
 
                     index += bytesToRead;

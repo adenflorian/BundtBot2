@@ -49,6 +49,16 @@ namespace DiscordApiWrapper.Voice
             await _voiceGatewayClient.SendSelectProtocolAsync(ipDiscoveryResult.IpAddress, ipDiscoveryResult.Port, _desiredEncryptionMethod);
         }
 
+        public async Task PauseAsync()
+        {
+            await _voiceUdpClient.PauseAsync();
+        }
+
+        public void Resume()
+        {
+            _voiceUdpClient.Resume();
+        }
+
         void OnSessionReceivedAsync(VoiceServerSession voiceServerSession)
         {
             _logger.LogInfo("Received Session from Voice Server", ConsoleColor.Green);
