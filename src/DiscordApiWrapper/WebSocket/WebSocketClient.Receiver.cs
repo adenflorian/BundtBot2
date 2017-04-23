@@ -14,6 +14,8 @@ namespace DiscordApiWrapper.WebSocket
             public readonly WebSocketReceiveResult Result;
             public readonly string Data;
 
+            public bool IsCloseRequested => Result.CloseStatus.HasValue;
+
             public ReceivedData(WebSocketReceiveResult result, string data)
             {
                 Result = result;
@@ -25,32 +27,34 @@ namespace DiscordApiWrapper.WebSocket
         {
             Task.Run(async () =>
             {
-                var message = "";
+                var completedMessage = "";
                 while (_clientWebSocket.State == WebSocketState.Open)
                 {
                     try
                     {
                         var receivedData = await ReceiveAsync();
 
-                        message += receivedData.Data;
-
-                        if (receivedData.Result.EndOfMessage == false) continue;
-
-                        if (receivedData.Result.CloseStatus.HasValue)
+                        if (receivedData.IsCloseRequested)
                         {
-                            await OnCloseReceivedAsync(receivedData.Result);
-                            message = "";
+                            LogCloseReceived(receivedData.Result.CloseStatus.Value.ToString());
+                            await ReconnectAsync();
+                            completedMessage = "";
                             continue;
                         }
 
-                        OnMessageReceived(message);
-                        message = "";
+                        completedMessage += receivedData.Data;
+
+                        if (receivedData.Result.EndOfMessage)
+                        {
+                            OnMessageReceived(completedMessage);
+                            completedMessage = "";
+                        }
                     }
                     catch (Exception ex)
                     {
                         if (_isDisposing) return;
-                        LogReceiveLoopException(_logger, ex, _clientWebSocket);
-                        message = "";
+                        LogReceiveLoopException(ex, _clientWebSocket);
+                        completedMessage = "";
                         await ReconnectAsync();
                     }
                 }
@@ -70,6 +74,12 @@ namespace DiscordApiWrapper.WebSocket
             return new ReceivedData(receiveResult, receivedString);
         }
 
+        static ArraySegment<byte> CreateReceiveBuffer()
+        {
+            const int arbitraryBufferSize = 8192;
+            return new ArraySegment<byte>(new byte[arbitraryBufferSize]);
+        }
+
         void OnMessageReceived(string message)
         {
             if (message.Length == 0)
@@ -80,28 +90,6 @@ namespace DiscordApiWrapper.WebSocket
             {
                 MessageReceived?.Invoke(message);
             }
-        }
-
-        void LogReceiveResult(WebSocketReceiveResult result)
-        {
-            _logger.LogDebug($"Received {result.Count} bytes on ClientWebSocket" +
-                                $"(EndOfMessage: {result.EndOfMessage})");
-            _logger.LogTrace(JsonConvert.SerializeObject(result, Formatting.Indented));
-        }
-
-        static ArraySegment<byte> CreateReceiveBuffer()
-        {
-            const int arbitraryBufferSize = 8192;
-            return new ArraySegment<byte>(new byte[arbitraryBufferSize]);
-        }
-
-        async Task OnCloseReceivedAsync(WebSocketReceiveResult result)
-        {
-            var codeString = result.CloseStatus.Value.ToString();
-
-            LogCloseReceived(_logger, codeString);
-
-            await ReconnectAsync();
         }
     }
 }

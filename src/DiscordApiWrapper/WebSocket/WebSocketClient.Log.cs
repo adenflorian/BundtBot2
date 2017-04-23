@@ -2,14 +2,15 @@ using System;
 using System.Net.WebSockets;
 using BundtBot;
 using DiscordApiWrapper.Gateway;
+using Newtonsoft.Json;
 
 namespace DiscordApiWrapper.WebSocket
 {
     partial class WebSocketClient
     {
-        static void LogConnected(MyLogger logger, Uri serverUri, ClientWebSocket clientWebSocket)
+        void LogConnected(Uri serverUri, ClientWebSocket clientWebSocket)
         {
-            logger.LogInfo(
+            _logger.LogInfo(
                 new LogMessage($"Connected to "),
                 new LogMessage($"{serverUri}", ConsoleColor.Cyan),
                 new LogMessage($" (ClientWebSocket State: "),
@@ -17,9 +18,9 @@ namespace DiscordApiWrapper.WebSocket
                 new LogMessage($")"));
         }
 
-        static void LogReconnected(MyLogger logger, Uri serverUri, ClientWebSocket clientWebSocket)
+        void LogReconnected(Uri serverUri, ClientWebSocket clientWebSocket)
         {
-            logger.LogInfo(
+            _logger.LogInfo(
                 new LogMessage($"Reconnected to "),
                 new LogMessage($"{serverUri}", ConsoleColor.Cyan),
                 new LogMessage($" (ClientWebSocket State: "),
@@ -27,19 +28,19 @@ namespace DiscordApiWrapper.WebSocket
                 new LogMessage($")"));
         }
 
-        static void LogReceiveLoopException(MyLogger logger, Exception ex, ClientWebSocket clientWebSocket)
+        void LogReceiveLoopException(Exception ex, ClientWebSocket clientWebSocket)
         {
-            logger.LogError("[Receive Loop] Exception caught in ReceiveLoop.");
-            logger.LogError(ex);
+            _logger.LogError("[Receive Loop] Exception caught in ReceiveLoop.");
+            _logger.LogError(ex);
 
-            logger.LogWarning($"[Receive Loop] _clientWebSocket.State: {clientWebSocket.State.ToString()}");
-            logger.LogWarning($"[Receive Loop] _clientWebSocket.CloseStatus: {clientWebSocket.CloseStatus.ToString()}");
-            logger.LogWarning($"[Receive Loop] _clientWebSocket.CloseStatusDescription: {clientWebSocket.CloseStatusDescription}");
+            _logger.LogWarning($"[Receive Loop] _clientWebSocket.State: {clientWebSocket.State.ToString()}");
+            _logger.LogWarning($"[Receive Loop] _clientWebSocket.CloseStatus: {clientWebSocket.CloseStatus.ToString()}");
+            _logger.LogWarning($"[Receive Loop] _clientWebSocket.CloseStatusDescription: {clientWebSocket.CloseStatusDescription}");
 
-            logger.LogWarning("[Receive Loop] Reconnecting.");
+            _logger.LogWarning("[Receive Loop] Reconnecting.");
         }
 
-        static void LogCloseReceived(MyLogger logger, string codeString)
+        void LogCloseReceived(string codeString)
         {
             string logMessage = "Received a message from Gateway with Close Status, will reconnect: ";
 
@@ -54,12 +55,19 @@ namespace DiscordApiWrapper.WebSocket
 
             if (codeString == "4001")
             {
-                logger.LogCritical(logMessage);
+                _logger.LogCritical(logMessage);
             }
             else
             {
-                logger.LogError(logMessage);
+                _logger.LogError(logMessage);
             }
+        }
+
+        void LogReceiveResult(WebSocketReceiveResult result)
+        {
+            _logger.LogDebug($"Received {result.Count} bytes on ClientWebSocket" +
+                                $"(EndOfMessage: {result.EndOfMessage})");
+            _logger.LogTrace(JsonConvert.SerializeObject(result, Formatting.Indented));
         }
     }
 }

@@ -46,7 +46,7 @@ namespace DiscordApiWrapper.WebSocket
         public async Task ConnectAsync()
 		{
 			await DoConnectLoopAsync();
-			LogConnected(_logger, _serverUri, _clientWebSocket);
+			LogConnected(_serverUri, _clientWebSocket);
 			StartReceiveLoop();
 			StartSendLoop();
 		}
@@ -68,7 +68,7 @@ namespace DiscordApiWrapper.WebSocket
         async Task ReconnectAsync()
         {
 			await DoConnectLoopAsync();
-            LogReconnected(_logger, _serverUri, _clientWebSocket);
+            LogReconnected(_serverUri, _clientWebSocket);
         }
 
         async Task DoConnectLoopAsync()
