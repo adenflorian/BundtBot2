@@ -4,9 +4,7 @@
   - fixed using retry logic
 [√] handle opcode 9 invalid session
 [√] make LogError and LogCritical use Console.Error.Write
-
 [√] change trace json log to output raw json
-
 [√] hello world voice
   [√] create handler for !hello in BundtBot
   [√] voice hello world
@@ -14,21 +12,26 @@
 [√] move to csproj
 [√] upgrade xunit
 [√] refactor WebSocketClient
-
 [√] Create a SoundManager for queueing audio
 [√] New way to manage commands
+[ ] make a json file to configure what actions bundtbot does on startup
+  - for running tests and such
+[ ] edit the same message continuously to do a ascii art animation
+[ ] allow multiple different text responses to certain events
+[ ] allow playing audio to two different servers at once
 
-[√] !yt
+## Optimizations
+[ ] uses too much memory on !yt
+
+## !commands
+
 [ ] !dog
 [ ] !uploaddog
 [ ] !setloglevel
 
-[ ] make a json file to configure what actions bundtbot does on startup
-  - for running tests and such
-
-[ ] edit the same message continuously to do a ascii art animation
-[ ] allow multiple different text responses to certain events
-
+## !yt
+[√] !yt
+[ ] !ytrandom
 
 ## DJ
 [√] enqueue audio to play
@@ -39,14 +42,14 @@
 [ ] !fastforward
 [ ] !slomo
 [ ] change the Playing Game filed to song name
+[ ] make it not leave channel in between clips
 
 ## Voice
 [√] put the voice udp client on its own thread
 [√] need to get rid of old voice client when leveing voice in server
   [√] need to disconnect from voice properly when leaving a voice channel
   [√] no exceptions should be thrown when disposing stuff
-  - I'm still not entirley comfortable with how I handling the disposal, but it's not terrible I think
-  - Will ask for others to look it over
+  - Disposal looks better now
 
 # BundtBot Web API
 [√] show last logged exception in website

@@ -93,14 +93,14 @@ namespace BundtBot
         /// <exception cref="YoutubeException">
         /// Thrown if we were unable to capture an output file from the stdout of youtube-dl.
         /// This could happen for many reasons.
-        /// (Examples: video removed from youtube, taken down because of copyright, too big)
+        /// (Examples: video removed from youtube, taken down because of copyright, too big, etc.)
         /// </exception>
         public FileInfo Download()
         {
             _logger.LogInfo($"Downloading {Url}");
             Process.Exited += Process_Exited;
 
-            _logger.LogInfo("\n" + Process.StartInfo.FileName + " " + Process.StartInfo.Arguments + "\n");
+            _logger.LogInfo(Process.StartInfo.FileName + " " + Process.StartInfo.Arguments);
 
             Process.Start();
             Process.BeginOutputReadLine();

@@ -8,23 +8,11 @@ namespace BundtBot
 {
     class DJ
     {
-        class AudioRequest
-        {
-            public VoiceChannel VoiceChannel;
-            public byte[] Audio;
-        }
-
         static readonly MyLogger _logger = new MyLogger(nameof(DJ));
 
         ConcurrentQueue<AudioRequest> _audioQueue = new ConcurrentQueue<AudioRequest>();
         AudioRequest _currentlyPlayingRequest;
-        bool _isStopRequested;
-        bool _isNextRequested;
-
-        public void EnqueueAudio(byte[] pcmAudio, VoiceChannel voiceChannel)
-        {
-            _audioQueue.Enqueue(new AudioRequest { VoiceChannel = voiceChannel, Audio = pcmAudio });
-        }
+        bool _cancelCurrentSong;
 
         public void Start()
         {
@@ -46,16 +34,7 @@ namespace BundtBot
                         while (true)
                         {
                             await Task.Delay(100);
-                            if (_isStopRequested)
-                            {
-                                _isStopRequested = false;
-                                break;
-                            }
-                            if (_isNextRequested)
-                            {
-                                _isNextRequested = false;
-                                break;
-                            }
+                            if (_cancelCurrentSong) { _cancelCurrentSong = false; break; }
                             if (task.IsCompleted) break;
                         }
 
@@ -69,6 +48,11 @@ namespace BundtBot
                     }
                 }
             });
+        }
+
+        public void EnqueueAudio(byte[] pcmAudio, VoiceChannel voiceChannel)
+        {
+            _audioQueue.Enqueue(new AudioRequest { VoiceChannel = voiceChannel, Audio = pcmAudio });
         }
 
         public async Task PauseAudioAsync()
@@ -89,13 +73,13 @@ namespace BundtBot
         {
             if (_currentlyPlayingRequest == null) throw new DJException("Nothing is playing, nothing to stop");
             _audioQueue = new ConcurrentQueue<AudioRequest>();
-            _isStopRequested = true;
+            _cancelCurrentSong = true;
         }
 
-        internal void Next()
+        public void Next()
         {
             if (_currentlyPlayingRequest == null) throw new DJException("Nothing is playing, nothing to next");
-            _isNextRequested = true;
+            _cancelCurrentSong = true;
         }
     }
 }

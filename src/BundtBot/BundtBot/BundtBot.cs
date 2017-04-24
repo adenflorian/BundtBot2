@@ -86,15 +86,30 @@ namespace BundtBot
         void RegisterCommands()
         {
             _commandManager.CommandPrefix = "!";
+            
             _commandManager.Commands.Add(new TextCommand("hi", async (message, receivedCommand) =>
             {
-                await message.ReplyAsync("hi...");
+                try
+                {
+                    await message.ReplyAsync("hi...");
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex);
+                }
             }));
             _commandManager.Commands.Add(new TextCommand("help", async (message, receivedCommand) =>
             {
-                var helpMessage = "";
-                _commandManager.Commands.ForEach(x => helpMessage += $"`{x.Name}` ");
-                await message.ReplyAsync("help me help you: " + helpMessage);
+                try
+                {
+                    var helpMessage = "";
+                    _commandManager.Commands.ForEach(x => helpMessage += $"`{x.Name}` ");
+                    await message.ReplyAsync("help me help you: " + helpMessage);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex);
+                }
             }));
             _commandManager.Commands.Add(new TextCommand("next", async (message, receivedCommand) =>
             {
@@ -136,65 +151,53 @@ namespace BundtBot
                 catch (DJException dje) { await message.ReplyAsync(dje.Message); }
                 catch (Exception ex) { _logger.LogError(ex); }
             }));
-            _commandManager.Commands.Add(new TextCommand("ms", async (message, receivedCommand) =>
-            {
-                var voiceChannel = message.Author.VoiceChannel;
-                if (voiceChannel == null)
-                {
-                    await message.ReplyAsync("You're going to want to be in a voice channel for this...");
-                    return;
-                }
-                var fullSongPcm = new WavFileReader().ReadFileBytes(new FileInfo("audio/ms.wav"));
-                _dj.EnqueueAudio(fullSongPcm, voiceChannel);
-                await message.ReplyAsync("Marble Soda Best Soda added to queue");
-            }));
-            _commandManager.Commands.Add(new TextCommand("hello", async (message, receivedCommand) =>
-            {
-                var voiceChannel = message.Author.VoiceChannel;
-                if (voiceChannel == null)
-                {
-                    await message.ReplyAsync("You're going to want to be in a voice channel for this...");
-                    return;
-                }
-
-                var fullSongPcm = new WavFileReader().ReadFileBytes(new FileInfo("audio/bbhw.wav"));
-                _dj.EnqueueAudio(fullSongPcm, voiceChannel);
-                await message.ReplyAsync("Hello added to queue");
-            }));
             _commandManager.Commands.Add(new TextCommand("echo", async (message, receivedCommand) =>
             {
-                await message.ReplyAsync(receivedCommand.ArgsString);
+                try
+                {
+                    await message.ReplyAsync(receivedCommand.ArgsString);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex);
+                }
             }, minimumArgCount: 1));
             _commandManager.Commands.Add(new TextCommand("yt", async (message, receivedCommand) =>
             {
-                // Check if arg is a url
-                if (Uri.IsWellFormedUriString(receivedCommand.ArgsString, UriKind.Absolute) == false)
+                try
                 {
-                    await message.ReplyAsync("Only URL's are accepted for thee moment");
-                    return;
+                    // Check if arg is a url
+                    if (Uri.IsWellFormedUriString(receivedCommand.ArgsString, UriKind.Absolute) == false)
+                    {
+                        await message.ReplyAsync("Only URL's are accepted for thee moment");
+                        return;
+                    }
+
+                    var uri = new Uri(receivedCommand.ArgsString);
+
+                    // TODO Allow more URLs
+                    if (uri.Host != "www.youtube.com")
+                    {
+                        await message.ReplyAsync("Only youtube URL's are accepted for the moment");
+                        return;
+                    }
+
+                    // Use youtube-dl to download url as wav
+
+                    var outputfolder = new DirectoryInfo("audio");
+                    if (outputfolder.Exists == false) outputfolder.Create();
+
+                    var youtubeOutput = await new YoutubeDownloader().YoutubeDownloadAndConvertAsync(message, uri.ToString(), outputfolder);
+
+
+                    var fullSongPcm = new WavFileReader().ReadFileBytes(youtubeOutput);
+                    _dj.EnqueueAudio(fullSongPcm, message.Server.VoiceChannels.First());
+                    await message.ReplyAsync(uri.ToString() + " added to queue");
                 }
-
-                var uri = new Uri(receivedCommand.ArgsString);
-
-                // TODO Allow more URLs
-                if (uri.Host != "www.youtube.com")
+                catch (Exception ex)
                 {
-                    await message.ReplyAsync("Only youtube URL's are accepted for the moment");
-                    return;
+                    _logger.LogError(ex);
                 }
-
-                // Use youtube-dl to download url as wav
-
-                var outputfolder = new DirectoryInfo("audio");
-                if (outputfolder.Exists == false) outputfolder.Create();
-
-                var youtubeOutput = await new YoutubeDownloader().YoutubeDownloadAndConvertAsync(message, uri.ToString(), outputfolder);
-
-
-                var fullSongPcm = new WavFileReader().ReadFileBytes(youtubeOutput);
-                _dj.EnqueueAudio(fullSongPcm, message.Server.VoiceChannels.First());
-                await message.ReplyAsync(uri.ToString() + " added to queue");
-
             }, minimumArgCount: 1));
         }
     }
