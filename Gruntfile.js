@@ -14,19 +14,6 @@ module.exports = function (grunt) {
     // Project configuration.
     grunt.initConfig({
         pkg: grunt.file.readJSON('package.json'),
-        sftp: {
-            deploy: {
-                files: {
-                    "./": bundtbotfile
-                },
-                options: {
-                    host: secret.testhost,
-                    username: secret.testusername,
-                    privateKey: grunt.file.read(secret.sshkeypath),
-                    showProgress: true
-                }
-            }
-        },
         sshexec: {
             deploy: {
                 command: [
@@ -73,5 +60,4 @@ module.exports = function (grunt) {
     });
 
     grunt.loadNpmTasks('grunt-ssh');
-
 };

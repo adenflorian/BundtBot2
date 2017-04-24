@@ -12,7 +12,7 @@ namespace DiscordApiWrapper.Audio
         /// Will thrown an Exception if the data bytes are not found in the first 1000 bytes,
         /// meaning it probably isn't a valid wav file.
         /// </summary>
-        public byte[] ReadFileBytes(FileInfo fileInfo)
+        public static byte[] ReadFileBytes(FileInfo fileInfo)
         {
             var fileBytes = File.ReadAllBytes(fileInfo.FullName);
 
@@ -26,7 +26,7 @@ namespace DiscordApiWrapper.Audio
             return sampleBytes;
         }
 
-        int FindSamplesStartingIndex(byte[] fileBytes)
+        static int FindSamplesStartingIndex(byte[] fileBytes)
         {
             using (var fileBytesStream = new MemoryStream(fileBytes))
             using (var fileBytesReader = new BinaryReader(fileBytesStream))

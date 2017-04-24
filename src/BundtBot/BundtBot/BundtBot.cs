@@ -53,8 +53,7 @@ namespace BundtBot
                     await server.TextChannels.First().SendMessageAsync("bundtbot online");
                     if (server.VoiceChannels.Count() == 0) return;
                     var voiceChannel = server.VoiceChannels.First();
-                    var fullSongPcm = new WavFileReader().ReadFileBytes(new FileInfo("audio/bbhw.wav"));
-                    _dj.EnqueueAudio(fullSongPcm, voiceChannel);
+                    _dj.EnqueueAudio(new FileInfo("audio/bbhw.wav"), voiceChannel);
                 }
                 catch (Exception ex)
                 {
@@ -86,7 +85,7 @@ namespace BundtBot
         void RegisterCommands()
         {
             _commandManager.CommandPrefix = "!";
-            
+
             _commandManager.Commands.Add(new TextCommand("hi", async (message, receivedCommand) =>
             {
                 try
@@ -189,9 +188,7 @@ namespace BundtBot
 
                     var youtubeOutput = await new YoutubeDownloader().YoutubeDownloadAndConvertAsync(message, uri.ToString(), outputfolder);
 
-
-                    var fullSongPcm = new WavFileReader().ReadFileBytes(youtubeOutput);
-                    _dj.EnqueueAudio(fullSongPcm, message.Server.VoiceChannels.First());
+                    _dj.EnqueueAudio(youtubeOutput, message.Server.VoiceChannels.First());
                     await message.ReplyAsync(uri.ToString() + " added to queue");
                 }
                 catch (Exception ex)

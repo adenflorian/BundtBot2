@@ -1,14 +1,10 @@
 const exec = require('child_process').exec
 const copydir = require('copy-dir');
 const fs = require('fs')
-const fstream = require('fstream')
 const gulp = require('gulp')
 const shell = require('gulp-shell')
-const gutil = require('gulp-util');
 const shelljs = require('shelljs')
-const tar = require('tar')
-const waitUntil = require('wait-until')
-const zlib = require('zlib')
+const client = require('scp2')
 
 const secretFilePath = './secret.json'
 
@@ -97,7 +93,24 @@ gulp.task('copytokentest', ['publish'], function () {
 
 gulp.task('tar', ['publish', 'copytokentest'], shell.task('node do tar', { verbose: true }))
 
-gulp.task('sftpdeploy', ['tar'], shell.task('grunt sftp:deploy', { verbose: true }))
+gulp.task('sftpdeploy', ['tar'], function (cb) {
+	client.defaults({
+		port: 22,
+		host: secret.testhost,
+		username: secret.testusername,
+		privateKey: fs.readFileSync(secret.sshkeypath)
+	});
+
+	client.on('transfer', (buffer, uploaded, total) => {
+		if (uploaded % 25 == 0) {
+			console.log(uploaded + '/' + total)
+		}
+	})
+
+	client.upload(tarFileName, tarFileName, function(){
+		cb()
+	})
+})
 
 gulp.task('cleantar', function (cb) {
 	cleanTar(cb)

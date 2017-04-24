@@ -1,3 +1,4 @@
+using System.IO;
 using BundtCord.Discord;
 
 namespace BundtBot
@@ -5,6 +6,6 @@ namespace BundtBot
     public class AudioRequest
     {
         public VoiceChannel VoiceChannel;
-        public byte[] Audio;
+        public FileInfo WavAudioFile;
     }
 }

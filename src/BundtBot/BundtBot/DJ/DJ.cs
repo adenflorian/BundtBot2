@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 using BundtCord.Discord;
+using DiscordApiWrapper.Audio;
 
 namespace BundtBot
 {
@@ -29,7 +31,8 @@ namespace BundtBot
 
                         await audioRequest.VoiceChannel.JoinAsync();
                         _currentlyPlayingRequest = audioRequest;
-                        var task =  audioRequest.VoiceChannel.SendAudioAsync(audioRequest.Audio);
+
+                        var task = audioRequest.VoiceChannel.SendAudioAsync(audioRequest.WavAudioFile.Open(FileMode.Open));
 
                         while (true)
                         {
@@ -50,9 +53,9 @@ namespace BundtBot
             });
         }
 
-        public void EnqueueAudio(byte[] pcmAudio, VoiceChannel voiceChannel)
+        public void EnqueueAudio(FileInfo wavAudioFile, VoiceChannel voiceChannel)
         {
-            _audioQueue.Enqueue(new AudioRequest { VoiceChannel = voiceChannel, Audio = pcmAudio });
+            _audioQueue.Enqueue(new AudioRequest { VoiceChannel = voiceChannel, WavAudioFile = wavAudioFile });
         }
 
         public async Task PauseAudioAsync()

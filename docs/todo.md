@@ -14,6 +14,7 @@
 [√] refactor WebSocketClient
 [√] Create a SoundManager for queueing audio
 [√] New way to manage commands
+[ ] refactor youtube code
 [ ] make a json file to configure what actions bundtbot does on startup
   - for running tests and such
 [ ] edit the same message continuously to do a ascii art animation
@@ -21,10 +22,15 @@
 [ ] allow playing audio to two different servers at once
 
 ## Optimizations
-[ ] uses too much memory on !yt
+[√] uses too much memory on !yt
+  - Keeping an entire audio clip's pcm data takes up a lot of space
+  - 400 MB for a 30 minute wav clip
+  - need to use streams instead
+  - only feed in a little bit at a time
 
 ## !commands
-
+[ ] !restart
+  - restart the bot
 [ ] !dog
 [ ] !uploaddog
 [ ] !setloglevel

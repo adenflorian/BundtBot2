@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
@@ -78,29 +79,26 @@ namespace DiscordApiWrapper.Voice
             stopwatch.Start();
         }
 
-        public async Task SendAudioAsync(byte[] pcmAudioBytes)
+        public async Task SendAudioAsync(Stream pcmAudioStream)
         {
             if (SecretKey == null) throw new InvalidOperationException("Secret Key is still null");
 
             ushort sequence = 0;
             uint timestamp = 0;
             double nextFrameInTicks = 0;
-            var index = 0;
             var pcmFrame = new byte[_bytesPer20Ms];
 
             stopwatch = Stopwatch.StartNew();
 
-            await Task.Run(() => {
+            await Task.Run(() =>
+            {
                 while (true)
                 {
                     if (_isDisposing) return;
                     if (_isPaused) { Thread.Sleep(100); continue; }
 
-                    Buffer.BlockCopy(pcmAudioBytes, index, pcmFrame, 0, _bytesPer20Ms);
-
-                    index += _bytesPer20Ms;
-
-                    if (IsAtEndOfAudio(index, pcmAudioBytes.Length)) break;
+                    if (pcmAudioStream.Position == pcmAudioStream.Length) break;
+                    pcmAudioStream.Read(pcmFrame, 0, pcmFrame.Length);
 
                     int encodedLength;
                     var compressedBytes = _opusEncoder.Encode(pcmFrame, pcmFrame.Length, out encodedLength);
@@ -113,7 +111,7 @@ namespace DiscordApiWrapper.Voice
 
                     int msUntilNextFrame = FindOutHowLongToWait(nextFrameInTicks);
                     if (msUntilNextFrame > 0) Thread.Sleep(msUntilNextFrame);
-                    
+
                     var task = SendAsync(encryptedVoicePacketBytes);
 
                     timestamp += _samplesPerFramePerChannel;

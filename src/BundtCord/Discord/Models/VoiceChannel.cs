@@ -1,3 +1,4 @@
+using System.IO;
 using System.Threading.Tasks;
 using BundtBot.Discord.Models;
 
@@ -31,9 +32,9 @@ namespace BundtCord.Discord
             await _client.LeaveVoiceChannelInServer(Server);
         }
 
-        public async Task SendAudioAsync(byte[] sodaBytes)
+        public async Task SendAudioAsync(Stream pcmAudioStream)
         {
-            await Server.VoiceClient.SendAudioAsync(sodaBytes);
+            await Server.VoiceClient.SendAudioAsync(pcmAudioStream);
         }
     }
 }

@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using BundtBot;
@@ -67,10 +68,10 @@ namespace DiscordApiWrapper.Voice
         }
 
         // TODO Handle this being called while already sending audio data
-        public async Task SendAudioAsync(byte[] sodaBytes)
+        public async Task SendAudioAsync(Stream pcmAudioStream)
         {
             await _voiceGatewayClient.SendSpeakingAsync(true, _ssrcId);
-            await _voiceUdpClient.SendAudioAsync(sodaBytes);
+            await _voiceUdpClient.SendAudioAsync(pcmAudioStream);
             await _voiceGatewayClient.SendSpeakingAsync(false, _ssrcId);
         }
 
