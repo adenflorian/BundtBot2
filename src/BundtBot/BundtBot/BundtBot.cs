@@ -165,31 +165,37 @@ namespace BundtBot
             {
                 try
                 {
+                    var youtubeString = "";
+
                     // Check if arg is a url
-                    if (Uri.IsWellFormedUriString(receivedCommand.ArgsString, UriKind.Absolute) == false)
+                    if (Uri.IsWellFormedUriString(receivedCommand.ArgsString, UriKind.Absolute))
                     {
-                        await message.ReplyAsync("Only URL's are accepted for thee moment");
-                        return;
+                        youtubeString = receivedCommand.ArgsString;
                     }
-
-                    var uri = new Uri(receivedCommand.ArgsString);
-
-                    // TODO Allow more URLs
-                    if (uri.Host != "www.youtube.com")
+                    else
                     {
-                        await message.ReplyAsync("Only youtube URL's are accepted for the moment");
-                        return;
+                        youtubeString = $"\"ytsearch1:{receivedCommand.ArgsString}\"";
                     }
-
-                    // Use youtube-dl to download url as wav
 
                     var outputfolder = new DirectoryInfo("audio");
                     if (outputfolder.Exists == false) outputfolder.Create();
 
-                    var youtubeOutput = await new YoutubeDownloader().YoutubeDownloadAndConvertAsync(message, uri.ToString(), outputfolder);
+                    var youtubeOutput = await new YoutubeDownloader().YoutubeDownloadAndConvertAsync(message, youtubeString, outputfolder);
+
+                    if (youtubeOutput == null)
+                    {
+                        await message.ReplyAsync("that thing you asked for, i don't think i can get it for you, but i might know someone who can... :frog:");
+                        return;
+                    }
+
+                    if (youtubeOutput.Exists == false)
+                    {
+                        await message.ReplyAsync("that thing you asked for, i don't think i can get it for you, but i might know someone who can... :frog:");
+                        return;
+                    }
 
                     _dj.EnqueueAudio(youtubeOutput, message.Server.VoiceChannels.First());
-                    await message.ReplyAsync(uri.ToString() + " added to queue");
+                    await message.ReplyAsync(youtubeString + " added to queue");
                 }
                 catch (Exception ex)
                 {
