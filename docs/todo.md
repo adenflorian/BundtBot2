@@ -6,6 +6,7 @@
 [ ] edit the same message continuously to do a ascii art animation
 [ ] allow multiple different text responses to certain events
 [ ] allow playing audio to two different servers at once
+[ ] look into Cake build system
 
 ## Optimizations
 

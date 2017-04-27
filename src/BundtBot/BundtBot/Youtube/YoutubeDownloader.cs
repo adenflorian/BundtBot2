@@ -49,6 +49,18 @@ namespace BundtBot
             }
             Console.WriteLine("downloader.Download() Finished! " + outputPath);
 
+
+
+            if (outputPath == null)
+            {
+                throw new YoutubeException("that thing you asked for, i don't think i can get it for you, but i might know someone who can... :frog:");
+            }
+
+            if (outputPath.Exists == false)
+            {
+                throw new YoutubeException("that thing you asked for, i don't think i can get it for you, but i might know someone who can... :frog:");
+            }
+
             return outputPath;
         }
 

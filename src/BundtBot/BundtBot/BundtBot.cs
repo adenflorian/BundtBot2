@@ -182,20 +182,13 @@ namespace BundtBot
 
                     var youtubeOutput = await new YoutubeDownloader().YoutubeDownloadAndConvertAsync(message, youtubeString, outputfolder);
 
-                    if (youtubeOutput == null)
-                    {
-                        await message.ReplyAsync("that thing you asked for, i don't think i can get it for you, but i might know someone who can... :frog:");
-                        return;
-                    }
-
-                    if (youtubeOutput.Exists == false)
-                    {
-                        await message.ReplyAsync("that thing you asked for, i don't think i can get it for you, but i might know someone who can... :frog:");
-                        return;
-                    }
-
                     _dj.EnqueueAudio(youtubeOutput, message.Server.VoiceChannels.First());
                     await message.ReplyAsync(youtubeString + " added to queue");
+                }
+                catch (YoutubeException ye)
+                {
+                    _logger.LogError(ye);
+                    await message.ReplyAsync(ye.Message);
                 }
                 catch (Exception ex)
                 {
