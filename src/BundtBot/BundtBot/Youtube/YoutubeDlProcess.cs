@@ -5,34 +5,28 @@ using System.Text.RegularExpressions;
 
 namespace BundtBot
 {
-    public class AudioDownloader
+    public class YoutubeDlProcess
     {
-        static readonly MyLogger _logger = new MyLogger(nameof(AudioDownloader));
-
         public Action<object, ProgressEventArgs> ProgressDownload;
         public Action<object, DownloadEventArgs> FinishedDownload;
         public Action<object, DownloadEventArgs> StartedDownload;
         public Action<object, ProgressEventArgs> ErrorDownload;
 
-        public object ProcessObject { get; set; }
+        object ProcessObject { get; set; }
         public bool Started { get; set; }
         public bool Finished { get; set; }
         public decimal Percentage { get; set; }
         public Process Process { get; set; }
         public string OutputName { get; set; }
-        public string Url { get; set; }
-
         public string ConsoleLog { get; set; }
-
         public FileInfo FinishedOutputFilePath { get; private set; }
 
+        static readonly MyLogger _logger = new MyLogger(nameof(YoutubeDlProcess));
+        
+        readonly string Url;
 
-        public AudioDownloader(string url, string outputName, DirectoryInfo outputfolder)
+        public YoutubeDlProcess(string url, string outputName, DirectoryInfo outputfolder)
         {
-            Started = false;
-            Finished = false;
-            Percentage = 0;
-
             Url = url;
 
             // make sure filename ends with an mp3 extension
@@ -66,28 +60,6 @@ namespace BundtBot
 
             Process.OutputDataReceived += new DataReceivedEventHandler(OutputHandler);
             Process.ErrorDataReceived += new DataReceivedEventHandler(ErrorDataReceived);
-        }
-
-        protected virtual void OnProgress(ProgressEventArgs e)
-        {
-            ProgressDownload?.Invoke(this, e);
-        }
-
-        protected virtual void OnDownloadFinished(DownloadEventArgs e)
-        {
-            if (Finished) return;
-            Finished = true;
-            FinishedDownload?.Invoke(this, e);
-        }
-
-        protected virtual void OnDownloadStarted(DownloadEventArgs e)
-        {
-            StartedDownload?.Invoke(this, e);
-        }
-
-        protected virtual void OnDownloadError(ProgressEventArgs e)
-        {
-            ErrorDownload?.Invoke(this, e);
         }
 
         /// <exception cref="YoutubeException">
@@ -134,7 +106,6 @@ namespace BundtBot
         }
         public void OutputHandler(object sendingProcess, DataReceivedEventArgs outLine)
         {
-
             // extract the percentage from process output
             if (string.IsNullOrEmpty(outLine.Data))
             {
@@ -198,6 +169,28 @@ namespace BundtBot
             {
                 OnDownloadFinished(new DownloadEventArgs() { ProcessObject = this.ProcessObject });
             }
+        }
+
+        void OnProgress(ProgressEventArgs e)
+        {
+            ProgressDownload?.Invoke(this, e);
+        }
+
+        void OnDownloadFinished(DownloadEventArgs e)
+        {
+            if (Finished) return;
+            Finished = true;
+            FinishedDownload?.Invoke(this, e);
+        }
+
+        void OnDownloadStarted(DownloadEventArgs e)
+        {
+            StartedDownload?.Invoke(this, e);
+        }
+
+        void OnDownloadError(ProgressEventArgs e)
+        {
+            ErrorDownload?.Invoke(this, e);
         }
     }
 

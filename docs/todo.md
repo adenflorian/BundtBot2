@@ -20,8 +20,11 @@
 
 ## !yt
 
+[ ]make the youtube classes their own library
 [ ] !yt search
 [ ] !ytrandom
+[ ] automatically duck audio when people talk
+[ ] Allow multiple url's in one command?
 
 ## DJ
 

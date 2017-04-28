@@ -4,6 +4,8 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using BundtBot.Youtube;
+using BundtCommon;
 using BundtCord.Discord;
 using DiscordApiWrapper.Audio;
 
@@ -16,10 +18,13 @@ namespace BundtBot
         DiscordClient _client;
         DJ _dj = new DJ();
         CommandManager _commandManager = new CommandManager();
+        DirectoryInfo _youtubeOutputFolder = new DirectoryInfo("audio");
 
         public async Task StartAsync()
         {
             _client = new DiscordClient(File.ReadAllText("bottoken"));
+
+            if (_youtubeOutputFolder.Exists == false) _youtubeOutputFolder.Create();
 
             RegisterEventHandlers();
             RegisterCommands();
@@ -154,7 +159,7 @@ namespace BundtBot
             {
                 try
                 {
-                    await message.ReplyAsync(receivedCommand.ArgsString);
+                    await message.ReplyAsync(receivedCommand.ArgumentsString);
                 }
                 catch (Exception ex)
                 {
@@ -165,29 +170,29 @@ namespace BundtBot
             {
                 try
                 {
-                    var youtubeString = "";
+                    YoutubeDlArgs youtubeDlArgs;
 
-                    // Check if arg is a url
-                    if (Uri.IsWellFormedUriString(receivedCommand.ArgsString, UriKind.Absolute))
+                    if (Uri.IsWellFormedUriString(receivedCommand.ArgumentsString, UriKind.Absolute))
                     {
-                        youtubeString = receivedCommand.ArgsString;
+                        youtubeDlArgs = YoutubeDlArgs.FromUrl(new Uri(receivedCommand.ArgumentsString));
                     }
                     else
                     {
-                        youtubeString = $"\"ytsearch1:{receivedCommand.ArgsString}\"";
+                        youtubeDlArgs = YoutubeDlArgs.FromSearchString(receivedCommand.ArgumentsString);
                     }
 
-                    var outputfolder = new DirectoryInfo("audio");
-                    if (outputfolder.Exists == false) outputfolder.Create();
+                    youtubeDlArgs.MaxFileSizeMB = 100;
+                    youtubeDlArgs.ExtractAudio = true;
+                    youtubeDlArgs.AudioFormat = YoutubeDlAudioFormat.wav;
 
-                    var youtubeOutput = await new YoutubeDownloader().YoutubeDownloadAndConvertAsync(message, youtubeString, outputfolder);
+                    FileInfo youtubeOutputFile = await DownloadYoutubeAudioAsync(youtubeDlArgs);
 
-                    _dj.EnqueueAudio(youtubeOutput, message.Server.VoiceChannels.First());
-                    await message.ReplyAsync(youtubeString + " added to queue");
+                    _dj.EnqueueAudio(youtubeOutputFile, message.Server.VoiceChannels.First());
+                    await message.ReplyAsync(receivedCommand.ArgumentsString + " added to queue");
                 }
                 catch (YoutubeException ye)
                 {
-                    _logger.LogError(ye);
+                    _logger.LogWarning(ye);
                     await message.ReplyAsync(ye.Message);
                 }
                 catch (Exception ex)
@@ -195,6 +200,33 @@ namespace BundtBot
                     _logger.LogError(ex);
                 }
             }, minimumArgCount: 1));
+        }
+
+        async Task<FileInfo> DownloadYoutubeAudioAsync(YoutubeDlArgs args)
+        {
+            var guid = Guid.NewGuid();
+
+            args.OutputTemplate = $@"{_youtubeOutputFolder}/{guid}.%(ext)s";
+
+            using (var youtubeDlProcess = new Process())
+            {
+                youtubeDlProcess.StartInfo.FileName = "./youtube-dl.exe";
+                youtubeDlProcess.StartInfo.Arguments = args.ToString();
+                youtubeDlProcess.StartInfo.CreateNoWindow = true;
+
+                youtubeDlProcess.Start();
+
+                await Wait.Until(() => youtubeDlProcess.HasExited).StartAsync();
+            }
+
+            var downloadedAudioFile = new FileInfo(_youtubeOutputFolder.FullName + '/' + guid + '.' + args.AudioFormat);
+
+            if (downloadedAudioFile.Exists == false)
+            {
+                throw new YoutubeException("that thing you asked for, i don't think i can get it for you, but i might know someone who can... :frog:");
+            }
+
+            return downloadedAudioFile;
         }
     }
 }

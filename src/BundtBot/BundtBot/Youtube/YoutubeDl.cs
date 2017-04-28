@@ -6,18 +6,18 @@ using BundtCord.Discord;
 
 namespace BundtBot
 {
-    class YoutubeDownloader
+    class YoutubeDl
     {
-        static readonly MyLogger _logger = new MyLogger(nameof(YoutubeDownloader));
+        static readonly MyLogger _logger = new MyLogger(nameof(YoutubeDl));
 
         decimal _lastPercentage;
 
-        public async Task<FileInfo> YoutubeDownloadAndConvertAsync(TextChannelMessage message, string ytSearchString, DirectoryInfo mp3OutputFolder)
+        public async Task<FileInfo> DownloadAndConvertAsync(TextChannelMessage message, string youtubeDlUrl, DirectoryInfo outputFolder)
         {
-            var urlToDownload = ytSearchString;
+            var urlToDownload = youtubeDlUrl;
             var newFilename = Guid.NewGuid().ToString();
 
-            var downloader = new AudioDownloader(urlToDownload, newFilename, mp3OutputFolder);
+            var downloader = new YoutubeDlProcess(urlToDownload, newFilename, outputFolder);
             downloader.ProgressDownload += (sender, ev) =>
             {
                 _logger.LogInfo(ev.Percentage.ToString("0.0"), ConsoleColor.Green);
@@ -48,8 +48,6 @@ namespace BundtBot
                 throw;
             }
             Console.WriteLine("downloader.Download() Finished! " + outputPath);
-
-
 
             if (outputPath == null)
             {
