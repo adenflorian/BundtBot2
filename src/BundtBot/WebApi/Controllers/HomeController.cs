@@ -4,10 +4,12 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace BundtBot.WebApi.Controllers
 {
+	// Default route
     public class HomeController : Controller
 	{
 		static readonly MyLogger _logger = new MyLogger(nameof(HomeController), ConsoleColor.DarkBlue);
 		
+		[HttpGet]
 		public IActionResult Index()
 		{
 			try {

@@ -24,10 +24,10 @@ namespace BundtBot.WebApi
 				try {
 					host.Run();
 				} catch (Exception ex) {
-					_logger.LogWarning("WebServer threw an exception...");
+					_logger.LogError("WebServer threw an exception...");
 					_logger.LogError(ex);
 				} finally {
-					_logger.LogWarning("WebServer exiting...");
+					_logger.LogError("WebServer exiting...");
 				}
 			});
 		}
@@ -45,8 +45,7 @@ namespace BundtBot.WebApi
 		public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
 		{
 			try {
-				loggerFactory
-					.AddMyWebServerLogger();
+				loggerFactory.AddMyWebServerLogger();
 				app.UseMvcWithDefaultRoute();
 			} catch (Exception ex) {
 				_logger.LogError(ex);

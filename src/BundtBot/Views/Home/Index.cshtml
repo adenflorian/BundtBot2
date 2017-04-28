@@ -10,10 +10,35 @@
 	</style>
 </head>
 <body>
-<h1>@ViewData["Title"]</h1>
-<h3>Bundt's watch says that it is @ViewData["ServerTime"]</h3>
-<h3>Assembly: @ViewData["AssemblyVersion"]</h3>
-<h3>Guilds:</h3>
-<h3>Last Logged Exception: @ViewData["LastLoggedException"]</h3>
+	<h1>@ViewData["Title"]</h1>
+	<h3>Bundt's watch says that it is @ViewData["ServerTime"]</h3>
+	<h3>Assembly: @ViewData["AssemblyVersion"]</h3>
+	<h3>Guilds:</h3>
+	<h3>Last Logged Exception: @ViewData["LastLoggedException"]</h3>
+	<button id="log-info">Log Level Info</button>
+	<button id="log-debug">Log Level Debug</button>
+	<button id="log-trace">Log Level Trace</button>
+	<script>
+		function PatchLogLevel(logLevel)
+		{
+			var url = 'api/logs';
+            var xhr = new XMLHttpRequest();
+            xhr.open('PATCH', url);
+			xhr.setRequestHeader("Content-Type", "application/json");
+			xhr.send(JSON.stringify({ LogLevel: logLevel }));
+		}
+
+		document.getElementById('log-debug').addEventListener('click', function () {
+			PatchLogLevel('Debug')
+		}, false);
+
+		document.getElementById('log-trace').addEventListener('click', function () {
+			PatchLogLevel('Trace')
+		}, false);
+
+		document.getElementById('log-info').addEventListener('click', function () {
+			PatchLogLevel('Information')
+		}, false);
+	</script>
 </body>
 </html>

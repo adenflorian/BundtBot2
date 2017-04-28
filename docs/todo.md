@@ -20,7 +20,7 @@
 
 ## !yt
 
-[ ]make the youtube classes their own library
+[ ] make the youtube classes their own library
 [ ] !yt search
 [ ] !ytrandom
 [ ] automatically duck audio when people talk
@@ -37,12 +37,12 @@
 
 ## BundtBot Web API
 
+[√] change log level
 [ ] make logs accessable from webserver
   like how many of each exception
   when each exception was last thrown
 [ ] make guilds display on website again
 [ ] lock down website
-[ ] change log level
 [ ] change dog level
 [ ] show uptime
 

@@ -26,22 +26,13 @@ namespace BundtBot.WebApi
 
         public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
         {
-            if (!IsEnabled(logLevel))
-            {
-                return;
-            }
+            if (!IsEnabled(logLevel)) return;
 
-            if (formatter == null)
-            {
-                throw new ArgumentNullException(nameof(formatter));
-            }
+            if (formatter == null) throw new ArgumentNullException(nameof(formatter));
 
             var message = formatter(state, exception);
 
-            if (string.IsNullOrEmpty(message))
-            {
-                return;
-            }
+            if (string.IsNullOrEmpty(message)) return;
             
             switch (logLevel)
             {
@@ -49,10 +40,10 @@ namespace BundtBot.WebApi
                     _logger.LogTrace(message);
                     break;
                 case LogLevel.Debug:
-                    _logger.LogDebug(message);
+                    _logger.LogTrace(message);
                     break;
                 case LogLevel.Information:
-                    _logger.LogInfo(message);
+                    _logger.LogDebug(message);
                     break;
                 case LogLevel.Warning:
                     _logger.LogWarning(message);
