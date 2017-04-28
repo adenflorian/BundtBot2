@@ -42,26 +42,21 @@ if (fs.existsSync(secretFilePath)) {
 	gulp.stop("***Run 'node setup.js' before using gulp!***")
 }
 
-gulp.task('default', function () {
-})
-
-gulp.task('clean', function () {
-	fs.unlink(tarFileName)
-})
+gulp.task('clean', cleanTar)
 
 gulp.task('restore', shell.task(`dotnet restore ${projectFilePath}`, { verbose: true }))
 
 gulp.task('dotnet-build', shell.task(`dotnet build ${projectFilePath}`, { verbose: true }))
 
-gulp.task('copyviews', ['dotnet-build'], function () {
+gulp.task('copyviews', ['dotnet-build'], () => {
 	copydir.sync(viewsFolder, `${buildOutputFolder}/${viewsFolderName}`);
 })
 
-gulp.task('copytokendev', ['dotnet-build'], function () {
+gulp.task('copytokendev', ['dotnet-build'], () => {
 	fs.writeFileSync(`${buildOutputFolder}/bottoken`, secret.devbottoken)
 })
 
-gulp.task('build', ['dotnet-build', 'copyviews', 'copytokendev'], function() {
+gulp.task('build', ['dotnet-build', 'copyviews', 'copytokendev'], () => {
 	copywindowsbinsbuild()
 })
 
@@ -79,48 +74,27 @@ function copylinuxbinspublish() {
 	fs.createReadStream(youtubedllinux).pipe(fs.createWriteStream(publishFolder + '/youtube-dl.exe'));
 }
 
-gulp.task('publish', function (cb) {
-	exec(`dotnet publish ${projectFilePath}`, function (error, stdout, stderr) {
+gulp.task('publish', (cb) => {
+	exec(`dotnet publish ${projectFilePath}`, (error, stdout, stderr) => {
 		console.log(stdout)
 		copylinuxbinspublish()
 		cb()
 	})
 })
 
-gulp.task('copytokentest', ['publish'], function () {
+gulp.task('copytokentest', ['publish'], () => {
 	fs.writeFileSync(`${publishFolder}/bottoken`, secret.testbottoken)
 })
 
 gulp.task('tar', ['publish', 'copytokentest'], shell.task('node do tar', { verbose: true }))
 
-gulp.task('sftpdeploy', ['tar'], function (cb) {
-	client.defaults({
-		port: 22,
-		host: secret.testhost,
-		username: secret.testusername,
-		privateKey: fs.readFileSync(secret.sshkeypath)
-	});
+gulp.task('sftpdeploy', ['tar'], sftpDeploy)
 
-	client.on('transfer', (buffer, uploaded, total) => {
-		if (uploaded % 25 == 0) {
-			console.log(uploaded + '/' + total)
-		}
-	})
-
-	client.upload(tarFileName, tarFileName, function(){
-		cb()
-	})
-})
-
-gulp.task('cleantar', function (cb) {
-	cleanTar(cb)
-})
+gulp.task('cleantar', cleanTar)
 
 gulp.task('sshdeploy', ['sftpdeploy'], shell.task('grunt sshexec:deploy', { verbose: true }))
 
-gulp.task('deploy', ['publish', 'tar', 'sftpdeploy', 'sshdeploy'], function (cb) {
-	cleanTar(cb)
-})
+gulp.task('deploy', ['publish', 'tar', 'sftpdeploy', 'sshdeploy'], cleanTar)
 
 // Start test commands
 
@@ -139,10 +113,31 @@ gulp.task('setup-server', shell.task('grunt sshexec:setup', { verbose: true }))
 
 gulp.task('restart-remote', shell.task('grunt sshexec:restart', { verbose: true }))
 
+function sftpDeploy(cb)
+{
+	client.defaults({
+		port: 22,
+		host: secret.testhost,
+		username: secret.testusername,
+		privateKey: fs.readFileSync(secret.sshkeypath)
+	});
+
+	client.on('transfer', (buffer, uploaded, total) => {
+		if (uploaded % 25 == 0) {
+			console.log(uploaded + '/' + total)
+		}
+	})
+
+	client.upload(tarFileName, tarFileName, () => {
+		client.close()
+		cb()
+	})
+}
+
 function cleanTar(cb)
 {
-	fs.unlink(`${projectName}.tar.gz`, function (err) {
+	fs.unlink(`${projectName}.tar.gz`, (err) => {
 		if (err) console.log(err)
-		cb()
+		if (cb) cb()
 	})
 }

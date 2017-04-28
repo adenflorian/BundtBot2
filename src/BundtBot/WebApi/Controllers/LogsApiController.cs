@@ -12,11 +12,14 @@ namespace BundtBot.WebApi.Controllers
     [Route("api/logs")]
     public class LogsApiController
     {
+        static readonly MyLogger _logger = new MyLogger(nameof(LogsApiController), ConsoleColor.DarkBlue);
+
         [HttpPatch]
         public void ChangeLogLevel([FromBody]LogLevelObject loglevel)
         {
             if (loglevel == null) return;
             MyLogger.CurrentLogLevel = loglevel.LogLevel;
+            _logger.LogInfo("Log Level set to " + loglevel.LogLevel);
         }
     }
 }

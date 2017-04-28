@@ -45,9 +45,11 @@
 [ ] lock down website
 [ ] change dog level
 [ ] show uptime
+[ ] authentication
 
 ## gulp
 
+[√] BUG: It gets stuck after deploy and you have to ctrl + c to exit
 [ ] instead of deleting previous version on test server, store it in a previous version folder so we can quickly rollback if need be
 [ ] get more logging from node do tar and grunt sftp:deploy
   i want to see progress logs
