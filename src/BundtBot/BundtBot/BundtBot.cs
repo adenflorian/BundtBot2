@@ -18,13 +18,15 @@ namespace BundtBot
         DiscordClient _client;
         DJ _dj = new DJ();
         CommandManager _commandManager = new CommandManager();
-        DirectoryInfo _youtubeOutputFolder = new DirectoryInfo("audio");
+        YoutubeDl _youtubeDl;
 
         public async Task StartAsync()
         {
             _client = new DiscordClient(File.ReadAllText("bottoken"));
 
-            if (_youtubeOutputFolder.Exists == false) _youtubeOutputFolder.Create();
+            var youtubeAudioFolder = new DirectoryInfo("audio-youtube");
+            if (youtubeAudioFolder.Exists == false) youtubeAudioFolder.Create();
+            _youtubeDl = new YoutubeDl(youtubeAudioFolder);
 
             RegisterEventHandlers();
             RegisterCommands();
@@ -178,7 +180,7 @@ namespace BundtBot
                     youtubeDlArgs.ExtractAudio = true;
                     youtubeDlArgs.AudioFormat = YoutubeDlAudioFormat.wav;
 
-                    FileInfo youtubeOutputFile = await DownloadYoutubeAudioAsync(youtubeDlArgs);
+                    FileInfo youtubeOutputFile = await _youtubeDl.DownloadAsync(youtubeDlArgs);
 
                     _dj.EnqueueAudio(youtubeOutputFile, message.Server.VoiceChannels.First());
                     await message.ReplyAsync(receivedCommand.ArgumentsString + " added to queue");
@@ -189,33 +191,6 @@ namespace BundtBot
                     await message.ReplyAsync(ye.Message);
                 }
             }, minimumArgCount: 1));
-        }
-
-        async Task<FileInfo> DownloadYoutubeAudioAsync(YoutubeDlArgs args)
-        {
-            var guid = Guid.NewGuid();
-
-            args.OutputTemplate = $@"{_youtubeOutputFolder}/{guid}.%(ext)s";
-
-            using (var youtubeDlProcess = new Process())
-            {
-                youtubeDlProcess.StartInfo.FileName = "./youtube-dl.exe";
-                youtubeDlProcess.StartInfo.Arguments = args.ToString();
-                youtubeDlProcess.StartInfo.CreateNoWindow = true;
-
-                youtubeDlProcess.Start();
-
-                await Wait.Until(() => youtubeDlProcess.HasExited).StartAsync();
-            }
-
-            var downloadedAudioFile = new FileInfo(_youtubeOutputFolder.FullName + '/' + guid + '.' + args.AudioFormat);
-
-            if (downloadedAudioFile.Exists == false)
-            {
-                throw new YoutubeException("that thing you asked for, i don't think i can get it for you, but i might know someone who can... :frog:");
-            }
-
-            return downloadedAudioFile;
         }
     }
 }
