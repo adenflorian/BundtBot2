@@ -40,7 +40,7 @@ namespace BundtBot
                 try
                 {
                     if (message.Author.User.Id == _client.Me.Id) return;
-                    _commandManager.ProcessTextMessage(message);
+                    await _commandManager.ProcessTextMessageAsync(message);
                 }
                 catch (CommandException ce)
                 {
@@ -93,27 +93,13 @@ namespace BundtBot
 
             _commandManager.Commands.Add(new TextCommand("hi", async (message, receivedCommand) =>
             {
-                try
-                {
-                    await message.ReplyAsync("hi...");
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex);
-                }
+                await message.ReplyAsync("hi...");
             }));
             _commandManager.Commands.Add(new TextCommand("help", async (message, receivedCommand) =>
             {
-                try
-                {
-                    var helpMessage = "";
-                    _commandManager.Commands.ForEach(x => helpMessage += $"`{x.Name}` ");
-                    await message.ReplyAsync("help me help you: " + helpMessage);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex);
-                }
+                var helpMessage = "";
+                _commandManager.Commands.ForEach(x => helpMessage += $"`{x.Name}` ");
+                await message.ReplyAsync("help me help you: " + helpMessage);
             }));
             _commandManager.Commands.Add(new TextCommand("next", async (message, receivedCommand) =>
             {
@@ -123,7 +109,6 @@ namespace BundtBot
                     await message.ReplyAsync("Yea, I wasn't a huge fan of that song either :track_next:");
                 }
                 catch (DJException dje) { await message.ReplyAsync(dje.Message); }
-                catch (Exception ex) { _logger.LogError(ex); }
             }));
             _commandManager.Commands.Add(new TextCommand("stop", async (message, receivedCommand) =>
             {
@@ -133,7 +118,6 @@ namespace BundtBot
                     await message.ReplyAsync("Please don't :stop_button: the music :frowning:");
                 }
                 catch (DJException dje) { await message.ReplyAsync(dje.Message); }
-                catch (Exception ex) { _logger.LogError(ex); }
             }));
             _commandManager.Commands.Add(new TextCommand("resume", async (message, receivedCommand) =>
             {
@@ -143,7 +127,6 @@ namespace BundtBot
                     await message.ReplyAsync("Green light! :arrow_forward:");
                 }
                 catch (DJException dje) { await message.ReplyAsync(dje.Message); }
-                catch (Exception ex) { _logger.LogError(ex); }
             }));
             _commandManager.Commands.Add(new TextCommand("pause", async (message, receivedCommand) =>
             {
@@ -153,7 +136,6 @@ namespace BundtBot
                     await message.ReplyAsync("Red Light! :rotating_light:");
                 }
                 catch (DJException dje) { await message.ReplyAsync(dje.Message); }
-                catch (Exception ex) { _logger.LogError(ex); }
             }));
             _commandManager.Commands.Add(new TextCommand("ff", async (message, receivedCommand) =>
             {
@@ -163,7 +145,6 @@ namespace BundtBot
                     await message.ReplyAsync("Double time!");
                 }
                 catch (DJException dje) { await message.ReplyAsync(dje.Message); }
-                catch (Exception ex) { _logger.LogError(ex); }
             }));
             _commandManager.Commands.Add(new TextCommand("sff", async (message, receivedCommand) =>
             {
@@ -173,18 +154,10 @@ namespace BundtBot
                     await message.ReplyAsync("Single time!...?");
                 }
                 catch (DJException dje) { await message.ReplyAsync(dje.Message); }
-                catch (Exception ex) { _logger.LogError(ex); }
             }));
             _commandManager.Commands.Add(new TextCommand("echo", async (message, receivedCommand) =>
             {
-                try
-                {
-                    await message.ReplyAsync(receivedCommand.ArgumentsString);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex);
-                }
+                await message.ReplyAsync(receivedCommand.ArgumentsString);
             }, minimumArgCount: 1));
             _commandManager.Commands.Add(new TextCommand("yt", async (message, receivedCommand) =>
             {
@@ -214,10 +187,6 @@ namespace BundtBot
                 {
                     _logger.LogWarning(ye);
                     await message.ReplyAsync(ye.Message);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex);
                 }
             }, minimumArgCount: 1));
         }

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using BundtBot.Extensions;
 using BundtCord.Discord;
 
@@ -10,8 +11,10 @@ namespace BundtBot
     {
         public string CommandPrefix = "!";
         public readonly List<TextCommand> Commands = new List<TextCommand>();
+        
+        static readonly MyLogger _logger = new MyLogger(nameof(CommandManager));
 
-        public void ProcessTextMessage(TextChannelMessage message)
+        public async Task ProcessTextMessageAsync(TextChannelMessage message)
         {
             // !commandName arg1 arg2 arg3
             if (message.Content.DoesNotStartWith(CommandPrefix)) return;
@@ -31,7 +34,15 @@ namespace BundtBot
                     + $"but I need {matchingCommand.MinimumArgCount}");
             }
 
-            matchingCommand.Command.Invoke(message, receivedCommand);
+            try
+            {
+                await matchingCommand.Command.Invoke(message, receivedCommand);
+            }
+            catch (Exception ex)
+            {
+                await message.ReplyAsync($"Some guy named {ex.GetType()} punched me while I was following your {receivedCommand.Name} command...then he told me: '{ex.Message}");
+                _logger.LogError(ex);
+            }
         }
 
         string StripPrefix(string command)

@@ -68,13 +68,22 @@
 
 ## !yt
 
+[ ] put youtube audio in a youtube audio folder
+[ ] cache audio files and reuse them
+  How?
+  Name the audio files after the youtube video id
+  What about videos not from youtube?
+  Store a prefix for what site they're from?
+[ ] !volume
 [ ] make the youtube classes their own library
-[ ] !yt search
 [ ] !ytrandom
 [ ] automatically duck audio when people talk
 [ ] Allow multiple url's in one command?
 [ ] Auto update youtube-dl.exe
   When tho? On startup?
+[ ] log youtube-dl stdout
+[ ] store audio as opus instead of wav
+[ ] read opus files directly without having to compress them
 
 ## DJ
 
