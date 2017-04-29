@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using BundtBot.Extensions;
+using BundtCommon.Extensions;
 using BundtCord.Discord;
 
 namespace BundtBot
@@ -10,13 +11,22 @@ namespace BundtBot
     class CommandManager
     {
         public string CommandPrefix = "!";
-        public readonly List<TextCommand> Commands = new List<TextCommand>();
+        readonly Dictionary<string, TextCommand> CommandsDict = new Dictionary<string, TextCommand>();
         
         static readonly MyLogger _logger = new MyLogger(nameof(CommandManager));
 
+        public void AddCommand(TextCommand newCommand)
+        {
+            CommandsDict.Add(newCommand.Name, newCommand);
+        }
+
+        public IEnumerable<TextCommand> GetCommands()
+        {
+            return CommandsDict.Values;
+        }
+
         public async Task ProcessTextMessageAsync(TextChannelMessage message)
         {
-            // !commandName arg1 arg2 arg3
             if (message.Content.DoesNotStartWith(CommandPrefix)) return;
             if (message.Content.Length < CommandPrefix.Length + 1) return;
 
@@ -24,9 +34,8 @@ namespace BundtBot
 
             var receivedCommand = new ReceivedCommand(commandString);
 
-            var matchingCommand = Commands.Where(x => x.Name == receivedCommand.Name).FirstOrDefault();
-
-            if (matchingCommand == null) throw new CommandException($"Command {receivedCommand.Name} not found, are you ok?");
+            if (CommandsDict.DoesNotContainKey(receivedCommand.Name)) throw new CommandException($"Command {receivedCommand.Name} not found, are you ok?");
+            var matchingCommand = CommandsDict[receivedCommand.Name];
 
             if (receivedCommand.Args.Count < matchingCommand.MinimumArgCount)
             {

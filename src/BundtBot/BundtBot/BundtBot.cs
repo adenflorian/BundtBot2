@@ -95,17 +95,17 @@ namespace BundtBot
         {
             _commandManager.CommandPrefix = "!";
 
-            _commandManager.Commands.Add(new TextCommand("hi", async (message, receivedCommand) =>
+            _commandManager.AddCommand(new TextCommand("hi", async (message, receivedCommand) =>
             {
                 await message.ReplyAsync("hi...");
             }));
-            _commandManager.Commands.Add(new TextCommand("help", async (message, receivedCommand) =>
+            _commandManager.AddCommand(new TextCommand("help", async (message, receivedCommand) =>
             {
                 var helpMessage = "";
-                _commandManager.Commands.ForEach(x => helpMessage += $"`{x.Name}` ");
+                _commandManager.GetCommands().ToList().ForEach(x => helpMessage += $"`{x.Name}` ");
                 await message.ReplyAsync("help me help you: " + helpMessage);
             }));
-            _commandManager.Commands.Add(new TextCommand("next", async (message, receivedCommand) =>
+            _commandManager.AddCommand(new TextCommand("next", async (message, receivedCommand) =>
             {
                 try
                 {
@@ -114,7 +114,7 @@ namespace BundtBot
                 }
                 catch (DJException dje) { await message.ReplyAsync(dje.Message); }
             }));
-            _commandManager.Commands.Add(new TextCommand("stop", async (message, receivedCommand) =>
+            _commandManager.AddCommand(new TextCommand("stop", async (message, receivedCommand) =>
             {
                 try
                 {
@@ -123,7 +123,7 @@ namespace BundtBot
                 }
                 catch (DJException dje) { await message.ReplyAsync(dje.Message); }
             }));
-            _commandManager.Commands.Add(new TextCommand("resume", async (message, receivedCommand) =>
+            _commandManager.AddCommand(new TextCommand("resume", async (message, receivedCommand) =>
             {
                 try
                 {
@@ -132,7 +132,7 @@ namespace BundtBot
                 }
                 catch (DJException dje) { await message.ReplyAsync(dje.Message); }
             }));
-            _commandManager.Commands.Add(new TextCommand("pause", async (message, receivedCommand) =>
+            _commandManager.AddCommand(new TextCommand("pause", async (message, receivedCommand) =>
             {
                 try
                 {
@@ -141,7 +141,7 @@ namespace BundtBot
                 }
                 catch (DJException dje) { await message.ReplyAsync(dje.Message); }
             }));
-            _commandManager.Commands.Add(new TextCommand("ff", async (message, receivedCommand) =>
+            _commandManager.AddCommand(new TextCommand("ff", async (message, receivedCommand) =>
             {
                 try
                 {
@@ -150,7 +150,7 @@ namespace BundtBot
                 }
                 catch (DJException dje) { await message.ReplyAsync(dje.Message); }
             }));
-            _commandManager.Commands.Add(new TextCommand("sff", async (message, receivedCommand) =>
+            _commandManager.AddCommand(new TextCommand("sff", async (message, receivedCommand) =>
             {
                 try
                 {
@@ -159,11 +159,11 @@ namespace BundtBot
                 }
                 catch (DJException dje) { await message.ReplyAsync(dje.Message); }
             }));
-            _commandManager.Commands.Add(new TextCommand("echo", async (message, receivedCommand) =>
+            _commandManager.AddCommand(new TextCommand("echo", async (message, receivedCommand) =>
             {
                 await message.ReplyAsync(receivedCommand.ArgumentsString);
             }, minimumArgCount: 1));
-            _commandManager.Commands.Add(new TextCommand("yt", async (message, receivedCommand) =>
+            _commandManager.AddCommand(new TextCommand("yt", async (message, receivedCommand) =>
             {
                 try
                 {
