@@ -15,6 +15,7 @@ namespace BundtBot
         ConcurrentQueue<AudioRequest> _audioQueue = new ConcurrentQueue<AudioRequest>();
         AudioRequest _currentlyPlayingRequest;
         bool _cancelCurrentSong;
+        DjStream _djStream;
 
         public void Start()
         {
@@ -32,7 +33,9 @@ namespace BundtBot
                         await audioRequest.VoiceChannel.JoinAsync();
                         _currentlyPlayingRequest = audioRequest;
 
-                        var task = audioRequest.VoiceChannel.SendAudioAsync(audioRequest.WavAudioFile.Open(FileMode.Open));
+                        _djStream = new DjStream(audioRequest.WavAudioFile.Open(FileMode.Open));
+
+                        var task = audioRequest.VoiceChannel.SendAudioAsync(_djStream);
 
                         while (true)
                         {
@@ -41,6 +44,7 @@ namespace BundtBot
                             if (task.IsCompleted) break;
                         }
 
+                        _djStream = null;
                         _currentlyPlayingRequest = null;
                         // TODO Join next channel if something else in queue instead of disconnecting everytime
                         await audioRequest.VoiceChannel.Server.LeaveVoice();
@@ -83,6 +87,18 @@ namespace BundtBot
         {
             if (_currentlyPlayingRequest == null) throw new DJException("Nothing is playing, nothing to next");
             _cancelCurrentSong = true;
+        }
+
+        public void FastForward()
+        {
+            if (_djStream == null) throw new DJException("I don't think anything is playing, I could be wrong tho ¯\\_(ツ)_/¯");
+            _djStream.EnableFastforward();
+        }
+
+        public void StopFastForward()
+        {
+            if (_djStream == null) throw new DJException("I don't think anything is playing, I could be wrong tho ¯\\_(ツ)_/¯");
+            _djStream.DisableFastforward();
         }
     }
 }

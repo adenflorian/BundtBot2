@@ -155,6 +155,26 @@ namespace BundtBot
                 catch (DJException dje) { await message.ReplyAsync(dje.Message); }
                 catch (Exception ex) { _logger.LogError(ex); }
             }));
+            _commandManager.Commands.Add(new TextCommand("ff", async (message, receivedCommand) =>
+            {
+                try
+                {
+                    _dj.FastForward();
+                    await message.ReplyAsync("Double time!");
+                }
+                catch (DJException dje) { await message.ReplyAsync(dje.Message); }
+                catch (Exception ex) { _logger.LogError(ex); }
+            }));
+            _commandManager.Commands.Add(new TextCommand("sff", async (message, receivedCommand) =>
+            {
+                try
+                {
+                    _dj.StopFastForward();
+                    await message.ReplyAsync("Single time!...?");
+                }
+                catch (DJException dje) { await message.ReplyAsync(dje.Message); }
+                catch (Exception ex) { _logger.LogError(ex); }
+            }));
             _commandManager.Commands.Add(new TextCommand("echo", async (message, receivedCommand) =>
             {
                 try

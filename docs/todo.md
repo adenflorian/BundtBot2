@@ -3,10 +3,57 @@
 [ ] refactor youtube code
 [ ] make a json file to configure what actions bundtbot does on startup
   for running tests and such
-[ ] edit the same message continuously to do a ascii art animation
-[ ] allow multiple different text responses to certain events
 [ ] allow playing audio to two different servers at once
+[ ] allow multiple different text responses to certain events
 [ ] look into Cake build system
+[ ] edit the same message continuously to do a ascii art animation
+
+## Gateway
+
+[ ] Dispatch
+  [ ] Ready
+  [ ] Resumed
+  [ ] Channel Create
+  [ ] Channel Update
+  [ ] Channel Delete
+  [ ] Guild Create
+  [ ] Guild Update
+  [ ] Guild Delete
+  [ ] Guild Ban Add
+  [ ] Guild Ban Remove
+  [ ] Guild Emojis Update
+  [ ] Guild Integrations Update
+  [ ] Guild Member Add
+  [ ] Guild Member Remove
+  [ ] Guild Member Update
+  [ ] Guild Members Chunk
+  [ ] Guild Role Create
+  [ ] Guild Role Update
+  [ ] Guild Role Delete
+  [ ] Message Create
+  [ ] Message Update
+  [ ] Message Delete
+  [ ] Message Delete Bulk
+  [ ] Presence Update
+  [ ] Typing Start
+  [ ] User Update
+  [ ] Voice State Update
+  [ ] Voice Server Update
+[ ] Heartbeat
+[ ] Identify
+[ ] StatusUpdate
+[ ] VoiceStateUpdate
+[ ] VoiceServerPing
+[ ] Resume
+[ ] Reconnect
+[ ] RequestGuildMembers
+[ ] InvalidSession
+[ ] Hello
+[ ] HeartbeatAck
+
+## Bugs
+
+[ ] not handling new users to the server correctly
 
 ## Optimizations
 
@@ -28,10 +75,13 @@
 
 ## DJ
 
-[ ] !fastforward
+[ ] make it not leave channel in between clips
+[√] !fastforward
+  [ ] fix being able to stack !ff
 [ ] !slomo
 [ ] change the Playing Game filed to song name
-[ ] make it not leave channel in between clips
+[ ] Warp the filestream with a BufferedStream
+  How to tell if this is even necessary?
 
 ## Voice
 
