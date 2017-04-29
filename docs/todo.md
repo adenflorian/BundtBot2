@@ -1,5 +1,6 @@
 # BundtBot ToDo
 
+[ ] create script to upgrade youtube-dl binaries
 [ ] refactor youtube code
 [ ] make a json file to configure what actions bundtbot does on startup
   for running tests and such
@@ -72,6 +73,8 @@
 [ ] !ytrandom
 [ ] automatically duck audio when people talk
 [ ] Allow multiple url's in one command?
+[ ] Auto update youtube-dl.exe
+  When tho? On startup?
 
 ## DJ
 
