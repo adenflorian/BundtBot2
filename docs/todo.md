@@ -9,6 +9,12 @@
 [ ] look into Cake build system
 [ ] edit the same message continuously to do a ascii art animation
 
+## TesterBot
+
+[√] Make TesterBot
+  For doing functional testing on BundtBot
+  Will be a separate discord bot
+
 ## Gateway
 
 [ ] Dispatch

@@ -3,6 +3,7 @@ const copydir = require('copy-dir');
 const fs = require('fs')
 const gulp = require('gulp')
 const shell = require('gulp-shell')
+const rimraf = require('rimraf')
 const shelljs = require('shelljs')
 const client = require('scp2')
 
@@ -102,6 +103,31 @@ gulp.task('test', shell.task('dotnet test test/BundtBotTests/BundtBotTests.cspro
 	{ verbose: true }))
 
 gulp.task('rate-limiter-tests', () => shelljs.exec(`dotnet test ${rateLimitTestsProjectFolder}/${rateLimitTestsProjectName}.csproj`))
+
+// TesterBot
+const testerBotProjectName = 'TesterBot'
+const testerBotProjectFolder = 'test/' + testerBotProjectName
+const testerBotProjectFile = testerBotProjectFolder + '/' + testerBotProjectName + '.csproj'
+const testerBotBinFolder = testerBotProjectFolder + '/bin'
+const testerBotObjFolder = testerBotProjectFolder + '/obj'
+const testerBotOutputFolder = testerBotBinFolder + '/debug/netcoreapp1.1'
+
+gulp.task('build-testerbot', (cb) => {
+	exec(`dotnet build ${testerBotProjectFile}`, (error, stdout, stderr) => {
+		console.log(stdout)
+		if (error) throw error
+		fs.writeFileSync(testerBotOutputFolder + '/bottoken', secret.testerbottoken)
+		cb()
+	})
+})
+
+gulp.task('clean-testerbot', (cb) => {
+	rimraf(testerBotBinFolder, (err) => {
+		if (err) throw err
+	})
+})
+
+gulp.task('run-testerbot', shell.task(`dotnet ${testerBotProjectName}.dll`, { verbose: true, cwd: testerBotOutputFolder }))
 
 // Start remote server commands
 
