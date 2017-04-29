@@ -14,6 +14,7 @@
 [√] Make TesterBot
   For doing functional testing on BundtBot
   Will be a separate discord bot
+[ ] add some asserts
 
 ## Gateway
 

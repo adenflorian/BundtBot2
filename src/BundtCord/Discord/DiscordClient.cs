@@ -126,7 +126,7 @@ namespace BundtCord.Discord
             ServerCreated?.Invoke(newServer);
         }
 
-        async void OnInvalidSessionReceivedAsync(string eventName, string eventJsonData)
+        async void OnInvalidSessionReceivedAsync(string eventJsonData)
         {
             _logger.LogInfo("Received InvalidSession from Gateway, "
                 + "clearing state data then sending Identify...", ConsoleColor.Red);

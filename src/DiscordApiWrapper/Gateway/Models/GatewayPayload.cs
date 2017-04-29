@@ -16,11 +16,11 @@ namespace BundtBot.Discord.Models.Gateway
 		[JsonProperty("s")]
 		public int? SequenceNumber;
 
-		/// <summary>
-		/// Only used with OpCode 0. GATEWAY_EVENT_NAME.
-		/// </summary>
-		[JsonProperty("t")]
-		public string EventName;
+        /// <summary>
+        /// Only used with OpCode 0. GATEWAY_EVENT_NAME.
+        /// </summary>
+        [JsonProperty("t")]
+        public GatewayEvent? EventName;
 
 		public GatewayPayload(GatewayOpCode gatewayOpCode, object eventData) {
 			GatewayOpCode = gatewayOpCode;
