@@ -21,10 +21,17 @@ namespace BundtBot.Youtube
         {
             YoutubeAudioFolder = youtubeAudioFolder;
         }
-        
+
+        /// <summary>
+        /// Will override the OutputTemplate and WriteInfoJson args
+        /// </summary>
+        /// <param name="args"></param>
+        /// <returns></returns>
         public async Task<YoutubeFile> DownloadAsync(YoutubeDlArgs args)
         {
             var guid = Guid.NewGuid();
+
+            // TODO Shouldn't be chaning the args in this method
             args.OutputTemplate = $@"{YoutubeAudioFolder}/{guid}.%(ext)s";
             args.WriteInfoJson = true;
 
@@ -39,9 +46,18 @@ namespace BundtBot.Youtube
             var downloadedFile = GetDownloadedFile(args, guid);
             var infoJsonObject = LoadInfoJson(downloadedFile);
 
-            // TODO Rename audio file to use video id
+            var finalFile = new FileInfo(YoutubeAudioFolder.FullName + '/' + infoJsonObject.Id + downloadedFile.Extension);
 
-            return new YoutubeFile(downloadedFile, infoJsonObject);
+            if (finalFile.Exists)
+            {
+                downloadedFile.Delete();
+            }
+            else
+            {
+                downloadedFile.MoveTo(finalFile.FullName);
+            }
+
+            return new YoutubeFile(finalFile, infoJsonObject);
         }
 
         static void SetupYoutubeDlProcess(YoutubeDlArgs args, Process youtubeDlProcess)
@@ -70,6 +86,7 @@ namespace BundtBot.Youtube
                 throw new YoutubeException("Sorry :( I couldn't find the infoJsonFile...");
             }
             var infoJsonObject = JsonConvert.DeserializeObject<YoutubeInfo>(File.ReadAllText(infoJsonFile.FullName));
+            infoJsonFile.Delete();
             return infoJsonObject;
         }
     }

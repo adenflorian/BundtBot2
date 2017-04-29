@@ -76,7 +76,8 @@
 ## !yt
 
 [√] put youtube audio in a youtube audio folder
-[ ] name audio file using video id
+[√] name audio file using video id
+[ ] create and use a temp youtube folder
 [ ] cache audio files and reuse them
   How?
   Name the audio files after the youtube video id

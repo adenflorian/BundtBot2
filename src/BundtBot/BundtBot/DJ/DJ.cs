@@ -33,21 +33,26 @@ namespace BundtBot
                         await audioRequest.VoiceChannel.JoinAsync();
                         _currentlyPlayingRequest = audioRequest;
 
-                        _djStream = new DjStream(audioRequest.WavAudioFile.Open(FileMode.Open));
-
-                        var task = audioRequest.VoiceChannel.SendAudioAsync(_djStream);
-
-                        while (true)
+                        using (var audioStream = audioRequest.WavAudioFile.OpenRead())
                         {
-                            await Task.Delay(100);
-                            if (_cancelCurrentSong) { _cancelCurrentSong = false; break; }
-                            if (task.IsCompleted) break;
-                        }
+                            _djStream = new DjStream(audioStream);
 
-                        _djStream = null;
-                        _currentlyPlayingRequest = null;
-                        // TODO Join next channel if something else in queue instead of disconnecting everytime
-                        await audioRequest.VoiceChannel.Server.LeaveVoice();
+                            var task = audioRequest.VoiceChannel.SendAudioAsync(_djStream);
+
+                            while (true)
+                            {
+                                await Task.Delay(100);
+                                if (_cancelCurrentSong) { _cancelCurrentSong = false; break; }
+                                if (task.IsCompleted) break;
+                            }
+
+                            _djStream.Dispose();
+                            _djStream = null;
+                            _currentlyPlayingRequest = null;
+                            
+                            // TODO Join next channel if something else in queue instead of disconnecting everytime
+                            await audioRequest.VoiceChannel.Server.LeaveVoice();
+                        }
                     }
                     catch (Exception ex)
                     {

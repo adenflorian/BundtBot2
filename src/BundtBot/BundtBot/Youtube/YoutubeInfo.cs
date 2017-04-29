@@ -6,5 +6,8 @@ namespace BundtBot.Youtube
     {
         [JsonProperty("title")]
         public string Title;
+
+        [JsonProperty("id")]
+        public string Id;
     }
 }

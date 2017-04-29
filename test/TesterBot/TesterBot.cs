@@ -46,6 +46,8 @@ namespace TesterBot
                 {
                     await server.TextChannels.First().SendMessageAsync("testerbot online");
                     await server.TextChannels.First().SendMessageAsync("!yt mac 420");
+                    await server.TextChannels.First().SendMessageAsync("!yt mac 420");
+                    await server.TextChannels.First().SendMessageAsync("!yt mac 420");
                     await Task.Delay(TimeEx._1second);
                     await server.TextChannels.First().SendMessageAsync("!yt heyayaya");
                     await Task.Delay(TimeEx._1second);
@@ -73,7 +75,6 @@ namespace TesterBot
                     await server.TextChannels.First().SendMessageAsync("!sff");
                     await server.TextChannels.First().SendMessageAsync("!next");
                     await server.TextChannels.First().SendMessageAsync("!stop");
-                    await Task.Delay(TimeEx._1second);
                     await server.TextChannels.First().SendMessageAsync("Tests complete! Good job @bundtbot");
                 }
                 catch (Exception ex)

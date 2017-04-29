@@ -25,22 +25,22 @@ namespace BundtBot.Youtube
         string _audioFormatArg => "--audio-format " + AudioFormat.ToString() + ' ';
 
         /// <summary>
-        /// See youtube-dl docs for info on how to use this. (-o, --output)
-        /// </summary>
-        public string OutputTemplate;
-        string _outputArg => OutputTemplate != null ? "--output " + OutputTemplate + ' ' : "";
-
-        /// <summary>
         /// Do not download any videos larger than this (in Megabytes)
         /// </summary>
         public uint MaxFileSizeMB;
         string _maxFileSizeArg => $"--max-filesize {MaxFileSizeMB}m ";
 
         /// <summary>
+        /// See youtube-dl docs for info on how to use this. (-o, --output)
+        /// </summary>
+        internal string OutputTemplate;
+        string _outputArg => OutputTemplate != null ? "--output " + OutputTemplate + ' ' : "";
+
+        /// <summary>
         /// Write video metadata to a [filename].info.json file. (--write-info-json)
         /// Example: Downloaded filename is abc.wav, info file would be abc.info.json
         /// </summary>
-        public bool WriteInfoJson;
+        internal bool WriteInfoJson;
         string _writeInfoJson => WriteInfoJson ? "--write-info-json " : "";
 
         /// <summary>
