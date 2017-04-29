@@ -7,6 +7,10 @@ using Newtonsoft.Json;
 
 namespace BundtBot.Youtube
 {
+    /// <summary>
+    /// Wrapper for youtube-dl.exe
+    /// https://rg3.github.io/youtube-dl/
+    /// </summary>
     class YoutubeDl
     {
         public readonly DirectoryInfo YoutubeAudioFolder;
