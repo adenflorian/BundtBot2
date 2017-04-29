@@ -127,7 +127,7 @@ gulp.task('clean-testerbot', (cb) => {
 	})
 })
 
-gulp.task('run-testerbot', shell.task(`dotnet ${testerBotProjectName}.dll`, { verbose: true, cwd: testerBotOutputFolder }))
+gulp.task('run-testerbot', ['build-testerbot'], shell.task(`dotnet ${testerBotProjectName}.dll`, { verbose: true, cwd: testerBotOutputFolder }))
 
 // Start remote server commands
 

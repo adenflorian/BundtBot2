@@ -45,6 +45,36 @@ namespace TesterBot
                 try
                 {
                     await server.TextChannels.First().SendMessageAsync("testerbot online");
+                    await server.TextChannels.First().SendMessageAsync("!yt mac 420");
+                    await Task.Delay(TimeEx._1second);
+                    await server.TextChannels.First().SendMessageAsync("!yt heyayaya");
+                    await Task.Delay(TimeEx._1second);
+                    await server.TextChannels.First().SendMessageAsync("!yt x gonna give it to ya");
+                    await Task.Delay(TimeEx._15seconds);
+                    await server.TextChannels.First().SendMessageAsync("!ff");
+                    await Task.Delay(TimeEx._5seconds);
+                    await server.TextChannels.First().SendMessageAsync("!sff");
+                    await Task.Delay(TimeEx._2seconds);
+                    await server.TextChannels.First().SendMessageAsync("!next");
+                    await Task.Delay(TimeEx._5seconds);
+                    await server.TextChannels.First().SendMessageAsync("!pause");
+                    await Task.Delay(TimeEx._3seconds);
+                    await server.TextChannels.First().SendMessageAsync("!resume");
+                    await Task.Delay(TimeEx._3seconds);
+                    await server.TextChannels.First().SendMessageAsync("!ff");
+                    await Task.Delay(TimeEx._5seconds);
+                    await server.TextChannels.First().SendMessageAsync("!next");
+                    await Task.Delay(TimeEx._3seconds);
+                    await server.TextChannels.First().SendMessageAsync("!stop");
+                    await Task.Delay(TimeEx._2seconds);
+                    await server.TextChannels.First().SendMessageAsync("!pause");
+                    await server.TextChannels.First().SendMessageAsync("!resume");
+                    await server.TextChannels.First().SendMessageAsync("!ff");
+                    await server.TextChannels.First().SendMessageAsync("!sff");
+                    await server.TextChannels.First().SendMessageAsync("!next");
+                    await server.TextChannels.First().SendMessageAsync("!stop");
+                    await Task.Delay(TimeEx._1second);
+                    await server.TextChannels.First().SendMessageAsync("Tests complete! Good job @bundtbot");
                 }
                 catch (Exception ex)
                 {
