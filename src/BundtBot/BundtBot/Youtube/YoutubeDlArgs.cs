@@ -34,7 +34,14 @@ namespace BundtBot.Youtube
         /// Do not download any videos larger than this (in Megabytes)
         /// </summary>
         public uint MaxFileSizeMB;
-        string _maxFileSizeArg => $"--max-filesize {MaxFileSizeMB}m";
+        string _maxFileSizeArg => $"--max-filesize {MaxFileSizeMB}m ";
+
+        /// <summary>
+        /// Write video metadata to a [filename].info.json file. (--write-info-json)
+        /// Example: Downloaded filename is abc.wav, info file would be abc.info.json
+        /// </summary>
+        public bool WriteInfoJson;
+        string _writeInfoJson => WriteInfoJson ? "--write-info-json " : "";
 
         /// <summary>
         /// See this link for supported sites: https://rg3.github.io/youtube-dl/supportedsites.html
@@ -68,6 +75,7 @@ namespace BundtBot.Youtube
             args += _audioFormatArg;
             args += _outputArg;
             args += _maxFileSizeArg;
+            args += _writeInfoJson;
 
             return args;
         }

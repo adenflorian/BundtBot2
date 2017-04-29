@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -8,6 +9,7 @@ using BundtBot.Youtube;
 using BundtCommon;
 using BundtCord.Discord;
 using DiscordApiWrapper.Audio;
+using Newtonsoft.Json;
 
 namespace BundtBot
 {
@@ -180,10 +182,10 @@ namespace BundtBot
                     youtubeDlArgs.ExtractAudio = true;
                     youtubeDlArgs.AudioFormat = YoutubeDlAudioFormat.wav;
 
-                    FileInfo youtubeOutputFile = await _youtubeDl.DownloadAsync(youtubeDlArgs);
+                    var youtubeResult = await _youtubeDl.DownloadAsync(youtubeDlArgs);
 
-                    _dj.EnqueueAudio(youtubeOutputFile, message.Server.VoiceChannels.First());
-                    await message.ReplyAsync(receivedCommand.ArgumentsString + " added to queue");
+                    _dj.EnqueueAudio(youtubeResult.DownloadedFile, message.Server.VoiceChannels.First());
+                    await message.ReplyAsync($"'{youtubeResult.Info.Title}' added to queue");
                 }
                 catch (YoutubeException ye)
                 {

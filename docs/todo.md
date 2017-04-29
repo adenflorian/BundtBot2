@@ -68,7 +68,8 @@
 
 ## !yt
 
-[ ] put youtube audio in a youtube audio folder
+[√] put youtube audio in a youtube audio folder
+[ ] name audio file using video id
 [ ] cache audio files and reuse them
   How?
   Name the audio files after the youtube video id
@@ -84,6 +85,9 @@
 [ ] log youtube-dl stdout
 [ ] store audio as opus instead of wav
 [ ] read opus files directly without having to compress them
+[ ] --postprocessor-args ARGS
+  maybe can nromalize audio
+[ ] stream live youtube
 
 ## DJ
 
