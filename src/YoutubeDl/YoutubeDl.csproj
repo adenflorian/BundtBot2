@@ -6,9 +6,4 @@
     <DebugType>portable</DebugType>
   </PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\BundtCommon\BundtCommon.csproj" />
-    <ProjectReference Include="..\BundtCord\BundtCord.csproj" />
-  </ItemGroup>
-
 </Project>
