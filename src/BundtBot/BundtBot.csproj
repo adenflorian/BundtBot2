@@ -23,6 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\BundtCommands\BundtCommands.csproj" />
     <ProjectReference Include="..\BundtCommon\BundtCommon.csproj" />
     <ProjectReference Include="..\BundtCord\BundtCord.csproj" />
   </ItemGroup>

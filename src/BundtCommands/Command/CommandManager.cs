@@ -8,7 +8,7 @@ using BundtCord.Discord;
 
 namespace BundtBot
 {
-    class CommandManager
+    public class CommandManager
     {
         public string CommandPrefix = "!";
         readonly Dictionary<string, TextCommand> CommandsDict = new Dictionary<string, TextCommand>();

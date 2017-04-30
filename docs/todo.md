@@ -1,6 +1,7 @@
 # BundtBot ToDo
 
 [ ] make websocket not throw exception when closing
+[ ] maybe make command stuff its own project
 [ ] make a json file to configure what actions bundtbot does on startup
   for running tests and such
 [ ] allow playing audio to two different servers at once
