@@ -95,7 +95,7 @@ namespace TesterBot
                     await server.TextChannels.First().SendMessageAsync("!nofx");
                     await server.TextChannels.First().SendMessageAsync("!next");
                     await server.TextChannels.First().SendMessageAsync("!stop");
-                    await Task.Delay(TimeEx._1seconds);
+                    await Task.Delay(TimeEx._1second);
                     await server.TextChannels.First().SendMessageAsync("Tests complete! Good job @bundtbot");
                 }
                 catch (Exception ex)
