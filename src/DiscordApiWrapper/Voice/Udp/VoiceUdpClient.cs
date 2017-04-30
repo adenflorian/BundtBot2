@@ -92,31 +92,40 @@ namespace DiscordApiWrapper.Voice
 
             await Task.Run(() =>
             {
-                while (true)
+                try
                 {
-                    if (_isDisposing) return;
-                    if (_isPaused) { Thread.Sleep(100); continue; }
+                    while (true)
+                    {
+                        if (_isDisposing) return;
+                        if (pcmAudioStream.Position == pcmAudioStream.Length) break;
+                        if (_isPaused) { Thread.Sleep(100); continue; }
 
-                    if (pcmAudioStream.Position == pcmAudioStream.Length) break;
-                    pcmAudioStream.Read(pcmFrame, 0, pcmFrame.Length);
+                        if (pcmAudioStream.Position == pcmAudioStream.Length) break;
+                        pcmAudioStream.Read(pcmFrame, 0, pcmFrame.Length);
 
-                    int encodedLength;
-                    var compressedBytes = _opusEncoder.Encode(pcmFrame, pcmFrame.Length, out encodedLength);
+                        int encodedLength;
+                        var compressedBytes = _opusEncoder.Encode(pcmFrame, pcmFrame.Length, out encodedLength);
 
-                    var compressedBytesShort = new byte[encodedLength];
-                    Buffer.BlockCopy(compressedBytes, 0, compressedBytesShort, 0, encodedLength);
+                        var compressedBytesShort = new byte[encodedLength];
+                        Buffer.BlockCopy(compressedBytes, 0, compressedBytesShort, 0, encodedLength);
 
-                    var voicePacket = new VoicePacket(sequence, timestamp, _syncSourceId, compressedBytesShort);
-                    var encryptedVoicePacketBytes = voicePacket.GetEncryptedBytes(SecretKey);
+                        var voicePacket = new VoicePacket(sequence, timestamp, _syncSourceId, compressedBytesShort);
+                        var encryptedVoicePacketBytes = voicePacket.GetEncryptedBytes(SecretKey);
 
-                    int msUntilNextFrame = FindOutHowLongToWait(nextFrameInTicks);
-                    if (msUntilNextFrame > 0) Thread.Sleep(msUntilNextFrame);
+                        int msUntilNextFrame = FindOutHowLongToWait(nextFrameInTicks);
+                        if (msUntilNextFrame > 0) Thread.Sleep(msUntilNextFrame);
 
-                    var task = SendAsync(encryptedVoicePacketBytes);
+                        var task = SendAsync(encryptedVoicePacketBytes);
 
-                    timestamp += _samplesPerFramePerChannel;
-                    sequence++;
-                    nextFrameInTicks += _ticksPerFrame;
+                        timestamp += _samplesPerFramePerChannel;
+                        sequence++;
+                        nextFrameInTicks += _ticksPerFrame;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError("Exception caught in send audio loop");
+                    _logger.LogError(ex);
                 }
             });
 

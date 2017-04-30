@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
+using BundtCommon;
 using BundtCord.Discord;
 using DiscordApiWrapper.Audio;
 
@@ -25,41 +27,45 @@ namespace BundtBot
                 {
                     try
                     {
-                        while (_audioQueue.Count == 0) await Task.Delay(100);
+                        await Wait.Until(() => _audioQueue.Count > 0).StartAsync();
 
-                        AudioRequest audioRequest;
-                        if (_audioQueue.TryDequeue(out audioRequest) == false) continue;
+                        var audioRequest = Dequeue();
 
                         await audioRequest.VoiceChannel.JoinAsync();
                         _currentlyPlayingRequest = audioRequest;
 
-                        using (var audioStream = audioRequest.WavAudioFile.OpenRead())
+                        using (var pcmAudioFileStream = audioRequest.WavAudioFile.OpenRead())
+                        using (_djStream = new DjStream(pcmAudioFileStream))
                         {
-                            _djStream = new DjStream(audioStream);
-
                             var task = audioRequest.VoiceChannel.SendAudioAsync(_djStream);
 
-                            while (true)
-                            {
-                                await Task.Delay(100);
-                                if (_cancelCurrentSong) { _cancelCurrentSong = false; break; }
-                                if (task.IsCompleted) break;
-                            }
+                            await Wait.Until(() => _cancelCurrentSong || task.IsCompleted).StartAsync();
 
-                            _djStream.Dispose();
-                            _djStream = null;
                             _currentlyPlayingRequest = null;
+                            _cancelCurrentSong = false;
+                            _djStream.Position = _djStream.Length;
+
+                            await Wait.Until(() => task.IsCompleted).StartAsync();
                             
-                            // TODO Join next channel if something else in queue instead of disconnecting everytime
-                            await audioRequest.VoiceChannel.Server.LeaveVoice();
+                            if (_audioQueue.Count == 0) await audioRequest.VoiceChannel.Server.LeaveVoice();
                         }
+
+                        _djStream = null;
                     }
                     catch (Exception ex)
                     {
                         _logger.LogError(ex);
+                        _logger.LogError("Restarting DJ loop");
                     }
                 }
             });
+        }
+
+        AudioRequest Dequeue()
+        {
+            AudioRequest audioRequest;
+            Debug.Assert(_audioQueue.TryDequeue(out audioRequest) == true);
+            return audioRequest;
         }
 
         public void EnqueueAudio(FileInfo wavAudioFile, VoiceChannel voiceChannel)
@@ -70,14 +76,12 @@ namespace BundtBot
         public async Task PauseAudioAsync()
         {
             if (_currentlyPlayingRequest == null) throw new DJException("Nothing is playing, nothing to pause");
-
             await _currentlyPlayingRequest.VoiceChannel.Server.VoiceClient.PauseAsync();
         }
 
         public void ResumeAudio()
         {
             if (_currentlyPlayingRequest == null) throw new DJException("Nothing is playing, nothing to resume");
-
             _currentlyPlayingRequest.VoiceChannel.Server.VoiceClient.Resume();
         }
 
@@ -91,6 +95,7 @@ namespace BundtBot
         public void Next()
         {
             if (_currentlyPlayingRequest == null) throw new DJException("Nothing is playing, nothing to next");
+            ResumeAudio();
             _cancelCurrentSong = true;
         }
 
