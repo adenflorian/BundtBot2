@@ -24,17 +24,31 @@ namespace BundtBot
 
         public async Task StartAsync()
         {
-            _client = new DiscordClient(File.ReadAllText("bottoken"));
-
-            var youtubeAudioFolder = new DirectoryInfo("audio-youtube");
-            if (youtubeAudioFolder.Exists == false) youtubeAudioFolder.Create();
-            _youtubeDl = new YoutubeDl(youtubeAudioFolder);
+            _client = SetupDiscordClient();
+            _youtubeDl = SetupYoutubeDl();
 
             RegisterEventHandlers();
             RegisterCommands();
-            _dj.Start();
 
+            _dj.Start();
             await _client.ConnectAsync();
+        }
+
+        DiscordClient SetupDiscordClient()
+        {
+            return new DiscordClient(File.ReadAllText("bottoken"));
+        }
+
+        YoutubeDl SetupYoutubeDl()
+        {
+            var youtubeOutputFolder = new DirectoryInfo("audio-youtube");
+            if (youtubeOutputFolder.Exists == false) youtubeOutputFolder.Create();
+
+            var youtubeTempFolder = new DirectoryInfo("temp-youtube");
+            if (youtubeTempFolder.Exists) youtubeTempFolder.Delete();
+            youtubeTempFolder.Create();
+
+            return new YoutubeDl(youtubeOutputFolder, youtubeTempFolder);
         }
 
         void RegisterEventHandlers()

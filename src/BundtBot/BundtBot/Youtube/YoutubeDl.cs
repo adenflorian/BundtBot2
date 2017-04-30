@@ -13,13 +13,15 @@ namespace BundtBot.Youtube
     /// </summary>
     class YoutubeDl
     {
-        public readonly DirectoryInfo YoutubeAudioFolder;
+        public readonly DirectoryInfo OutputFolder;
+        public readonly DirectoryInfo TempFolder;
 
         static readonly MyLogger _logger = new MyLogger(nameof(YoutubeDl));
 
-        public YoutubeDl(DirectoryInfo youtubeAudioFolder)
+        public YoutubeDl(DirectoryInfo outputFolder, DirectoryInfo tempFolder)
         {
-            YoutubeAudioFolder = youtubeAudioFolder;
+            OutputFolder = outputFolder;
+            TempFolder = tempFolder;
         }
 
         /// <summary>
@@ -32,7 +34,7 @@ namespace BundtBot.Youtube
             var guid = Guid.NewGuid();
 
             // TODO Shouldn't be chaning the args in this method
-            args.OutputTemplate = $@"{YoutubeAudioFolder}/{guid}.%(ext)s";
+            args.OutputTemplate = $@"{TempFolder}/{guid}.%(ext)s";
             args.WriteInfoJson = true;
 
             using (var youtubeDlProcess = new Process())
@@ -46,7 +48,7 @@ namespace BundtBot.Youtube
             var downloadedFile = GetDownloadedFile(args, guid);
             var infoJsonObject = LoadInfoJson(downloadedFile);
 
-            var finalFile = new FileInfo(YoutubeAudioFolder.FullName + '/' + infoJsonObject.Id + downloadedFile.Extension);
+            var finalFile = new FileInfo(OutputFolder.FullName + '/' + infoJsonObject.Id + downloadedFile.Extension);
 
             if (finalFile.Exists)
             {
@@ -69,7 +71,7 @@ namespace BundtBot.Youtube
 
         FileInfo GetDownloadedFile(YoutubeDlArgs args, Guid guid)
         {
-            var downloadedAudioFile = new FileInfo(YoutubeAudioFolder.FullName + '/' + guid + '.' + args.AudioFormat);
+            var downloadedAudioFile = new FileInfo(TempFolder.FullName + '/' + guid + '.' + args.AudioFormat);
             if (downloadedAudioFile.Exists == false)
             {
                 throw new YoutubeException("Sorry :( I couldn't find the downloadedAudioFile...");
