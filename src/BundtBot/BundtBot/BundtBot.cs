@@ -45,7 +45,7 @@ namespace BundtBot
             if (youtubeOutputFolder.Exists == false) youtubeOutputFolder.Create();
 
             var youtubeTempFolder = new DirectoryInfo("temp-youtube");
-            if (youtubeTempFolder.Exists) youtubeTempFolder.Delete();
+            if (youtubeTempFolder.Exists) youtubeTempFolder.Delete(true);
             youtubeTempFolder.Create();
 
             return new YoutubeDl(youtubeOutputFolder, youtubeTempFolder);
@@ -179,27 +179,35 @@ namespace BundtBot
             }, minimumArgCount: 1));
             _commandManager.AddCommand(new TextCommand("yt", async (message, receivedCommand) =>
             {
+                // TODO Ensure requesting user is in audio channel
                 try
                 {
-                    YoutubeDlArgs youtubeDlArgs;
+                    YoutubeDlUrl youtubeDlUrl;
 
                     if (Uri.IsWellFormedUriString(receivedCommand.ArgumentsString, UriKind.Absolute))
                     {
-                        youtubeDlArgs = YoutubeDlArgs.FromUrl(new Uri(receivedCommand.ArgumentsString));
+                        youtubeDlUrl = YoutubeDlUrl.FromUrl(new Uri(receivedCommand.ArgumentsString));
                     }
                     else
                     {
-                        youtubeDlArgs = YoutubeDlArgs.FromSearchString(receivedCommand.ArgumentsString);
+                        youtubeDlUrl = YoutubeDlUrl.FromSearchString(receivedCommand.ArgumentsString);
                     }
 
-                    youtubeDlArgs.MaxFileSizeMB = 100;
-                    youtubeDlArgs.ExtractAudio = true;
-                    youtubeDlArgs.AudioFormat = YoutubeDlAudioFormat.wav;
+                    var youtubeInfo = await _youtubeDl.DownloadInfoAsync(youtubeDlUrl);
 
-                    var youtubeResult = await _youtubeDl.DownloadAsync(youtubeDlArgs);
-
-                    _dj.EnqueueAudio(youtubeResult.DownloadedFile, message.Server.VoiceChannels.First());
-                    await message.ReplyAsync($"'{youtubeResult.Info.Title}' added to queue");
+                    var audioFile = new FileInfo(_youtubeDl.OutputFolder.FullName + '/' + youtubeInfo.Id + ".wav");
+                    
+                    if (audioFile.Exists)
+                    {
+                        _dj.EnqueueAudio(audioFile, message.Server.VoiceChannels.First());
+                        await message.ReplyAsync($"'{youtubeInfo.Title}' added to queue from cache");
+                    }
+                    else
+                    {
+                        var youtubeResult = await _youtubeDl.DownloadAudioAsync(youtubeDlUrl, YoutubeDlAudioFormat.wav, 100);
+                        _dj.EnqueueAudio(youtubeResult.DownloadedFile, message.Server.VoiceChannels.First());
+                        await message.ReplyAsync($"'{youtubeResult.Info.Title}' added to queue");
+                    }
                 }
                 catch (YoutubeException ye)
                 {

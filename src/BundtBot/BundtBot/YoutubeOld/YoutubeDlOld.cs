@@ -17,7 +17,7 @@ namespace BundtBot
             var urlToDownload = youtubeDlUrl;
             var newFilename = Guid.NewGuid().ToString();
 
-            var downloader = new YoutubeDlProcess(urlToDownload, newFilename, outputFolder);
+            var downloader = new YoutubeDlProcessOld(urlToDownload, newFilename, outputFolder);
             downloader.ProgressDownload += (sender, ev) =>
             {
                 _logger.LogInfo(ev.Percentage.ToString("0.0"), ConsoleColor.Green);

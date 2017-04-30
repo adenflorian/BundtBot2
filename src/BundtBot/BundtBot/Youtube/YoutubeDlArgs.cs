@@ -2,15 +2,10 @@ using System;
 
 namespace BundtBot.Youtube
 {
-    public enum YoutubeDlAudioFormat
+    class YoutubeDlArgs
     {
-        wav
-    }
-    
-    public class YoutubeDlArgs
-    {
-        public readonly string UrlOrSearchString;
-        string _urlArg => UrlOrSearchString + ' ';
+        public readonly string UrlOrYtSearchString;
+        string _urlArg => UrlOrYtSearchString + ' ';
 
         /// <summary>
         /// If true, resulting file will be an audio file. (-x, --extract-audio)
@@ -33,38 +28,27 @@ namespace BundtBot.Youtube
         /// <summary>
         /// See youtube-dl docs for info on how to use this. (-o, --output)
         /// </summary>
-        internal string OutputTemplate;
+        public string OutputTemplate;
         string _outputArg => OutputTemplate != null ? "--output " + OutputTemplate + ' ' : "";
 
         /// <summary>
         /// Write video metadata to a [filename].info.json file. (--write-info-json)
         /// Example: Downloaded filename is abc.wav, info file would be abc.info.json
         /// </summary>
-        internal bool WriteInfoJson;
+        public bool WriteInfoJson;
         string _writeInfoJson => WriteInfoJson ? "--write-info-json " : "";
 
         /// <summary>
-        /// See this link for supported sites: https://rg3.github.io/youtube-dl/supportedsites.html
+        /// Do not download the video. (--skip-download)
         /// </summary>
-        public static YoutubeDlArgs FromUrl(Uri mediaUrl)
-        {
-            if (mediaUrl.IsAbsoluteUri == false) throw new ArgumentException("Must be an absolute uri", nameof(mediaUrl));
+        public bool SkipDownload;
 
-            return new YoutubeDlArgs(mediaUrl.ToString());
+        public YoutubeDlArgs(YoutubeDlUrl youtubeDlUrl)
+        {
+            UrlOrYtSearchString = youtubeDlUrl.UrlOrSearchString;
         }
 
-        /// <summary>
-        /// Will search youtube and download first video found.
-        /// </summary>
-        public static YoutubeDlArgs FromSearchString(string searchString)
-        {
-            return new YoutubeDlArgs($"\"ytsearch1:{searchString}\"");
-        }
-
-        YoutubeDlArgs(string youtubeDlUrl)
-        {
-            UrlOrSearchString = youtubeDlUrl;
-        }
+        string _skipDownload => SkipDownload ? "--skip-download " : "";
 
         public override string ToString()
         {
@@ -76,6 +60,8 @@ namespace BundtBot.Youtube
             args += _outputArg;
             args += _maxFileSizeArg;
             args += _writeInfoJson;
+            //args += _dumpJson;
+            args += _skipDownload;
 
             return args;
         }

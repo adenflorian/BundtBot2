@@ -1,5 +1,4 @@
 using System;
-using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 using BundtCommon;
@@ -24,29 +23,55 @@ namespace BundtBot.Youtube
             TempFolder = tempFolder;
         }
 
-        /// <summary>
-        /// Will override the OutputTemplate and WriteInfoJson args
-        /// </summary>
-        /// <param name="args"></param>
-        /// <returns></returns>
-        public async Task<YoutubeFile> DownloadAsync(YoutubeDlArgs args)
+        public async Task<YoutubeInfo> DownloadInfoAsync(YoutubeDlUrl youtubeDlUrl)
         {
             var guid = Guid.NewGuid();
 
-            // TODO Shouldn't be chaning the args in this method
-            args.OutputTemplate = $@"{TempFolder}/{guid}.%(ext)s";
-            args.WriteInfoJson = true;
-
-            using (var youtubeDlProcess = new Process())
+            var youtubeDlArgs = new YoutubeDlArgs(youtubeDlUrl)
             {
-                SetupYoutubeDlProcess(args, youtubeDlProcess);
-                _logger.LogDebug($"Starting process: {youtubeDlProcess.StartInfo.FileName} {youtubeDlProcess.StartInfo.Arguments}");
-                youtubeDlProcess.Start();
-                await Wait.Until(() => youtubeDlProcess.HasExited).StartAsync();
-            }
+                OutputTemplate = $@"{TempFolder}/{guid}.%(ext)s",
+                SkipDownload = true,
+                WriteInfoJson = true
+            };
 
-            var downloadedFile = GetDownloadedFile(args, guid);
-            var infoJsonObject = LoadInfoJson(downloadedFile);
+            await YoutubeDlProcess.Run(youtubeDlArgs);
+
+            return LoadInfoUsingGuid(guid);
+        }
+
+        YoutubeInfo LoadInfoUsingGuid(Guid guid)
+        {
+            return LoadInfoFromInfoJsonFile(new FileInfo(TempFolder.FullName + '/' + guid + ".info.json"));
+        }
+
+        static YoutubeInfo LoadInfoFromInfoJsonFile(FileInfo infoJsonFile)
+        {
+            if (infoJsonFile.Exists == false)
+            {
+                throw new YoutubeException("Sorry :( I couldn't find the infoJsonFile...");
+            }
+            var infoJsonObject = JsonConvert.DeserializeObject<YoutubeInfo>(File.ReadAllText(infoJsonFile.FullName));
+            infoJsonFile.Delete();
+            return infoJsonObject;
+        }
+
+        public async Task<YoutubeFile> DownloadAudioAsync(YoutubeDlUrl youtubeDlUrl, YoutubeDlAudioFormat audioFormat, uint maxFileSize)
+        {
+            var guid = Guid.NewGuid();
+
+            var youtubeDlArgs = new YoutubeDlArgs(youtubeDlUrl)
+            {
+                AudioFormat = audioFormat,
+                MaxFileSizeMB = maxFileSize,
+                ExtractAudio = true,
+                OutputTemplate = $@"{TempFolder}/{guid}.%(ext)s",
+                WriteInfoJson = true
+            };
+
+            await YoutubeDlProcess.Run(youtubeDlArgs);
+
+            var downloadedFile = GetDownloadedFile(youtubeDlArgs, guid);
+            var infoJsonObject = LoadInfoFromDownloadedFile(downloadedFile);
 
             var finalFile = new FileInfo(OutputFolder.FullName + '/' + infoJsonObject.Id + downloadedFile.Extension);
 
@@ -62,13 +87,6 @@ namespace BundtBot.Youtube
             return new YoutubeFile(finalFile, infoJsonObject);
         }
 
-        static void SetupYoutubeDlProcess(YoutubeDlArgs args, Process youtubeDlProcess)
-        {
-            youtubeDlProcess.StartInfo.FileName = "./youtube-dl.exe";
-            youtubeDlProcess.StartInfo.Arguments = args.ToString();
-            youtubeDlProcess.StartInfo.CreateNoWindow = true;
-        }
-
         FileInfo GetDownloadedFile(YoutubeDlArgs args, Guid guid)
         {
             var downloadedAudioFile = new FileInfo(TempFolder.FullName + '/' + guid + '.' + args.AudioFormat);
@@ -80,16 +98,9 @@ namespace BundtBot.Youtube
             return downloadedAudioFile;
         }
 
-        static YoutubeInfo LoadInfoJson(FileInfo downloadedFile)
+        static YoutubeInfo LoadInfoFromDownloadedFile(FileInfo downloadedFile)
         {
-            var infoJsonFile = new FileInfo(Path.ChangeExtension(downloadedFile.FullName, ".info.json"));
-            if (infoJsonFile.Exists == false)
-            {
-                throw new YoutubeException("Sorry :( I couldn't find the infoJsonFile...");
-            }
-            var infoJsonObject = JsonConvert.DeserializeObject<YoutubeInfo>(File.ReadAllText(infoJsonFile.FullName));
-            infoJsonFile.Delete();
-            return infoJsonObject;
+            return LoadInfoFromInfoJsonFile(new FileInfo(Path.ChangeExtension(downloadedFile.FullName, ".info.json")));
         }
     }
 }

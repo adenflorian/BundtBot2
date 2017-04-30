@@ -5,7 +5,7 @@ using System.Text.RegularExpressions;
 
 namespace BundtBot
 {
-    public class YoutubeDlProcess
+    public class YoutubeDlProcessOld
     {
         public Action<object, ProgressEventArgs> ProgressDownload;
         public Action<object, DownloadEventArgs> FinishedDownload;
@@ -21,11 +21,11 @@ namespace BundtBot
         public string ConsoleLog { get; set; }
         public FileInfo FinishedOutputFilePath { get; private set; }
 
-        static readonly MyLogger _logger = new MyLogger(nameof(YoutubeDlProcess));
+        static readonly MyLogger _logger = new MyLogger(nameof(YoutubeDlProcessOld));
         
         readonly string Url;
 
-        public YoutubeDlProcess(string url, string outputName, DirectoryInfo outputfolder)
+        public YoutubeDlProcessOld(string url, string outputName, DirectoryInfo outputfolder)
         {
             Url = url;
 

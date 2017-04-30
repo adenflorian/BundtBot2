@@ -77,12 +77,15 @@
 
 [√] put youtube audio in a youtube audio folder
 [√] name audio file using video id
-[ ] create and use a temp youtube folder
-[ ] cache audio files and reuse them
+[√] create and use a temp youtube folder
+[√] cache audio files and reuse them
   How?
-  Name the audio files after the youtube video id
-  What about videos not from youtube?
-  Store a prefix for what site they're from?
+    Name the audio files after the youtube video id
+    What about videos not from youtube?
+    Store a prefix for what site they're from?
+  What do we need to know to be able to check the cache
+    video id
+[√] todo have different sets of youtube dl args classes, one public, one internal
 [ ] !volume
 [ ] make the youtube classes their own library
 [ ] !ytrandom
@@ -90,12 +93,14 @@
 [ ] Allow multiple url's in one command?
 [ ] Auto update youtube-dl.exe
   When tho? On startup?
-[ ] log youtube-dl stdout
+[√] log youtube-dl stdout
 [ ] store audio as opus instead of wav
 [ ] read opus files directly without having to compress them
 [ ] --postprocessor-args ARGS
   maybe can nromalize audio
 [ ] stream live youtube
+[ ] maybe only allow a certain number of youtube downloads at once
+[ ] don't read the wav file so sloppily
 
 ## DJ
 
