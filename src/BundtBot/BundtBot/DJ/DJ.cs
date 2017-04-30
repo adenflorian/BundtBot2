@@ -105,10 +105,16 @@ namespace BundtBot
             _djStream.EnableFastforward();
         }
 
-        public void StopFastForward()
+        internal void SloMo()
         {
             if (_djStream == null) throw new DJException("I don't think anything is playing, I could be wrong tho ¯\\_(ツ)_/¯");
-            _djStream.DisableFastforward();
+            _djStream.EnableSloMo();
+        }
+
+        internal void StopEffects()
+        {
+            if (_djStream == null) throw new DJException("I don't think anything is playing, I could be wrong tho ¯\\_(ツ)_/¯");
+            _djStream.DisableEffects();
         }
     }
 }

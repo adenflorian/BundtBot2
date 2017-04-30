@@ -1,5 +1,6 @@
 # BundtBot ToDo
 
+[ ] make websocket not throw exception when closing
 [ ] make a json file to configure what actions bundtbot does on startup
   for running tests and such
 [ ] allow playing audio to two different servers at once
@@ -70,6 +71,7 @@
 [ ] !dog
 [ ] !uploaddog
 [ ] !setloglevel
+[ ] multiple command names
 
 ## !yt
 
@@ -103,14 +105,15 @@
 [ ] stream live youtube
 [ ] maybe only allow a certain number of youtube downloads at once
 [ ] don't read the wav file so sloppily
+[ ] !upnext
 
 ## DJ
 
-[ ] make it not leave channel in between clips
+[√] make it not leave channel in between clips
 [√] !fastforward
   [ ] fix being able to stack !ff
-[ ] !slomo
-[ ] change the Playing Game filed to song name
+[√] !slomo
+[ ] change the Playing Game field to song name
 [ ] Warp the filestream with a BufferedStream
   How to tell if this is even necessary?
 

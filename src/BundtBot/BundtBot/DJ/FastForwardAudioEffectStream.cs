@@ -31,7 +31,8 @@ namespace BundtBot
             
             // Read twice as many bytes from base stream
             var twiceCountBuffer = new byte[count * 2];
-            BasePcmAudioStream.Read(twiceCountBuffer, offset, count * 2);
+            var bytesReadFromBaseStream = BasePcmAudioStream.Read(twiceCountBuffer, offset, count * 2);
+            if (bytesReadFromBaseStream == 0) return 0;
 
             // Remove every other 4 bytes (2 byte sper sample per channel (2 channels))
             var j = 0;

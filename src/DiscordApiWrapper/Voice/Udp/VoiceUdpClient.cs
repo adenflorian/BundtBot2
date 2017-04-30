@@ -100,6 +100,7 @@ namespace DiscordApiWrapper.Voice
                         if (pcmAudioStream.Position == pcmAudioStream.Length) break;
                         if (_isPaused) { Thread.Sleep(100); continue; }
 
+                        if (pcmAudioStream.CanRead == false) break;
                         if (pcmAudioStream.Position == pcmAudioStream.Length) break;
                         pcmAudioStream.Read(pcmFrame, 0, pcmFrame.Length);
 

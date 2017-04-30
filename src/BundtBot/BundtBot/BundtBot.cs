@@ -155,7 +155,7 @@ namespace BundtBot
                 }
                 catch (DJException dje) { await message.ReplyAsync(dje.Message); }
             }));
-            _commandManager.AddCommand(new TextCommand("ff", async (message, receivedCommand) =>
+            _commandManager.AddCommand(new TextCommand("faster", async (message, receivedCommand) =>
             {
                 try
                 {
@@ -164,11 +164,20 @@ namespace BundtBot
                 }
                 catch (DJException dje) { await message.ReplyAsync(dje.Message); }
             }));
-            _commandManager.AddCommand(new TextCommand("sff", async (message, receivedCommand) =>
+            _commandManager.AddCommand(new TextCommand("slower", async (message, receivedCommand) =>
             {
                 try
                 {
-                    _dj.StopFastForward();
+                    _dj.SloMo();
+                    await message.ReplyAsync("Half time!");
+                }
+                catch (DJException dje) { await message.ReplyAsync(dje.Message); }
+            }));
+            _commandManager.AddCommand(new TextCommand("nofx", async (message, receivedCommand) =>
+            {
+                try
+                {
+                    _dj.StopEffects();
                     await message.ReplyAsync("Single time!...?");
                 }
                 catch (DJException dje) { await message.ReplyAsync(dje.Message); }

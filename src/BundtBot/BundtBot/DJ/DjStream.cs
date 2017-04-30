@@ -33,7 +33,12 @@ namespace BundtBot
             WetPcmAudioStream = new FastForwardAudioEffectStream(WetPcmAudioStream);
         }
 
-        public void DisableFastforward()
+        public void EnableSloMo()
+        {
+            WetPcmAudioStream = new SloMoAudioEffectStream(WetPcmAudioStream);
+        }
+
+        public void DisableEffects()
         {
             WetPcmAudioStream = OriginalBasePcmAudioStream;
         }
