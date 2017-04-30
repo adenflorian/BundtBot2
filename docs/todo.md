@@ -1,7 +1,5 @@
 # BundtBot ToDo
 
-[ ] create script to upgrade youtube-dl binaries
-[ ] refactor youtube code
 [ ] make a json file to configure what actions bundtbot does on startup
   for running tests and such
 [ ] allow playing audio to two different servers at once
@@ -86,6 +84,10 @@
   What do we need to know to be able to check the cache
     video id
 [√] todo have different sets of youtube dl args classes, one public, one internal
+[√] create script to upgrade youtube-dl binaries
+[√] log youtube-dl stdout
+[√] refactor youtube code
+[ ] make it so bundtbot doesnt leave and rejoin channel in between clips
 [ ] !volume
 [ ] make the youtube classes their own library
 [ ] !ytrandom
@@ -93,7 +95,6 @@
 [ ] Allow multiple url's in one command?
 [ ] Auto update youtube-dl.exe
   When tho? On startup?
-[√] log youtube-dl stdout
 [ ] store audio as opus instead of wav
 [ ] read opus files directly without having to compress them
 [ ] --postprocessor-args ARGS
