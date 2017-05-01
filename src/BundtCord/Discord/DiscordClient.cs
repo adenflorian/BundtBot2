@@ -6,6 +6,7 @@ using BundtBot;
 using BundtBot.Discord.Gateway;
 using BundtBot.Discord.Models;
 using BundtBot.Discord.Models.Gateway;
+using BundtBot.Extensions;
 using BundtCommon;
 using DiscordApiWrapper.Gateway.Models;
 using DiscordApiWrapper.Models;

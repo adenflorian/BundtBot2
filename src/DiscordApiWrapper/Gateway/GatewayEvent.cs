@@ -29,6 +29,6 @@ namespace DiscordApiWrapper.Gateway
         Typing_Start,
         User_Update,
         Voice_State_Update,
-        Voice_Server_Update,
+        Voice_Server_Update
     }
 }

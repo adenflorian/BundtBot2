@@ -51,7 +51,7 @@ namespace BundtBot.Discord.Models
 		public int DefaultMessageNotificationsLevel;
 
 		[JsonProperty("roles")]
-		public List<object> Roles;
+		public List<DiscordRole> Roles;
 
 		[JsonProperty("emojis")]
 		public List<Emoji> Emojis;

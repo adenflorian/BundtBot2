@@ -8,6 +8,7 @@ using BundtBot.Extensions;
 using DiscordApiWrapper.Gateway;
 using DiscordApiWrapper.Gateway.Models;
 using DiscordApiWrapper.Models;
+using DiscordApiWrapper.Models.Events;
 using DiscordApiWrapper.WebSocket;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -33,8 +34,32 @@ namespace BundtBot.Discord.Gateway
         public event GatewayEventHandler<TypingStart> TypingStart;
         public event GatewayEventHandler<VoiceState> VoiceStateUpdate;
         public event GatewayEventHandler<VoiceServerInfo> VoiceServerUpdate;
+        event GatewayEventHandler<Channel> ChannelCreated;
         public event GatewayEventHandler<DmChannel> DmChannelCreated;
         public event GatewayEventHandler<GuildChannel> GuildChannelCreated;
+        public event GatewayEventHandler<Resumed> Resumed;    // TODO Need to test
+        public event GatewayEventHandler<GuildChannel> ChannelUpdated;    // TODO Need to test
+        event GatewayEventHandler<Channel> ChannelDeleted;    // TODO Need to test
+        //public event GatewayEventHandler<DmChannel> DmChannelDeleted;    // TODO Need to test
+        //public event GatewayEventHandler<GuildChannel> GuildChannelDeleted;    // TODO Need to test
+        public event GatewayEventHandler<DiscordGuild> GuildUpdated;    // TODO Need to test
+        event GatewayEventHandler<GuildDeleted> GuildDeleted;    // TODO Need to test
+        public event GatewayEventHandler<GuildBanAdd> GuildBanAdded;    // TODO Need to test
+        public event GatewayEventHandler<GuildBanRemove> GuildBanRemoved;    // TODO Need to test
+        public event GatewayEventHandler<GuildEmojisUpdate> GuildEmojisUpdated;    // TODO Need to test
+        public event GatewayEventHandler<GuildIntegrationsUpdate> GuildIntegrationsUpdated;    // TODO Need to test
+        public event GatewayEventHandler<GuildMemberAdd> GuildMemberAdded;    // TODO Need to test
+        public event GatewayEventHandler<GuildMemberRemove> GuildMemberRemoved;    // TODO Need to test
+        public event GatewayEventHandler<GuildMemberUpdate> GuildMemberUpdated;    // TODO Need to test
+        public event GatewayEventHandler<GuildMembersChunk> GuildMembersChunked;    // TODO Need to test
+        public event GatewayEventHandler<GuildRoleCreate> GuildRoleCreated;    // TODO Need to test
+        public event GatewayEventHandler<GuildRoleUpdate> GuildRoleUpdated;    // TODO Need to test
+        public event GatewayEventHandler<GuildRoleDelete> GuildRoleDeleted;    // TODO Need to test
+        public event GatewayEventHandler<DiscordMessage> MessageUpdated;    // TODO Need to test
+        public event GatewayEventHandler<MessageDelete> MessageDeleted;    // TODO Need to test
+        public event GatewayEventHandler<MessageDeleteBulk> MessageDeleteBulk;    // TODO Need to test
+        //TODO public event GatewayEventHandler<PresenceUpdate> PresenceUpdated;    // TODO Need to test
+        public event GatewayEventHandler<DiscordUser> UserUpdated;    // TODO Need to test
 
         static readonly MyLogger _logger = new MyLogger(nameof(DiscordGatewayClient), ConsoleColor.Cyan);
 
@@ -58,6 +83,7 @@ namespace BundtBot.Discord.Gateway
             HeartbackAckReceived += (d) => _logger.LogInfo(new LogMessage("HeartbackAck Received ← "), new LogMessage("♥", ConsoleColor.Red));
             Ready += OnReady;
             DispatchReceived += OnDispatchReceived;
+            ChannelCreated += OnChannelCreated;
             
             _webSocketClient.MessageReceived += OnMessageReceived;
         }
@@ -140,64 +166,61 @@ namespace BundtBot.Discord.Gateway
 
         void OnDispatchReceived(GatewayEvent eventName, string eventJsonData)
         {
-            _logger.LogDebug("Processing Gateway Event " + eventName);
+            _logger.LogInfo(new LogMessage("Received Event: "), new LogMessage(eventName.ToString(), ConsoleColor.Cyan));
 
             switch (eventName)
             {
                 case GatewayEvent.Channel_Create:
-                    if (eventJsonData.Deserialize<Channel>().IsPrivate)
-                    {
-                        HandleEvent<DmChannel>(eventJsonData, "CHANNEL_CREATE", DmChannelCreated);
-                    }
-                    else
-                    {
-                        HandleEvent<GuildChannel>(eventJsonData, "CHANNEL_CREATE", GuildChannelCreated);
-                    }
+                    var newChannel = eventJsonData.Deserialize<Channel>();
+                    newChannel.OriginalEventJson = eventJsonData;
+                    ChannelCreated?.Invoke(newChannel);
                     break;
-                case GatewayEvent.Message_Create:
-                    HandleEvent<DiscordMessage>(eventJsonData, "MESSAGE_CREATE", MessageCreated);
-                    break;
-                case GatewayEvent.Guild_Create:
-                    HandleEvent<DiscordGuild>(eventJsonData, "GUILD_CREATE", GuildCreated);
-                    break;
-                case GatewayEvent.Ready:
-                    HandleEvent<Ready>(eventJsonData, "READY", Ready);
-                    break;
-                case GatewayEvent.Typing_Start:
-                    HandleEvent<TypingStart>(eventJsonData, "TYPING_START", TypingStart);
-                    break;
-                case GatewayEvent.Voice_State_Update:
-                    HandleEvent<VoiceState>(eventJsonData, "VOICE_STATE_UPDATE", VoiceStateUpdate);
-                    break;
-                case GatewayEvent.Voice_Server_Update:
-                    HandleEvent<VoiceServerInfo>(eventJsonData, "VOICE_SERVER_UPDATE", VoiceServerUpdate);
-                    break;
-                default:
-                    _logger.LogWarning($"Received an Event with no handler: {eventName}");
-                    break;
+                case GatewayEvent.Message_Create: HandleEvent<DiscordMessage>(eventJsonData, MessageCreated); break;
+                case GatewayEvent.Guild_Create: HandleEvent<DiscordGuild>(eventJsonData, GuildCreated); break;
+                case GatewayEvent.Ready: HandleEvent<Ready>(eventJsonData, Ready); break;
+                case GatewayEvent.Typing_Start: HandleEvent<TypingStart>(eventJsonData, TypingStart); break;
+                case GatewayEvent.Voice_State_Update: HandleEvent<VoiceState>(eventJsonData, VoiceStateUpdate); break;
+                case GatewayEvent.Voice_Server_Update: HandleEvent<VoiceServerInfo>(eventJsonData, VoiceServerUpdate); break;
+                case GatewayEvent.Resumed: HandleEvent<Resumed>(eventJsonData, Resumed); break;
+                case GatewayEvent.Channel_Update: HandleEvent<GuildChannel>(eventJsonData, ChannelUpdated); break;
+                case GatewayEvent.Channel_Delete: HandleEvent<Channel>(eventJsonData, ChannelDeleted); break;
+                case GatewayEvent.Guild_Update: HandleEvent<DiscordGuild>(eventJsonData, GuildUpdated); break;
+                case GatewayEvent.Guild_Delete: HandleEvent<GuildDeleted>(eventJsonData, GuildDeleted); break;
+                case GatewayEvent.Guild_Ban_Add: HandleEvent<GuildBanAdd>(eventJsonData, GuildBanAdded); break;
+                case GatewayEvent.Guild_Ban_Remove: HandleEvent<GuildBanRemove>(eventJsonData, GuildBanRemoved); break;
+                case GatewayEvent.Guild_Emojis_Update: HandleEvent<GuildEmojisUpdate>(eventJsonData, GuildEmojisUpdated); break;
+                case GatewayEvent.Guild_Integrations_Update: HandleEvent<GuildIntegrationsUpdate>(eventJsonData, GuildIntegrationsUpdated); break;
+                case GatewayEvent.Guild_Member_Add: HandleEvent<GuildMemberAdd>(eventJsonData, GuildMemberAdded); break;
+                case GatewayEvent.Guild_Member_Remove: HandleEvent<GuildMemberRemove>(eventJsonData, GuildMemberRemoved); break;
+                case GatewayEvent.Guild_Member_Update: HandleEvent<GuildMemberUpdate>(eventJsonData, GuildMemberUpdated); break;
+                case GatewayEvent.Guild_Members_Chunk: HandleEvent<GuildMembersChunk>(eventJsonData, GuildMembersChunked); break;
+                case GatewayEvent.Guild_Role_Create: HandleEvent<GuildRoleCreate>(eventJsonData, GuildRoleCreated); break;
+                case GatewayEvent.Guild_Role_Update: HandleEvent<GuildRoleUpdate>(eventJsonData, GuildRoleUpdated); break;
+                case GatewayEvent.Guild_Role_Delete: HandleEvent<GuildRoleDelete>(eventJsonData, GuildRoleDeleted); break;
+                case GatewayEvent.Message_Update: HandleEvent<DiscordMessage>(eventJsonData, MessageUpdated); break;
+                case GatewayEvent.Message_Delete: HandleEvent<MessageDelete>(eventJsonData, MessageDeleted); break;
+                case GatewayEvent.Message_Delete_Bulk: HandleEvent<MessageDeleteBulk>(eventJsonData, MessageDeleteBulk); break;
+                // TODO case GatewayEvent.Presence_Update: HandleEvent<PresenceUpdate>(eventJsonData, pres); break;
+                case GatewayEvent.User_Update: HandleEvent<DiscordUser>(eventJsonData, UserUpdated); break;
+                default: _logger.LogWarning($"Received an Event with no handler: {eventName}"); break;
             }
         }
 
-        void LogReceivedEvent(string eventName, string eventDataSummary)
+        void HandleEvent<T>(string eventJsonData, GatewayEventHandler<T> handler)
         {
-            _logger.LogInfo(
-                new LogMessage("Received Event: "),
-                new LogMessage(eventName + " ", ConsoleColor.Cyan),
-                new LogMessage(eventDataSummary, ConsoleColor.DarkCyan));
+            handler?.Invoke(eventJsonData.Deserialize<T>());
         }
 
-        void LogReceivedEvent(string eventName)
+        void OnChannelCreated(Channel newChannel)
         {
-            _logger.LogInfo(
-                new LogMessage("Received Event: "),
-                new LogMessage(eventName + " ", ConsoleColor.Cyan));
-        }
-
-        void HandleEvent<T>(string eventJsonData, string eventName, GatewayEventHandler<T> handler)
-        {
-            var eventObject = eventJsonData.Deserialize<T>();
-            LogReceivedEvent(eventName);
-            handler?.Invoke(eventObject);
+            if (newChannel.IsPrivate)
+            {
+                HandleEvent<DmChannel>(newChannel.OriginalEventJson, DmChannelCreated);
+            }
+            else
+            {
+                HandleEvent<GuildChannel>(newChannel.OriginalEventJson, GuildChannelCreated);
+            }
         }
         #endregion
 

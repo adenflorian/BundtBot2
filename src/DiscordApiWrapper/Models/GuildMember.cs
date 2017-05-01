@@ -1,4 +1,5 @@
 ﻿using System;
+using DiscordApiWrapper.Models;
 using Newtonsoft.Json;
 
 namespace BundtBot.Discord.Models
@@ -15,7 +16,7 @@ namespace BundtBot.Discord.Models
 		public string Nickname;
 		
 		[JsonProperty("roles")]
-		public object[] Roles;
+		public ulong[] RoleIds;
 
 		/// <summary>
 		/// Date the user joined the guild.
