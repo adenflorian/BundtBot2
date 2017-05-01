@@ -148,7 +148,7 @@ namespace DiscordApiWrapper.Voice
         
         void OnMessageReceived(string message)
         {
-            var payload = JsonConvert.DeserializeObject<VoiceServerPayload>(message);
+            var payload = message.Deserialize<VoiceServerPayload>();
 
             LogMessageReceived(message, payload);
 
@@ -161,10 +161,10 @@ namespace DiscordApiWrapper.Voice
                     HeartbeatAckReceived?.Invoke();
                     break;
                 case VoiceOpCode.Ready:
-                    ReadyReceived?.Invoke(JsonConvert.DeserializeObject<VoiceServerReady>(payload.EventData?.ToString()));
+                    ReadyReceived?.Invoke(payload.EventData?.ToString().Deserialize<VoiceServerReady>());
                     break;
                 case VoiceOpCode.Session:
-                    SessionReceived?.Invoke(JsonConvert.DeserializeObject<VoiceServerSession>(payload.EventData?.ToString()));
+                    SessionReceived?.Invoke(payload.EventData?.ToString().Deserialize<VoiceServerSession>());
                     break;
                 default:
                     _logger.LogWarning($"Received an OpCode with no handler: {payload.VoiceOpCode}");

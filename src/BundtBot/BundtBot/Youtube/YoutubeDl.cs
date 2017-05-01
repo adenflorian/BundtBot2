@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using BundtBot.Extensions;
 using BundtCommon;
 using Newtonsoft.Json;
 
@@ -50,7 +51,7 @@ namespace BundtBot.Youtube
             {
                 throw new YoutubeException("Sorry :( I couldn't find the infoJsonFile...");
             }
-            var infoJsonObject = JsonConvert.DeserializeObject<YoutubeInfo>(File.ReadAllText(infoJsonFile.FullName));
+            var infoJsonObject = File.ReadAllText(infoJsonFile.FullName).Deserialize<YoutubeInfo>();
             infoJsonFile.Delete();
             return infoJsonObject;
         }

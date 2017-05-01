@@ -7,6 +7,10 @@
 [ ] allow multiple different text responses to certain events
 [ ] edit the same message continuously to do a ascii art animation
 
+## Bugs
+
+[ ] not handling new users to the server correctly
+
 ## Tech Debt
 
 [ ] make websocket not throw exception when closing
@@ -61,10 +65,6 @@
 [ ] InvalidSession
 [ ] Hello
 [ ] HeartbeatAck
-
-## Bugs
-
-[ ] not handling new users to the server correctly
 
 ## Optimizations
 
