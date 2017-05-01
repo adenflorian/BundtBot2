@@ -66,67 +66,71 @@ namespace TesterBot
             {
                 await message.ReplyAsync("sorry, busy, no time to talk.");
             }));
-            _commandManager.AddCommand(new TextCommand("test", async (message, receivedCommand) =>
+            _commandManager.AddCommand(new TextCommand("testdev", async (message, receivedCommand) =>
             {
-                await RunVarietyTestAsync(message.Server);
+                await RunVarietyTestAsync(message.Server, "$");
+            }));
+            _commandManager.AddCommand(new TextCommand("testtest", async (message, receivedCommand) =>
+            {
+                await RunVarietyTestAsync(message.Server, "!");
             }));
         }
 
-        async Task RunVarietyTestAsync(Server server)
+        async Task RunVarietyTestAsync(Server server, string commandPrefix)
         {
             await server.TextChannels.First().SendMessageAsync("testerbot online");
-            await server.TextChannels.First().SendMessageAsync("!yt mac 420");
-            await server.TextChannels.First().SendMessageAsync("!yt mac 420");
+            await server.TextChannels.First().SendMessageAsync(commandPrefix + "yt mac 420");
+            await server.TextChannels.First().SendMessageAsync(commandPrefix + "yt mac 420");
             await Task.Delay(TimeEx._10seconds);
-            await server.TextChannels.First().SendMessageAsync("!pause");
+            await server.TextChannels.First().SendMessageAsync(commandPrefix + "pause");
             await Task.Delay(TimeEx._1second);
-            await server.TextChannels.First().SendMessageAsync("!next");
-            await server.TextChannels.First().SendMessageAsync("!yt mac 420");
+            await server.TextChannels.First().SendMessageAsync(commandPrefix + "next");
+            await server.TextChannels.First().SendMessageAsync(commandPrefix + "yt mac 420");
             await Task.Delay(TimeEx._1second);
-            await server.TextChannels.First().SendMessageAsync("!yt heyayaya");
+            await server.TextChannels.First().SendMessageAsync(commandPrefix + "yt heyayaya");
             await Task.Delay(TimeEx._1second);
-            await server.TextChannels.First().SendMessageAsync("!yt x gonna give it to ya");
+            await server.TextChannels.First().SendMessageAsync(commandPrefix + "yt x gonna give it to ya");
             await Task.Delay(TimeEx._5seconds);
-            await server.TextChannels.First().SendMessageAsync("!faster");
+            await server.TextChannels.First().SendMessageAsync(commandPrefix + "faster");
             await Task.Delay(TimeEx._5seconds);
-            await server.TextChannels.First().SendMessageAsync("!nofx");
+            await server.TextChannels.First().SendMessageAsync(commandPrefix + "nofx");
             await Task.Delay(TimeEx._2seconds);
-            await server.TextChannels.First().SendMessageAsync("!slower");
+            await server.TextChannels.First().SendMessageAsync(commandPrefix + "slower");
             await Task.Delay(TimeEx._2seconds);
-            await server.TextChannels.First().SendMessageAsync("!slower");
+            await server.TextChannels.First().SendMessageAsync(commandPrefix + "slower");
             await Task.Delay(TimeEx._2seconds);
-            await server.TextChannels.First().SendMessageAsync("!faster");
+            await server.TextChannels.First().SendMessageAsync(commandPrefix + "faster");
             await Task.Delay(TimeEx._2seconds);
-            await server.TextChannels.First().SendMessageAsync("!faster");
+            await server.TextChannels.First().SendMessageAsync(commandPrefix + "faster");
             await Task.Delay(TimeEx._2seconds);
-            await server.TextChannels.First().SendMessageAsync("!faster");
+            await server.TextChannels.First().SendMessageAsync(commandPrefix + "faster");
             await Task.Delay(TimeEx._2seconds);
-            await server.TextChannels.First().SendMessageAsync("!faster");
+            await server.TextChannels.First().SendMessageAsync(commandPrefix + "faster");
             await Task.Delay(TimeEx._2seconds);
-            await server.TextChannels.First().SendMessageAsync("!slower");
+            await server.TextChannels.First().SendMessageAsync(commandPrefix + "slower");
             await Task.Delay(TimeEx._2seconds);
-            await server.TextChannels.First().SendMessageAsync("!slower");
+            await server.TextChannels.First().SendMessageAsync(commandPrefix + "slower");
             await Task.Delay(TimeEx._2seconds);
-            await server.TextChannels.First().SendMessageAsync("!next");
+            await server.TextChannels.First().SendMessageAsync(commandPrefix + "next");
             await Task.Delay(TimeEx._2seconds);
-            await server.TextChannels.First().SendMessageAsync("!pause");
+            await server.TextChannels.First().SendMessageAsync(commandPrefix + "pause");
             await Task.Delay(TimeEx._3seconds);
-            await server.TextChannels.First().SendMessageAsync("!resume");
+            await server.TextChannels.First().SendMessageAsync(commandPrefix + "resume");
             await Task.Delay(TimeEx._3seconds);
-            await server.TextChannels.First().SendMessageAsync("!faster");
+            await server.TextChannels.First().SendMessageAsync(commandPrefix + "faster");
             await Task.Delay(TimeEx._5seconds);
-            await server.TextChannels.First().SendMessageAsync("!next");
+            await server.TextChannels.First().SendMessageAsync(commandPrefix + "next");
             await Task.Delay(TimeEx._3seconds);
-            await server.TextChannels.First().SendMessageAsync("!stop");
+            await server.TextChannels.First().SendMessageAsync(commandPrefix + "stop");
             await Task.Delay(TimeEx._2seconds);
-            await server.TextChannels.First().SendMessageAsync("!Time for the lightning round!");
+            await server.TextChannels.First().SendMessageAsync("Time for the lightning round!");
             await Task.Delay(TimeEx._1second);
-            await server.TextChannels.First().SendMessageAsync("!pause");
-            await server.TextChannels.First().SendMessageAsync("!resume");
-            await server.TextChannels.First().SendMessageAsync("!faster");
-            await server.TextChannels.First().SendMessageAsync("!nofx");
-            await server.TextChannels.First().SendMessageAsync("!next");
-            await server.TextChannels.First().SendMessageAsync("!stop");
+            await server.TextChannels.First().SendMessageAsync(commandPrefix + "pause");
+            await server.TextChannels.First().SendMessageAsync(commandPrefix + "resume");
+            await server.TextChannels.First().SendMessageAsync(commandPrefix + "faster");
+            await server.TextChannels.First().SendMessageAsync(commandPrefix + "nofx");
+            await server.TextChannels.First().SendMessageAsync(commandPrefix + "next");
+            await server.TextChannels.First().SendMessageAsync(commandPrefix + "stop");
             await Task.Delay(TimeEx._1second);
             await server.TextChannels.First().SendMessageAsync("Tests complete! Good job @bundtbot");
         }
