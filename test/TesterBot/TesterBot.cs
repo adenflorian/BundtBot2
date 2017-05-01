@@ -48,7 +48,7 @@ namespace TesterBot
             {
                 try
                 {
-                    await server.TextChannels.First().SendMessageAsync("testbot online");
+                    await server.TextChannels.First().SendMessageAsync("testbot online :robot:");
                 }
                 catch (Exception ex)
                 {
