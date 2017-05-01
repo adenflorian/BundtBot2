@@ -105,11 +105,15 @@ namespace BundtBot
 
         void RegisterCommands()
         {
-            _commandManager.CommandPrefix = "!";
+            _commandManager.CommandPrefix = BundtFig.GetValue("command-prefix");
 
             _commandManager.AddCommand(new TextCommand("hi", async (message, receivedCommand) =>
             {
-                await message.ReplyAsync("hi...");
+                await message.ReplyAsync(BundtFig.GetValue("hi-response"));
+            }));
+            _commandManager.AddCommand(new TextCommand("poke", async (message, receivedCommand) =>
+            {
+                await message.ReplyAsync(BundtFig.GetValue("poke-response"));
             }));
             _commandManager.AddCommand(new TextCommand("help", async (message, receivedCommand) =>
             {
@@ -197,7 +201,7 @@ namespace BundtBot
                 await textchannel.SendMessageAsync("Y'all need a voice channel...");
                 return;
             }
-            
+
             // TODO Ensure requesting user is in audio channel
             try
             {

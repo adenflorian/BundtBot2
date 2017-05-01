@@ -68,6 +68,8 @@
 
 ## Optimizations
 
+[ ] make easy way for measuring stuff
+
 ## !commands
 
 [ ] !restart

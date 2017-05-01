@@ -1,4 +1,6 @@
 {
     "on-server-created-yt": "https://www.youtube.com/watch?v=PQ1Oww-XCMM",
-    "command-prefix": "$"
+    "command-prefix": "$",
+    "hi-response": "hi...I'm dev bot...",
+    "poke-response": "`squish`"
 }

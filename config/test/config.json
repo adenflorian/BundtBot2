@@ -1,4 +1,6 @@
 {
     "on-server-created-yt": "https://www.youtube.com/watch?v=jmwWT0Jbdgs",
-    "command-prefix": "!"
+    "command-prefix": "!",
+    "hi-response": "Hi hmm...",
+    "poke-response": "( ͡° ͜ʖ ͡°)"
 }
