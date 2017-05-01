@@ -1,5 +1,5 @@
 const exec = require('child_process').exec
-const copydir = require('copy-dir');
+const copydir = require('copy-dir')
 const fs = require('fs')
 const gulp = require('gulp')
 const shell = require('gulp-shell')
@@ -33,12 +33,12 @@ const libsodium64windows = 'bin/libsodium/windows-1.0.12-x86-64/libsodium.dll'
 const youtubedlwindows = 'bin/youtube-dl/windows/youtube-dl.exe'
 const youtubedllinux = 'bin/youtube-dl/linux/youtube-dl.exe'
 
-var secret;
+var secret
 
 if (fs.existsSync(secretFilePath)) {
 	secret = JSON.parse(fs.readFileSync(secretFilePath))
 	// Add all the gruntfile tasks to gulp
-	require('gulp-grunt')(gulp);
+	require('gulp-grunt')(gulp)
 } else {
 	gulp.stop("***Run 'node setup.js' before using gulp!***")
 }
@@ -49,30 +49,45 @@ gulp.task('restore', shell.task(`dotnet restore ${projectFilePath}`, { verbose: 
 
 gulp.task('dotnet-build', shell.task(`dotnet build ${projectFilePath}`, { verbose: true }))
 
-gulp.task('copyviews', ['dotnet-build'], () => {
-	copydir.sync(viewsFolder, `${buildOutputFolder}/${viewsFolderName}`);
+gulp.task('copyviews', ['dotnet-build'], (cb) => {
+	copydir(viewsFolder, `${buildOutputFolder}/${viewsFolderName}`, (err) => {
+		if (err) throw err
+		cb()
+	})
 })
 
 gulp.task('copytokendev', ['dotnet-build'], () => {
 	fs.writeFileSync(`${buildOutputFolder}/bottoken`, secret.devbottoken)
 })
 
-gulp.task('build', ['dotnet-build', 'copyviews', 'copytokendev'], () => {
+gulp.task('copytokentest', ['publish'], () => {
+	fs.writeFileSync(`${publishFolder}/bottoken`, secret.testbottoken)
+})
+
+gulp.task('copyconfigdev', ['dotnet-build'], () => {
+	fs.createReadStream('config/dev/config.json').pipe(fs.createWriteStream(buildOutputFolder + '/config.json'))
+})
+
+gulp.task('copyconfigtest', ['dotnet-build'], () => {
+	fs.createReadStream('config/test/config.json').pipe(fs.createWriteStream(publishFolder + '/config.json'))
+})
+
+gulp.task('build', ['dotnet-build', 'copyviews', 'copytokendev', 'copyconfigdev'], () => {
 	copywindowsbinsbuild()
 })
 
-gulp.task('run', ['build', 'copyviews', 'copytokendev'], shell.task(`dotnet BundtBot.dll`, { verbose: true, cwd: buildOutputFolder }))
+gulp.task('run', ['build'], shell.task(`dotnet BundtBot.dll`, { verbose: true, cwd: buildOutputFolder }))
 
 function copywindowsbinsbuild() {
-	fs.createReadStream(libopus64windows).pipe(fs.createWriteStream(buildOutputFolder + '/libopus.dll'));
-	fs.createReadStream(libsodium64windows).pipe(fs.createWriteStream(buildOutputFolder + '/libsodium.dll'));
-	fs.createReadStream(youtubedlwindows).pipe(fs.createWriteStream(buildOutputFolder + '/youtube-dl.exe'));
+	fs.createReadStream(libopus64windows).pipe(fs.createWriteStream(buildOutputFolder + '/libopus.dll'))
+	fs.createReadStream(libsodium64windows).pipe(fs.createWriteStream(buildOutputFolder + '/libsodium.dll'))
+	fs.createReadStream(youtubedlwindows).pipe(fs.createWriteStream(buildOutputFolder + '/youtube-dl.exe'))
 }
 
 function copylinuxbinspublish() {
-	fs.createReadStream(libopus64linux).pipe(fs.createWriteStream(publishFolder + '/libopus.dll'));
-	fs.createReadStream(libsodium64linux).pipe(fs.createWriteStream(publishFolder + '/libsodium.dll'));
-	fs.createReadStream(youtubedllinux).pipe(fs.createWriteStream(publishFolder + '/youtube-dl.exe'));
+	fs.createReadStream(libopus64linux).pipe(fs.createWriteStream(publishFolder + '/libopus.dll'))
+	fs.createReadStream(libsodium64linux).pipe(fs.createWriteStream(publishFolder + '/libsodium.dll'))
+	fs.createReadStream(youtubedllinux).pipe(fs.createWriteStream(publishFolder + '/youtube-dl.exe'))
 }
 
 gulp.task('publish', (cb) => {
@@ -83,11 +98,7 @@ gulp.task('publish', (cb) => {
 	})
 })
 
-gulp.task('copytokentest', ['publish'], () => {
-	fs.writeFileSync(`${publishFolder}/bottoken`, secret.testbottoken)
-})
-
-gulp.task('tar', ['publish', 'copytokentest'], shell.task('node do tar', { verbose: true }))
+gulp.task('tar', ['publish', 'copytokentest', 'copyconfigtest'], shell.task('node do tar', { verbose: true }))
 
 gulp.task('sftpdeploy', ['tar'], sftpDeploy)
 
@@ -146,7 +157,7 @@ function sftpDeploy(cb)
 		host: secret.testhost,
 		username: secret.testusername,
 		privateKey: fs.readFileSync(secret.sshkeypath)
-	});
+	})
 
 	client.on('transfer', (buffer, uploaded, total) => {
 		if (uploaded % 25 == 0) {

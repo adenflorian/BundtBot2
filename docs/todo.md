@@ -1,13 +1,16 @@
 # BundtBot ToDo
 
-[ ] make websocket not throw exception when closing
-[ ] maybe make command stuff its own project
-[ ] make a json file to configure what actions bundtbot does on startup
+[√] make command stuff its own project
+[√] make a json file to configure what actions bundtbot does on startup
   for running tests and such
 [ ] allow playing audio to two different servers at once
 [ ] allow multiple different text responses to certain events
-[ ] look into Cake build system
 [ ] edit the same message continuously to do a ascii art animation
+
+## Tech Debt
+
+[ ] make websocket not throw exception when closing
+[ ] look into Cake build system
 
 ## TesterBot
 
@@ -109,6 +112,10 @@
 [ ] maybe only allow a certain number of youtube downloads at once
 [ ] don't read the wav file so sloppily
 [ ] !upnext
+[ ] option to play for certain amount of time
+  --maxlength
+  --starttime
+  --endtime
 
 ## DJ
 
