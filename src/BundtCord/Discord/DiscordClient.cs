@@ -98,6 +98,7 @@ namespace BundtCord.Discord
 
         void OnGuildCreated(DiscordGuild discordGuild)
         {
+            discordGuild.AllChannels.ForEach(x => x.GuildID = discordGuild.Id);
             var newServer = new Server(discordGuild, this);
             Servers.Add(newServer.Id, newServer);
             ServerMembers[newServer.Id] = new Dictionary<ulong, ServerMember>();
