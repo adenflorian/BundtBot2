@@ -4,6 +4,7 @@ using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using BundtBot.Extensions;
 using BundtCommon;
 
 namespace DiscordApiWrapper.WebSocket
@@ -55,9 +56,9 @@ namespace DiscordApiWrapper.WebSocket
 
         async Task SendAsync(string messageToSend, ClientWebSocket _clientWebSocket)
         {
-            _logger.LogDebug($"Sending message... ({messageToSend.GetHashCode()})");
+            _logger.LogDebug($"Sending message... ({messageToSend.GetHashAsLowercaseHex()})");
             await _clientWebSocket.SendAsync(CreateSendBuffer(messageToSend), WebSocketMessageType.Text, true, CancellationToken.None);
-            _logger.LogDebug($"Sent! ({messageToSend.GetHashCode()})");
+            _logger.LogDebug($"Sent! ({messageToSend.GetHashAsLowercaseHex()})");
         }
 
         ArraySegment<byte> CreateSendBuffer(string data)

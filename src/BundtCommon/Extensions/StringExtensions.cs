@@ -23,9 +23,14 @@ namespace BundtBot.Extensions {
 			return JsonConvert.DeserializeObject<T>(@this);
 		}
 
-		public static bool DoesNotStartWith(this string @this, string value)
-		{
-			return @this.StartsWith(value) == false;
-		}
+        public static bool DoesNotStartWith(this string @this, string value)
+        {
+            return @this.StartsWith(value) == false;
+        }
+
+        public static string GetHashAsLowercaseHex(this string @this)
+        {
+            return @this.GetHashCode().ToString("X").ToLower();
+        }
 	}
 }
