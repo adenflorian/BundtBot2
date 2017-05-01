@@ -1,0 +1,18 @@
+{
+    "t": "GUILD_ROLE_UPDATE",
+    "s": 183,
+    "op": 0,
+    "d": {
+        "role": {
+            "position": 1,
+            "permissions": 104324161,
+            "name": "te",
+            "mentionable": false,
+            "managed": false,
+            "id": "084731230847186907",
+            "hoist": false,
+            "color": 0
+        },
+        "guild_id": "543232188776194400"
+    }
+}

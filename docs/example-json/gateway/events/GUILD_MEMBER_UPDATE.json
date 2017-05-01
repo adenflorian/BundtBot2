@@ -1,0 +1,18 @@
+{
+    "t": "GUILD_MEMBER_UPDATE",
+    "s": 187,
+    "op": 0,
+    "d": {
+        "user": {
+            "username": "AdenFlorian",
+            "id": "91259617090215936",
+            "discriminator": "8934",
+            "avatar": "b59d50f4fbbf260deadb6ff9cb6d3f8b"
+        },
+        "roles": [
+            "308471860847312907"
+        ],
+        "nick": "testaden",
+        "guild_id": "188776194454323200"
+    }
+}

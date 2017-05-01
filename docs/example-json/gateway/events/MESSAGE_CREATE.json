@@ -1,0 +1,27 @@
+{
+    "t": "MESSAGE_CREATE",
+    "s": 189,
+    "op": 0,
+    "d": {
+        "type": 0,
+        "tts": false,
+        "timestamp": "2017-05-01T00:35:58.811-05:00",
+        "pinned": false,
+        "nonce": "627191333084762864",
+        "mentions": [],
+        "mention_roles": [],
+        "mention_everyone": false,
+        "id": "258074730847664689",
+        "embeds": [],
+        "edited_timestamp": null,
+        "content": "test",
+        "channel_id": "944543188776123200",
+        "author": {
+            "username": "AdenFlorian",
+            "id": "17090291259615936",
+            "discriminator": "8834",
+            "avatar": "bf260deadbb59d50f4fb6ff9cb6d3f8b"
+        },
+        "attachments": []
+    }
+}
