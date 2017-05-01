@@ -81,7 +81,7 @@ namespace TesterBot
             await server.TextChannels.First().SendMessageAsync("testerbot online");
             await server.TextChannels.First().SendMessageAsync(commandPrefix + "yt mac 420");
             await server.TextChannels.First().SendMessageAsync(commandPrefix + "yt mac 420");
-            await Task.Delay(TimeEx._10seconds);
+            await Task.Delay(TimeEx._15seconds);
             await server.TextChannels.First().SendMessageAsync(commandPrefix + "pause");
             await Task.Delay(TimeEx._1second);
             await server.TextChannels.First().SendMessageAsync(commandPrefix + "next");
