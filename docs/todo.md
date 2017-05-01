@@ -98,8 +98,9 @@
 [√] log youtube-dl stdout
 [√] refactor youtube code
 [√] make it so bundtbot doesnt leave and rejoin channel in between clips
-[ ] make it so we can keep the same stream and stay speaking and just swap out audio streams with absolutely no interruption
 [ ] !volume
+[ ] cache search string to video ids
+[ ] make it so we can keep the same stream and stay speaking and just swap out audio streams with absolutely no interruption
 [ ] make the youtube classes their own library
 [ ] !ytrandom
 [ ] automatically duck audio when people talk

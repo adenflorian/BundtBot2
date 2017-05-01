@@ -119,6 +119,8 @@ namespace TesterBot
             await Task.Delay(TimeEx._3seconds);
             await server.TextChannels.First().SendMessageAsync("!stop");
             await Task.Delay(TimeEx._2seconds);
+            await server.TextChannels.First().SendMessageAsync("!Time for the lightning round!");
+            await Task.Delay(TimeEx._1second);
             await server.TextChannels.First().SendMessageAsync("!pause");
             await server.TextChannels.First().SendMessageAsync("!resume");
             await server.TextChannels.First().SendMessageAsync("!faster");
