@@ -73,6 +73,8 @@
 [ ] !uploaddog
 [ ] !setloglevel
 [ ] multiple command names
+[ ] print similar commands when someone typos a command
+[ ] auto select command if small typo
 
 ## !yt
 
