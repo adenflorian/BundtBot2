@@ -1,0 +1,16 @@
+{
+    "t": "VOICE_STATE_UPDATE",
+    "s": 7,
+    "op": 0,
+    "d": {
+        "user_id": "823514120767326122",
+        "suppress": false,
+        "session_id": "6c64045921d304b5bfb12ddef5815f1b",
+        "self_mute": false,
+        "self_deaf": false,
+        "mute": false,
+        "guild_id": "454323188776194200",
+        "deaf": false,
+        "channel_id": null
+    }
+}

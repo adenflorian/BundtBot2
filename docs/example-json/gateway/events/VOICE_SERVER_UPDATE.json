@@ -1,0 +1,10 @@
+{
+    "t": "VOICE_SERVER_UPDATE",
+    "s": 6,
+    "op": 0,
+    "d": {
+        "token": "5466af0d58bcf141",
+        "guild_id": "543218877619443200",
+        "endpoint": "us-south455.discord.gg:80"
+    }
+}
