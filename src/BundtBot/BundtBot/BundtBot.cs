@@ -120,12 +120,18 @@ namespace BundtBot
             {
                 var helpMessage = "";
                 _commandManager.GetCommands().ToList().ForEach(x => helpMessage += $"`{x.Name}` ");
-                await message.ReplyAsync("help me help you: " + helpMessage);
+                await message.ReplyAsync("help me help you: " + helpMessage + "\nhttps://github.com/AdenFlorian/BundtBot2");
             }));
             _commandManager.AddCommand(new TextCommand("echo", async (message, receivedCommand) =>
             {
                 await message.ReplyAsync(receivedCommand.ArgumentsString);
             }, minimumArgCount: 1));
+            _commandManager.AddCommand(new TextCommand("bugreport", async (message, receivedCommand) =>
+            {
+                await message.ReplyAsync("It's not a bug, it's a feature...");
+                await Task.Delay(TimeEx._3seconds);
+                await message.ReplyAsync("...but if it's really a bug, please create an issue here: https://github.com/AdenFlorian/BundtBot2");
+            }));
         }
 
         void RegisterAudioCommands()
