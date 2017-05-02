@@ -3,9 +3,21 @@ BundtBot
 
 I am Bundt
 
+Before Building
+---------------
+
+You must have the following installed:
+- Node.js
+- .NET Core
+
+Getting Started
+---------------
+
 Clone repo
 
 [Visual Studio Code](https://code.visualstudio.com/) is the recommended editor
+
+Run `npm install`
 
 Run `node setup.js` (Only the dev bot token is required to run locally)
 
