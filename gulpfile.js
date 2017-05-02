@@ -68,7 +68,7 @@ gulp.task('copyconfigdev', ['dotnet-build'], () => {
 	fs.createReadStream('config/dev/config.json').pipe(fs.createWriteStream(buildOutputFolder + '/config.json'))
 })
 
-gulp.task('copyconfigtest', ['dotnet-build'], () => {
+gulp.task('copyconfigtest', ['publish'], () => {
 	fs.createReadStream('config/test/config.json').pipe(fs.createWriteStream(publishFolder + '/config.json'))
 })
 
