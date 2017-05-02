@@ -1,8 +1,6 @@
 # BundtBot ToDo
 
 [√] make command stuff its own project
-[√] make a json file to configure what actions bundtbot does on startup
-  for running tests and such
 [ ] allow playing audio to two different servers at once
 [ ] allow multiple different text responses to certain events
 [ ] edit the same message continuously to do a ascii art animation
@@ -22,6 +20,12 @@
   For doing functional testing on BundtBot
   Will be a separate discord bot
 [ ] add some asserts
+
+## BundtFig
+
+[√] make a json file to configure what actions bundtbot does on startup
+  for running tests and such
+[ ] have a global config file with defaults
 
 ## Gateway
 
@@ -72,10 +76,10 @@
 
 ## !commands
 
-[ ] !bugreport
+[√] !bugreport
+[√] !dog
 [ ] !restart
   restart the bot
-[ ] !dog
 [ ] !uploaddog
 [ ] !setloglevel
 [ ] multiple command names

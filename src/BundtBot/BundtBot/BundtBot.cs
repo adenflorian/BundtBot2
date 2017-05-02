@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Reflection;
 using System.Threading.Tasks;
 using BundtBot.Youtube;
@@ -131,6 +132,46 @@ namespace BundtBot
                 await message.ReplyAsync("It's not a bug, it's a feature...");
                 await Task.Delay(TimeEx._3seconds);
                 await message.ReplyAsync("...but if it's really a bug, please create an issue here: https://github.com/AdenFlorian/BundtBot2");
+            }));
+            _commandManager.AddCommand(new TextCommand("github", async (message, receivedCommand) =>
+            {
+                await message.ReplyAsync(":octopus: :cat: https://github.com/AdenFlorian/BundtBot2");
+            }));
+            _commandManager.AddCommand(new TextCommand("dog", async (message, receivedCommand) =>
+            {
+                var randomDogBaseUrl = "https://random.dog/";
+                using (var httpClient = new HttpClient())
+                {
+                    httpClient.Timeout = TimeSpan.FromSeconds(2);
+                    var dogId = await httpClient.GetStringAsync(randomDogBaseUrl + "woof");
+                    await message.ReplyAsync("Dogs rule:\n" + randomDogBaseUrl + dogId);
+                }
+            }));
+            _commandManager.AddCommand(new TextCommand("cat", async (message, receivedCommand) =>
+            {
+                if (new Random().NextDouble() >= 0.5)
+                {
+                    var randomCatBaseUrl = "http://random.cat/";
+                    using (var httpClient = new HttpClient())
+                    {
+                        httpClient.Timeout = TimeSpan.FromSeconds(2);
+                        var meow = await httpClient.GetStringAsync(randomCatBaseUrl + "meow");
+                        var pFrom = meow.IndexOf("\\/i\\/", StringComparison.Ordinal) + "\\/i\\/".Length;
+                        var pTo = meow.LastIndexOf("\"}", StringComparison.Ordinal);
+                        var cat = "http://random.cat/i/" + meow.Substring(pFrom, pTo - pFrom);
+                        await message.ReplyAsync("Cats drool:\n" + cat);
+                    }
+                }
+                else
+                {
+                    var randomDogBaseUrl = "https://random.dog/";
+                    using (var httpClient = new HttpClient())
+                    {
+                        httpClient.Timeout = TimeSpan.FromSeconds(2);
+                        var dogId = await httpClient.GetStringAsync(randomDogBaseUrl + "woof");
+                        await message.ReplyAsync("How about a dog instead:\n" + randomDogBaseUrl + dogId);
+                    }
+                }
             }));
         }
 
