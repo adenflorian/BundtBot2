@@ -72,6 +72,7 @@
 
 ## !commands
 
+[ ] !bugreport
 [ ] !restart
   restart the bot
 [ ] !dog
@@ -80,6 +81,7 @@
 [ ] multiple command names
 [ ] print similar commands when someone typos a command
 [ ] auto select command if small typo
+[ ] !github
 
 ## !yt
 
@@ -143,6 +145,8 @@
 [ ] change dog level
 [ ] show uptime
 [ ] authentication
+[ ] send users a dm with a unique token for accessing bundtbot api
+[ ] let users sned commands by clicking buttons
 
 ## gulp
 

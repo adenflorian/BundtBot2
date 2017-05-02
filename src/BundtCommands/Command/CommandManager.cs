@@ -45,6 +45,7 @@ namespace BundtBot
 
             try
             {
+                _logger.LogInfo("Processing Text Command: " + message.Content);
                 await matchingCommand.Command.Invoke(message, receivedCommand);
             }
             catch (Exception ex)

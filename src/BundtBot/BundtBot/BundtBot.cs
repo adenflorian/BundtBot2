@@ -29,6 +29,7 @@ namespace BundtBot
 
             RegisterEventHandlers();
             RegisterCommands();
+            RegisterAudioCommands();
 
             _dj.Start();
             await _client.ConnectAsync();
@@ -121,6 +122,18 @@ namespace BundtBot
                 _commandManager.GetCommands().ToList().ForEach(x => helpMessage += $"`{x.Name}` ");
                 await message.ReplyAsync("help me help you: " + helpMessage);
             }));
+            _commandManager.AddCommand(new TextCommand("echo", async (message, receivedCommand) =>
+            {
+                await message.ReplyAsync(receivedCommand.ArgumentsString);
+            }, minimumArgCount: 1));
+        }
+
+        void RegisterAudioCommands()
+        {
+            _commandManager.AddCommand(new TextCommand("yt", async (message, receivedCommand) =>
+            {
+                await DoYoutubeCommandAsync(message.TextChannel, receivedCommand.ArgumentsString);
+            }, minimumArgCount: 1));
             _commandManager.AddCommand(new TextCommand("next", async (message, receivedCommand) =>
             {
                 try
@@ -184,14 +197,6 @@ namespace BundtBot
                 }
                 catch (DJException dje) { await message.ReplyAsync(dje.Message); }
             }));
-            _commandManager.AddCommand(new TextCommand("echo", async (message, receivedCommand) =>
-            {
-                await message.ReplyAsync(receivedCommand.ArgumentsString);
-            }, minimumArgCount: 1));
-            _commandManager.AddCommand(new TextCommand("yt", async (message, receivedCommand) =>
-            {
-                await DoYoutubeCommandAsync(message.TextChannel, receivedCommand.ArgumentsString);
-            }, minimumArgCount: 1));
         }
 
         async Task DoYoutubeCommandAsync(TextChannel textchannel, string args)
