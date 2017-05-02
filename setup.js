@@ -42,6 +42,4 @@ inquirer.prompt(questions).then(function (answers) {
     console.log(answersJson)
     fs.writeFileSync('secret.json', JSON.stringify(answers, null, 4))
     console.log('Secrets have been saved to secret.json')
-
-    cb()
 })
