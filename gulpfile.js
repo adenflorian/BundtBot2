@@ -26,13 +26,6 @@ const rateLimitTestsProjectName = 'RateLimitTests'
 const rateLimitTestsProjectFolder = `${testFolder}/${rateLimitTestsProjectName}`
 const rateLimitTestsOutputFolder = `${rateLimitTestsProjectFolder}/bin/Debug/netcoreapp1.1`
 
-const libopus64linux = 'bin/opus/linux-1.1.2-x86-64/libopus.so.0.5.2'
-const libopus64windows = 'bin/opus/windows-1.1.2-x86-64/opus.dll'
-const libsodium64linux = 'bin/libsodium/linux-1.0.12-x86-64/libsodium.so.18.2.0'
-const libsodium64windows = 'bin/libsodium/windows-1.0.12-x86-64/libsodium.dll'
-const youtubedlwindows = 'bin/youtube-dl/windows/youtube-dl.exe'
-const youtubedllinux = 'bin/youtube-dl/linux/youtube-dl.exe'
-
 var secret
 
 if (fs.existsSync(secretFilePath)) {
@@ -47,7 +40,14 @@ gulp.task('clean', cleanTar)
 
 gulp.task('restore', shell.task(`dotnet restore ${projectFilePath}`, { verbose: true }))
 
-gulp.task('dotnet-build', shell.task(`dotnet build ${projectFilePath}`, { verbose: true }))
+gulp.task('dotnet-restore', (cb) => {
+	exec('dotnet restore', (error, stdout, stderr) => {
+		console.log(stdout)
+		cb()
+	})
+})
+
+gulp.task('dotnet-build', ['dotnet-restore'], shell.task(`dotnet build ${projectFilePath}`, { verbose: true }))
 
 gulp.task('copyviews', ['dotnet-build'], (cb) => {
 	copydir(viewsFolder, `${buildOutputFolder}/${viewsFolderName}`, (err) => {
@@ -79,18 +79,20 @@ gulp.task('build', ['dotnet-build', 'copyviews', 'copytokendev', 'copyconfigdev'
 gulp.task('run', ['build'], shell.task(`dotnet BundtBot.dll`, { verbose: true, cwd: buildOutputFolder }))
 
 function copywindowsbinsbuild() {
-	fs.createReadStream(libopus64windows).pipe(fs.createWriteStream(buildOutputFolder + '/libopus.dll'))
-	fs.createReadStream(libsodium64windows).pipe(fs.createWriteStream(buildOutputFolder + '/libsodium.dll'))
-	fs.createReadStream(youtubedlwindows).pipe(fs.createWriteStream(buildOutputFolder + '/youtube-dl.exe'))
+	fs.createReadStream('bin/opus/windows-1.1.2-x86-64/opus.dll').pipe(fs.createWriteStream(buildOutputFolder + '/libopus.dll'))
+	fs.createReadStream('bin/libsodium/windows-1.0.12-x86-64/libsodium.dll').pipe(fs.createWriteStream(buildOutputFolder + '/libsodium.dll'))
+	fs.createReadStream('bin/youtube-dl/windows/youtube-dl.exe').pipe(fs.createWriteStream(buildOutputFolder + '/youtube-dl.exe'))
+	fs.createReadStream('bin/ffmpeg/windows/ffmpeg.exe').pipe(fs.createWriteStream(buildOutputFolder + '/ffmpeg.exe'))
+	fs.createReadStream('bin/ffmpeg/windows/ffprobe.exe').pipe(fs.createWriteStream(buildOutputFolder + '/ffprobe.exe'))
 }
 
 function copylinuxbinspublish() {
-	fs.createReadStream(libopus64linux).pipe(fs.createWriteStream(publishFolder + '/libopus.dll'))
-	fs.createReadStream(libsodium64linux).pipe(fs.createWriteStream(publishFolder + '/libsodium.dll'))
-	fs.createReadStream(youtubedllinux).pipe(fs.createWriteStream(publishFolder + '/youtube-dl.exe'))
+	fs.createReadStream('bin/opus/linux-1.1.2-x86-64/libopus.so.0.5.2').pipe(fs.createWriteStream(publishFolder + '/libopus.dll'))
+	fs.createReadStream('bin/libsodium/linux-1.0.12-x86-64/libsodium.so.18.2.0').pipe(fs.createWriteStream(publishFolder + '/libsodium.dll'))
+	fs.createReadStream('bin/youtube-dl/linux/youtube-dl.exe').pipe(fs.createWriteStream(publishFolder + '/youtube-dl.exe'))
 }
 
-gulp.task('publish', (cb) => {
+gulp.task('publish', ['dotnet-restore'], (cb) => {
 	exec(`dotnet publish ${projectFilePath}`, (error, stdout, stderr) => {
 		console.log(stdout)
 		copylinuxbinspublish()
