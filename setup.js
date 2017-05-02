@@ -16,7 +16,7 @@ const questions = [
         type: 'input',
         name: 'prodbottoken',
         message: 'Prod bot token (optional): '
-    }
+    },
     {
         type: 'input',
         name: 'testusername',
