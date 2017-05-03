@@ -3,9 +3,22 @@ BundtBot
 
 I am Bundt
 
+Before Building
+---------------
+
+You must have the following installed:
+- [Node.js v7.9.0+](https://nodejs.org/)
+- [.NET Core SDK 1.0.3+](https://www.microsoft.com/net/core)
+- [gulp-cli -g 1.3.0+](https://www.npmjs.com/package/gulp-cli)
+
+Getting Started
+---------------
+
 Clone repo
 
 [Visual Studio Code](https://code.visualstudio.com/) is the recommended editor
+
+Run `npm install`
 
 Run `node setup.js` (Only the dev bot token is required to run locally)
 
