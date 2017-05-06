@@ -12,6 +12,7 @@ namespace DiscordApiWrapper.RestApi
 
         public RestClientLogger(HttpMessageHandler innerHandler) : base(innerHandler)
         {
+            _logger.SetLogLevel(BundtFig.GetValue("loglevel-restclientlogger"));
         }
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,

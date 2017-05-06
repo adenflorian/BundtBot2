@@ -10,6 +10,7 @@ using DiscordApiWrapper.Gateway.Models;
 using DiscordApiWrapper.Models;
 using DiscordApiWrapper.Models.Events;
 using DiscordApiWrapper.WebSocket;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -74,6 +75,7 @@ namespace BundtBot.Discord.Gateway
         public DiscordGatewayClient(string authToken, Uri gatewayUri)
         {
             _authToken = authToken;
+            _logger.SetLogLevel(BundtFig.GetValue("loglevel-discordgatewayclient"));
 
             var modifiedGatewayUrl = gatewayUri.AddParameter("v", "5").AddParameter("encoding", "'json'");
 

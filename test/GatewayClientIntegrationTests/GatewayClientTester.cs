@@ -13,7 +13,7 @@ public class GatewayClientTester
     [Fact]
     public async Task TestAsync()
     {
-        MyLogger.CurrentLogLevel = LogLevel.Trace;
+        _logger.SetLogLevel(LogLevel.Trace);
         DiscordGatewayClient client = new DiscordGatewayClient("authtoken", new Uri("ws://localhost:8001"));
 
         await client.ConnectAsync();

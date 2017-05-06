@@ -41,6 +41,7 @@ namespace DiscordApiWrapper.Voice
             _sessionId = sessionId;
 
             _logger = new MyLogger(nameof(VoiceGatewayClient) + "-" + voiceServerInfo.GuildID.ToString().Substring(0, 4), ConsoleColor.DarkGreen);
+            _logger.SetLogLevel(BundtFig.GetValue("loglevel-voicegatewayclient"));
 
             var modifiedUrl = voiceServerInfo.Endpoint.AddParameter("v", "5").AddParameter("encoding", "'json'");
             _webSocketClient = new WebSocketClient(modifiedUrl, "Voice-" + voiceServerInfo.GuildID.ToString().Substring(0, 4) + "-", ConsoleColor.DarkGreen);
@@ -84,7 +85,7 @@ namespace DiscordApiWrapper.Voice
             StartHeartBeatLoop(voiceServerReady.HeartbeatInterval);
         }
 
-        async void OnSessionReceivedAsync(VoiceServerSession obj)
+        void OnSessionReceivedAsync(VoiceServerSession obj)
         {
             //await SendSpeakingTrueAsync();
         }

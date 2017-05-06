@@ -22,7 +22,7 @@ namespace BundtBot
         public static Exception LastLoggedException;
 
         public bool EnableTimestamps = true;
-        public static LogLevel CurrentLogLevel = LogLevel.Debug;
+        MyLogLevel _logLevel = new MyLogLevel();
 
         readonly string _prefix;
         readonly ConsoleColor? _prefixColor;
@@ -33,6 +33,22 @@ namespace BundtBot
             _prefix = prefix;
             _prefixColor = prefixColor;
             _supportsAnsiColors = Console.LargestWindowHeight <= 0;
+            _logLevel.CurrentLogLevel = LogLevel.Trace;
+        }
+
+        public void SetLogLevel(LogLevel logLevel)
+        {
+            _logLevel.CurrentLogLevel = logLevel;
+        }
+
+        public void SetLogLevel(string logLevel)
+        {
+            _logLevel.CurrentLogLevel = (LogLevel)Enum.Parse(typeof(LogLevel), logLevel);
+        }
+
+        public static void SetLogLevelOverride(LogLevel logLevel)
+        {
+            MyLogLevel.LogLevelOverride = logLevel;
         }
 
         public async Task LogAndWaitRetryWarningAsync(TimeSpan waitAmount)
@@ -48,7 +64,7 @@ namespace BundtBot
         /// </summary>
         public void LogTrace(object message, ConsoleColor? color = null)
         {
-            if (LogLevel.Trace < CurrentLogLevel) return;
+            if (LogLevel.Trace < _logLevel.CurrentLogLevel) return;
             BuildAndLog("Trace", message, ConsoleColor.DarkMagenta, color);
         }
 
@@ -58,13 +74,13 @@ namespace BundtBot
         /// </summary>
         public void LogDebug(object message, ConsoleColor? color = null)
         {
-            if (LogLevel.Debug < CurrentLogLevel) return;
+            if (LogLevel.Debug < _logLevel.CurrentLogLevel) return;
             BuildAndLog("Debug", message, ConsoleColor.DarkCyan, color);
         }
         
         public void LogDebugJson(object message, ConsoleColor? color = null)
         {
-            if (LogLevel.Debug < CurrentLogLevel) return;
+            if (LogLevel.Debug < _logLevel.CurrentLogLevel) return;
             BuildAndLog("Debug", JsonConvert.SerializeObject(message, Formatting.Indented), ConsoleColor.DarkCyan, color);
         }
 
@@ -74,13 +90,13 @@ namespace BundtBot
         /// </summary>
         public void LogInfo(object message, ConsoleColor? color = null)
         {
-            if (LogLevel.Information < CurrentLogLevel) return;
+            if (LogLevel.Information < _logLevel.CurrentLogLevel) return;
             BuildAndLog("Info", message, ConsoleColor.Blue, color);
         }
 
         public void LogInfo(params LogMessage[] messages)
         {
-            if (LogLevel.Information < CurrentLogLevel) return;
+            if (LogLevel.Information < _logLevel.CurrentLogLevel) return;
 
             var message = "";
 
@@ -108,7 +124,7 @@ namespace BundtBot
         /// </summary>
         public void LogWarning(object message)
         {
-            if (LogLevel.Warning < CurrentLogLevel) return;
+            if (LogLevel.Warning < _logLevel.CurrentLogLevel) return;
             BuildAndLog("Warning", message, ConsoleColor.Yellow, ConsoleColor.Yellow);
         }
 
@@ -120,7 +136,7 @@ namespace BundtBot
         {
             ex.Data["DateTime"] = DateTime.Now;
             LastLoggedException = ex;
-            if (LogLevel.Error < CurrentLogLevel) return;
+            if (LogLevel.Error < _logLevel.CurrentLogLevel) return;
             BuildAndLog("**ERROR**", $"{ex.GetType()}: {ex.Message}", ConsoleColor.Red, ConsoleColor.Red, stdErr: true);
             if (shortVersion) return;
             BuildAndLog("**ERROR**", ex.StackTrace ?? "No stack trace available", ConsoleColor.Red, stdErr: true);
@@ -140,7 +156,7 @@ namespace BundtBot
         /// </summary>
         public void LogError(string message)
         {
-            if (LogLevel.Error < CurrentLogLevel) return;
+            if (LogLevel.Error < _logLevel.CurrentLogLevel) return;
             BuildAndLog("**ERROR**", message, ConsoleColor.Red, ConsoleColor.Red, stdErr: true);
         }
 
@@ -152,7 +168,7 @@ namespace BundtBot
         {
             ex.Data["DateTime"] = DateTime.Now;
             LastLoggedException = ex;
-            if (LogLevel.Critical < CurrentLogLevel) return;
+            if (LogLevel.Critical < _logLevel.CurrentLogLevel) return;
             BuildAndLog("❗❗❗CRITICAL❗❗❗", $"{ex.GetType()}: {ex.Message}", ConsoleColor.Red, ConsoleColor.Red, stdErr: true);
             BuildAndLog("❗❗❗CRITICAL❗❗❗", ex.StackTrace ?? "No stack trace available", ConsoleColor.Red, ConsoleColor.Red, stdErr: true);
             if (ex.InnerException != null)
@@ -167,7 +183,7 @@ namespace BundtBot
         /// </summary>
         public void LogCritical(string message)
         {
-            if (LogLevel.Critical < CurrentLogLevel) return;
+            if (LogLevel.Critical < _logLevel.CurrentLogLevel) return;
             BuildAndLog("❗❗❗CRITICAL❗❗❗", message, ConsoleColor.Red, stdErr: true);
         }
 

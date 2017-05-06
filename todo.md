@@ -3,8 +3,9 @@
 - [x] make command stuff its own project
 - [x] allow playing audio to two different servers at once
   - works but has issues
-- [ ] more fine grained logging control
+- [x] more fine grained logging control
   - be able to change log levels by class
+  - be able to define in a json
 - [ ] allow multiple different text responses to certain events
 - [ ] edit the same message continuously to do a ascii art animation
 

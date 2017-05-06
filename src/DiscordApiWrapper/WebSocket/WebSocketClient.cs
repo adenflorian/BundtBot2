@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using BundtBot;
 using BundtCommon;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
 namespace DiscordApiWrapper.WebSocket
@@ -27,6 +28,7 @@ namespace DiscordApiWrapper.WebSocket
 		{
 			_serverUri = serverUri;
 			_logger = new MyLogger(logPrefix + nameof(WebSocketClient), prefixColor);
+            _logger.SetLogLevel(BundtFig.GetValue("loglevel-websocketclient"));
 		}
 
         public async Task ConnectAsync()

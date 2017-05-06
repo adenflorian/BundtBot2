@@ -45,11 +45,10 @@ namespace DiscordApiWrapper.WebSocket
         async Task ReceiveMessageAsync()
         {
             var completedMessage = new ReceivedMessage();
-            ReceivedData receivedData;
 
             while (completedMessage.IsCompleted == false)
             {
-                receivedData = await ReceiveAsync(_clientWebSocket);
+                var receivedData = await ReceiveAsync(_clientWebSocket);
 
                 ThrowIfCloseStatus(receivedData.Result.CloseStatus);
 

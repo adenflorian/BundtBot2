@@ -49,6 +49,7 @@ namespace DiscordApiWrapper.Voice
             _udpClient = new UdpClient();
             _voiceUdpEndpoint = UdpUtility.GetEndpointFromInfo(remoteUri, remotePort);
             _syncSourceId = synchronizationSourceId;
+            _logger.SetLogLevel(BundtFig.GetValue("loglevel-voiceudpclient"));
         }
 
         public async Task<IpDiscoveryResult> SendIpDiscoveryPacketAsync()

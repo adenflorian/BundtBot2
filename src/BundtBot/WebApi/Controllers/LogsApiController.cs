@@ -18,7 +18,7 @@ namespace BundtBot.WebApi.Controllers
         public void ChangeLogLevel([FromBody]LogLevelObject loglevel)
         {
             if (loglevel == null) return;
-            MyLogger.CurrentLogLevel = loglevel.LogLevel;
+            MyLogLevel.LogLevelOverride = loglevel.LogLevel;
             _logger.LogInfo("Log Level set to " + loglevel.LogLevel);
         }
     }
