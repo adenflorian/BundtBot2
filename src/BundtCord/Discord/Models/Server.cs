@@ -13,6 +13,7 @@ namespace BundtCord.Discord
         public IEnumerable<VoiceChannel> VoiceChannels => _client.VoiceChannels.Values.Where(x => x.ServerId == Id);
         public IEnumerable<ServerMember> Members => _client.ServerMembers[Id].Values;
         public DiscordVoiceClient VoiceClient { get; internal set; }
+        public string MyVoiceSessionId { get; internal set; }
 
         DiscordClient _client;
 

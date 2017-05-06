@@ -136,10 +136,11 @@
 - [x] !fastforward
   - [ ] fix being able to stack !ff
 - [x] !slomo
-- [ ] one DJ per server
+- [x] one DJ per server
 - [ ] change the Playing Game field to song name
 - [ ] Warp the filestream with a BufferedStream
   - How to tell if this is even necessary?
+- [ ] looping
 
 ## Voice
 

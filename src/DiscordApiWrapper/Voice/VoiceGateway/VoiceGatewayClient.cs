@@ -93,6 +93,7 @@ namespace DiscordApiWrapper.Voice
         void StartHeartBeatLoop(TimeSpan heartbeatInterval)
         {
             _heartbeatTimer?.Dispose();
+            // TODO Handle exceptions from SendHeartbeatAsync()
             _heartbeatTimer = new Timer(async (o) => await SendHeartbeatAsync(), null, TimeSpan.Zero, heartbeatInterval);
             _logger.LogInfo($"Heartbeat loop started with interval of {heartbeatInterval.TotalSeconds} seconds", ConsoleColor.Green);
         }
@@ -107,32 +108,12 @@ namespace DiscordApiWrapper.Voice
             await SendOpCodeAsync(VoiceOpCode.Heartbeat, null);
         }
 
-        internal async Task SendSpeakingAsync(bool isSpeaking)
+        public async Task SendSpeakingAsync(bool isSpeaking)
         {
             _logger.LogInfo($"Sending Speaking to Voice Server (isSpeaking: {isSpeaking})", ConsoleColor.Green);
             await SendOpCodeAsync(VoiceOpCode.Speaking, new VoiceServerSpeakingClient
             {
                 IsSpeaking = isSpeaking,
-                Delay = 0
-            });
-        }
-
-        public async Task SendSpeakingTrueAsync()
-        {
-            _logger.LogInfo($"Sending Speaking to Voice Server (isSpeaking: true)", ConsoleColor.Green);
-            await SendOpCodeAsync(VoiceOpCode.Speaking, new VoiceServerSpeakingClient
-            {
-                IsSpeaking = true,
-                Delay = 0
-            });
-        }
-
-        public async Task SendSpeakingFalseAsync()
-        {
-            _logger.LogInfo($"Sending Speaking to Voice Server (isSpeaking: false)", ConsoleColor.Green);
-            await SendOpCodeAsync(VoiceOpCode.Speaking, new VoiceServerSpeakingClient
-            {
-                IsSpeaking = false,
                 Delay = 0
             });
         }

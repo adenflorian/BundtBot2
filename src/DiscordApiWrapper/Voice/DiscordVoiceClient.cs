@@ -100,14 +100,9 @@ namespace DiscordApiWrapper.Voice
             }
         }
 
-        public async Task SpeakAsync()
+        public async Task SendSpeakingAsync(bool isSpeaking)
         {
-            await _voiceGatewayClient.SendSpeakingTrueAsync();
-        }
-
-        public async Task NoSpeakAsync()
-        {
-            await _voiceGatewayClient.SendSpeakingFalseAsync();
+            await _voiceGatewayClient.SendSpeakingAsync(isSpeaking);
         }
     }
 }

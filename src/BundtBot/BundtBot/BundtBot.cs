@@ -246,16 +246,6 @@ namespace BundtBot
                 }
                 catch (DJException dje) { await message.ReplyAsync(dje.Message); }
             }));
-            _commandManager.AddCommand(new TextCommand("speak", async (message, receivedCommand) =>
-            {
-                await _client.SpeakAsync(message.Server);
-                await message.ReplyAsync("Speaking");
-            }));
-            _commandManager.AddCommand(new TextCommand("nospeak", async (message, receivedCommand) =>
-            {
-                await _client.NoSpeakAsync(message.Server);
-                await message.ReplyAsync("No Speaking");
-            }));
         }
 
         async Task DoYoutubeCommandAsync(TextChannel textchannel, string args)

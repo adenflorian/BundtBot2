@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using BundtBot;
@@ -181,16 +182,24 @@ namespace BundtCord.Discord
 
             var server = Servers[voiceServerInfo.GuildID];
 
+            // TODO Should use session id from voice state update
+
             if (server.VoiceClient == null)
             {
                 var voiceClient = new DiscordVoiceClient();
-                await voiceClient.ConnectAsync(voiceServerInfo, Me.Id, _sessionId);
+                Debug.Assert(Servers[voiceServerInfo.GuildID].MyVoiceSessionId != null);
+                await voiceClient.ConnectAsync(voiceServerInfo, Me.Id, Servers[voiceServerInfo.GuildID].MyVoiceSessionId);
                 server.VoiceClient = voiceClient;
             }
         }
 
         void OnVoiceStateUpdate(VoiceState voiceState)
         {
+            if (voiceState.UserId == Me.Id)
+            {
+                Debug.Assert(voiceState.GuildID.HasValue);
+                Servers[voiceState.GuildID.Value].MyVoiceSessionId = voiceState.SessionId;
+            }
             ProcessVoiceState(voiceState);
         }
 
@@ -245,19 +254,13 @@ namespace BundtCord.Discord
                 IsDeafenedBySelf = deafened
             });
 
-            // TODO Destroy that server's voice client properly
             server.VoiceClient?.Dispose();
             server.VoiceClient = null;
-        }
 
-        public async Task SpeakAsync(Server server)
-        {
-            await server.VoiceClient.SpeakAsync();
-        }
-
-        public async Task NoSpeakAsync(Server server)
-        {
-            await server.VoiceClient.NoSpeakAsync();
+            foreach (var x in Servers.Values)
+            {
+                 x.VoiceClient?.SendSpeakingAsync(true);
+            }
         }
     }
 }

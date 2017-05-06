@@ -1,8 +1,8 @@
 {
     "op": 4,
     "d": {
-        "guild_id": 123418877454323200,
-        "channel_id": 123418877619323201,
+        "guild_id": 123418877454323200, // null if you want to disconnect from all servers
+        "channel_id": 123418877619323201,   // null if you want to disconnect from voice in a server
         "self_deaf": false,
         "self_mute": false
     }
