@@ -19,7 +19,7 @@ namespace BundtBot
         static readonly MyLogger _logger = new MyLogger(nameof(BundtBot));
 
         DiscordClient _client;
-        DJ _dj = new DJ();
+        Dictionary<ulong, DJ> _djDictionary = new Dictionary<ulong, DJ>();
         CommandManager _commandManager = new CommandManager();
         YoutubeDl _youtubeDl;
 
@@ -32,7 +32,6 @@ namespace BundtBot
             RegisterCommands();
             RegisterAudioCommands();
 
-            _dj.Start();
             await _client.ConnectAsync();
         }
 
@@ -75,6 +74,9 @@ namespace BundtBot
             _client.ServerCreated += async (server) => {
                 try
                 {
+                    _djDictionary[server.Id] = new DJ();
+                    _djDictionary[server.Id].Start();
+
                     await server.TextChannels.First().SendMessageAsync("bundtbot online");
                     await DoYoutubeCommandAsync(server.TextChannels.First(), BundtFig.GetValue("on-server-created-yt"));
                 }
@@ -185,7 +187,7 @@ namespace BundtBot
             {
                 try
                 {
-                    _dj.Next();
+                    _djDictionary[message.Server.Id].Next();
                     await message.ReplyAsync("Yea, I wasn't a huge fan of that song either :track_next:");
                 }
                 catch (DJException dje) { await message.ReplyAsync(dje.Message); }
@@ -194,7 +196,7 @@ namespace BundtBot
             {
                 try
                 {
-                    _dj.StopAudioAsync();
+                    _djDictionary[message.Server.Id].StopAudio();
                     await message.ReplyAsync("Please don't :stop_button: the music :frowning:");
                 }
                 catch (DJException dje) { await message.ReplyAsync(dje.Message); }
@@ -203,7 +205,7 @@ namespace BundtBot
             {
                 try
                 {
-                    _dj.ResumeAudio();
+                    _djDictionary[message.Server.Id].ResumeAudio();
                     await message.ReplyAsync("Green light! :arrow_forward:");
                 }
                 catch (DJException dje) { await message.ReplyAsync(dje.Message); }
@@ -212,7 +214,7 @@ namespace BundtBot
             {
                 try
                 {
-                    await _dj.PauseAudioAsync();
+                    await _djDictionary[message.Server.Id].PauseAudioAsync();
                     await message.ReplyAsync("Red Light! :rotating_light:");
                 }
                 catch (DJException dje) { await message.ReplyAsync(dje.Message); }
@@ -221,7 +223,7 @@ namespace BundtBot
             {
                 try
                 {
-                    _dj.FastForward();
+                    _djDictionary[message.Server.Id].FastForward();
                     await message.ReplyAsync("Double time!");
                 }
                 catch (DJException dje) { await message.ReplyAsync(dje.Message); }
@@ -230,7 +232,7 @@ namespace BundtBot
             {
                 try
                 {
-                    _dj.SloMo();
+                    _djDictionary[message.Server.Id].SloMo();
                     await message.ReplyAsync("Half time!");
                 }
                 catch (DJException dje) { await message.ReplyAsync(dje.Message); }
@@ -239,10 +241,20 @@ namespace BundtBot
             {
                 try
                 {
-                    _dj.StopEffects();
+                    _djDictionary[message.Server.Id].StopEffects();
                     await message.ReplyAsync("Single time!...?");
                 }
                 catch (DJException dje) { await message.ReplyAsync(dje.Message); }
+            }));
+            _commandManager.AddCommand(new TextCommand("speak", async (message, receivedCommand) =>
+            {
+                await _client.SpeakAsync(message.Server);
+                await message.ReplyAsync("Speaking");
+            }));
+            _commandManager.AddCommand(new TextCommand("nospeak", async (message, receivedCommand) =>
+            {
+                await _client.NoSpeakAsync(message.Server);
+                await message.ReplyAsync("No Speaking");
             }));
         }
 
@@ -274,13 +286,13 @@ namespace BundtBot
 
                 if (audioFile.Exists)
                 {
-                    _dj.EnqueueAudio(audioFile, textchannel.Server.VoiceChannels.First());
+                    _djDictionary[textchannel.Server.Id].EnqueueAudio(audioFile, textchannel.Server.VoiceChannels.First());
                     await textchannel.SendMessageAsync($"'{youtubeInfo.Title}' added to queue from cache");
                 }
                 else
                 {
                     var youtubeResult = await _youtubeDl.DownloadAudioAsync(youtubeDlUrl, YoutubeDlAudioFormat.wav, 100);
-                    _dj.EnqueueAudio(youtubeResult.DownloadedFile, textchannel.Server.VoiceChannels.First());
+                    _djDictionary[textchannel.Server.Id].EnqueueAudio(youtubeResult.DownloadedFile, textchannel.Server.VoiceChannels.First());
                     await textchannel.SendMessageAsync($"'{youtubeResult.Info.Title}' added to queue");
                 }
             }

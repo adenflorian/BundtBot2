@@ -11,6 +11,9 @@ using Newtonsoft.Json.Linq;
 
 namespace DiscordApiWrapper.Voice
 {
+    /// <summary>
+    /// Will be one per server
+    /// </summary>
     class VoiceGatewayClient : IDisposable
     {
         public event Action<VoiceServerReady> ReadyReceived;
@@ -19,7 +22,7 @@ namespace DiscordApiWrapper.Voice
         event Action HelloReceived;
         event Action HeartbeatAckReceived;
 
-        static readonly MyLogger _logger = new MyLogger(nameof(VoiceGatewayClient), ConsoleColor.DarkGreen);
+        readonly MyLogger _logger;
 
         readonly WebSocketClient _webSocketClient;
 
@@ -37,13 +40,16 @@ namespace DiscordApiWrapper.Voice
             _userId = userId;
             _sessionId = sessionId;
 
+            _logger = new MyLogger(nameof(VoiceGatewayClient) + "-" + voiceServerInfo.GuildID.ToString().Substring(0, 4), ConsoleColor.DarkGreen);
+
             var modifiedUrl = voiceServerInfo.Endpoint.AddParameter("v", "5").AddParameter("encoding", "'json'");
-            _webSocketClient = new WebSocketClient(modifiedUrl, "Voice-", ConsoleColor.DarkGreen);
+            _webSocketClient = new WebSocketClient(modifiedUrl, "Voice-" + voiceServerInfo.GuildID.ToString().Substring(0, 4) + "-", ConsoleColor.DarkGreen);
             _webSocketClient.MessageReceived += OnMessageReceived;
 
             HelloReceived += OnHelloReceivedAsync;
             ReadyReceived += OnReadyReceivedAsync;
             HeartbeatAckReceived += OnHeartbeatAckReceived;
+            SessionReceived += OnSessionReceivedAsync;
         }
 
         public async Task ConnectAsync()
@@ -78,6 +84,11 @@ namespace DiscordApiWrapper.Voice
             StartHeartBeatLoop(voiceServerReady.HeartbeatInterval);
         }
 
+        async void OnSessionReceivedAsync(VoiceServerSession obj)
+        {
+            //await SendSpeakingTrueAsync();
+        }
+
         void StartHeartBeatLoop(TimeSpan heartbeatInterval)
         {
             _heartbeatTimer?.Dispose();
@@ -95,12 +106,32 @@ namespace DiscordApiWrapper.Voice
             await SendOpCodeAsync(VoiceOpCode.Heartbeat, null);
         }
 
-        internal async Task SendSpeakingAsync(bool isSpeaking, uint ssrcId)
+        internal async Task SendSpeakingAsync(bool isSpeaking)
         {
             _logger.LogInfo($"Sending Speaking to Voice Server (isSpeaking: {isSpeaking})", ConsoleColor.Green);
             await SendOpCodeAsync(VoiceOpCode.Speaking, new VoiceServerSpeakingClient
             {
                 IsSpeaking = isSpeaking,
+                Delay = 0
+            });
+        }
+
+        public async Task SendSpeakingTrueAsync()
+        {
+            _logger.LogInfo($"Sending Speaking to Voice Server (isSpeaking: true)", ConsoleColor.Green);
+            await SendOpCodeAsync(VoiceOpCode.Speaking, new VoiceServerSpeakingClient
+            {
+                IsSpeaking = true,
+                Delay = 0
+            });
+        }
+
+        public async Task SendSpeakingFalseAsync()
+        {
+            _logger.LogInfo($"Sending Speaking to Voice Server (isSpeaking: false)", ConsoleColor.Green);
+            await SendOpCodeAsync(VoiceOpCode.Speaking, new VoiceServerSpeakingClient
+            {
+                IsSpeaking = false,
                 Delay = 0
             });
         }

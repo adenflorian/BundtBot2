@@ -1,7 +1,10 @@
 # BundtBot ToDo
 
 - [x] make command stuff its own project
-- [ ] allow playing audio to two different servers at once
+- [x] allow playing audio to two different servers at once
+  - works but has issues
+- [ ] more fine grained logging control
+  - be able to change log levels by class
 - [ ] allow multiple different text responses to certain events
 - [ ] edit the same message continuously to do a ascii art animation
 
@@ -132,6 +135,7 @@
 - [x] !fastforward
   - [ ] fix being able to stack !ff
 - [x] !slomo
+- [ ] one DJ per server
 - [ ] change the Playing Game field to song name
 - [ ] Warp the filestream with a BufferedStream
   - How to tell if this is even necessary?

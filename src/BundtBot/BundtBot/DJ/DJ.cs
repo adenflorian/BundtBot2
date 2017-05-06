@@ -85,7 +85,7 @@ namespace BundtBot
             _currentlyPlayingRequest.VoiceChannel.Server.VoiceClient.Resume();
         }
 
-        public void StopAudioAsync()
+        public void StopAudio()
         {
             if (_currentlyPlayingRequest == null) throw new DJException("Nothing is playing, nothing to stop");
             _audioQueue = new ConcurrentQueue<AudioRequest>();
@@ -105,13 +105,13 @@ namespace BundtBot
             _djStream.EnableFastforward();
         }
 
-        internal void SloMo()
+        public void SloMo()
         {
             if (_djStream == null) throw new DJException("I don't think anything is playing, I could be wrong tho ¯\\_(ツ)_/¯");
             _djStream.EnableSloMo();
         }
 
-        internal void StopEffects()
+        public void StopEffects()
         {
             if (_djStream == null) throw new DJException("I don't think anything is playing, I could be wrong tho ¯\\_(ツ)_/¯");
             _djStream.DisableEffects();

@@ -16,7 +16,8 @@ namespace DiscordApiWrapper.Gateway
             {"4008", "rate limited - Woah nelly! You're sending payloads to us too quickly. Slow it down!"},
             {"4009", "session - Your session timed out. Reconnect and start a new one."},
             {"4010", "invalid shard - You sent us an invalid shard when identifying."},
-            {"4011", "sharding required - The session would have handled too many guilds - you are required to shard your connection in order to connect."}
+            {"4011", "sharding required - The session would have handled too many guilds - you are required to shard your connection in order to connect."},
+            {"4014", "voice server shutting down - It means the voice server wants to shutdown and is disconnecting all clients - Jake"}
         };
     }
 }

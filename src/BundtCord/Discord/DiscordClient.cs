@@ -10,6 +10,7 @@ using BundtBot.Extensions;
 using BundtCommon;
 using DiscordApiWrapper.Gateway.Models;
 using DiscordApiWrapper.Models;
+using DiscordApiWrapper.Models.Events;
 using DiscordApiWrapper.RestApi;
 using DiscordApiWrapper.Voice;
 
@@ -73,6 +74,16 @@ namespace BundtCord.Discord
             _gatewayClient.VoiceStateUpdate += OnVoiceStateUpdate;
             _gatewayClient.DmChannelCreated += OnDmChannelCreated;
             _gatewayClient.GuildChannelCreated += OnGuildChannelCreated;
+            _gatewayClient.GuildMemberAdded += OnGuildMemberAdded;
+        }
+
+        void OnGuildMemberAdded(GuildMemberAdd guildMemberAdd)
+        {
+            // For each gateway event, we ask ourselves, which of the master dictionaries should be updated?
+            // ServerMembers
+            ServerMembers[guildMemberAdd.GuildId][guildMemberAdd.User.Id] = new ServerMember(guildMemberAdd.GuildId, guildMemberAdd.User.Id, this);
+            // Users?
+            Users[guildMemberAdd.User.Id] = new User(guildMemberAdd.User, this);
         }
 
         void OnGuildChannelCreated(GuildChannel guildChannel)
@@ -237,6 +248,16 @@ namespace BundtCord.Discord
             // TODO Destroy that server's voice client properly
             server.VoiceClient?.Dispose();
             server.VoiceClient = null;
+        }
+
+        public async Task SpeakAsync(Server server)
+        {
+            await server.VoiceClient.SpeakAsync();
+        }
+
+        public async Task NoSpeakAsync(Server server)
+        {
+            await server.VoiceClient.NoSpeakAsync();
         }
     }
 }

@@ -70,9 +70,9 @@ namespace DiscordApiWrapper.Voice
         // TODO Handle this being called while already sending audio data
         public async Task SendAudioAsync(Stream pcmAudioStream)
         {
-            await _voiceGatewayClient.SendSpeakingAsync(true, _ssrcId);
+            await _voiceGatewayClient.SendSpeakingAsync(true);
             await _voiceUdpClient.SendAudioAsync(pcmAudioStream);
-            await _voiceGatewayClient.SendSpeakingAsync(false, _ssrcId);
+            await _voiceGatewayClient.SendSpeakingAsync(false);
         }
 
         ~DiscordVoiceClient()
@@ -98,6 +98,16 @@ namespace DiscordApiWrapper.Voice
 
                 _isDisposed = true;
             }
+        }
+
+        public async Task SpeakAsync()
+        {
+            await _voiceGatewayClient.SendSpeakingTrueAsync();
+        }
+
+        public async Task NoSpeakAsync()
+        {
+            await _voiceGatewayClient.SendSpeakingFalseAsync();
         }
     }
 }

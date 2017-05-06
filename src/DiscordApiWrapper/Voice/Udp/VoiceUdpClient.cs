@@ -121,6 +121,11 @@ namespace DiscordApiWrapper.Voice
                         timestamp += _samplesPerFramePerChannel;
                         sequence++;
                         nextFrameInTicks += _ticksPerFrame;
+
+                        if (sequence % 100 == 0)
+                        {
+                            _logger.LogTrace($"Sequence: {sequence}, Stream Position: {pcmAudioStream.Position}");
+                        }
                     }
                 }
                 catch (Exception ex)
