@@ -140,9 +140,6 @@ namespace BundtCord.Discord
             discordGuild.VoiceStates.ForEach(x => ProcessVoiceState(x));
 
             // TODO
-            // discordGuild.AfkChannelId
-            // discordGuild.AfkChannelId
-            // discordGuild.AfkTimeout
             // discordGuild.DefaultMessageNotificationsLevel
             // discordGuild.EmbeddedChannelId
             // discordGuild.Emojis
@@ -162,6 +159,8 @@ namespace BundtCord.Discord
             // discordGuild.VerificationLevel
             // discordGuild.VoiceRegionId
             // discordGuild.VoiceStates
+
+            _logger.LogDebug("Server Loaded: " + newServer);
 
             ServerCreated?.Invoke(newServer);
         }
