@@ -50,56 +50,34 @@ gulp.task('dotnet-restore', myShell(`dotnet restore ${projectFilePath}`))
 
 gulp.task('dotnet-build', ['dotnet-restore'], myShell(`dotnet build ${projectFilePath}`))
 
-gulp.task('copytokendev', ['dotnet-build'], () => {
-	copyToken(secret.devbottoken, buildOutputFolder)
-})
-
-gulp.task('copytokentest', ['publish'], () => {
-	copyToken(secret.testbottoken, publishFolder)
-})
-
-function copyToken(token, outputFolder)
-{
+function copyToken(token, outputFolder){
 	fs.writeFileSync(`${outputFolder}/bottoken`, token)
 }
 
 gulp.task('copyconfigdev', ['dotnet-build'], () => {
-	fs.createReadStream('config/dev/config.json').pipe(fs.createWriteStream(buildOutputFolder + '/config.json'))
+	copy('config/dev/config.json', buildOutputFolder + '/config.json')
 })
 
 gulp.task('copyconfigtest', ['publish'], () => {
-	fs.createReadStream('config/test/config.json').pipe(fs.createWriteStream(publishFolder + '/config.json'))
+	copy('config/test/config.json', publishFolder + '/config.json')
 })
 
-gulp.task('build', ['dotnet-build', 'copytokendev', 'copyconfigdev'], () => {
+gulp.task('build', ['dotnet-build', 'copyconfigdev'], () => {
+	copyToken(secret.devbottoken, buildOutputFolder)
 	copywindowsbinsbuild()
 })
 
-gulp.task('run', ['build'], myShell(`dotnet BundtBot.dll`, { verbose: true, cwd: buildOutputFolder }))
-
-function copywindowsbinsbuild() {
-	fs.createReadStream('bin/opus/windows-1.1.2-x86-64/opus.dll').pipe(fs.createWriteStream(buildOutputFolder + '/libopus.dll'))
-	fs.createReadStream('bin/libsodium/windows-1.0.12-x86-64/libsodium.dll').pipe(fs.createWriteStream(buildOutputFolder + '/libsodium.dll'))
-	fs.createReadStream('bin/youtube-dl/windows/youtube-dl.exe').pipe(fs.createWriteStream(buildOutputFolder + '/youtube-dl.exe'))
-	fs.createReadStream('bin/ffmpeg/windows/ffmpeg.exe').pipe(fs.createWriteStream(buildOutputFolder + '/ffmpeg.exe'))
-	fs.createReadStream('bin/ffmpeg/windows/ffprobe.exe').pipe(fs.createWriteStream(buildOutputFolder + '/ffprobe.exe'))
-}
-
-function copylinuxbinspublish() {
-	fs.createReadStream('bin/opus/linux-1.1.2-x86-64/libopus.so.0.5.2').pipe(fs.createWriteStream(publishFolder + '/libopus.dll'))
-	fs.createReadStream('bin/libsodium/linux-1.0.12-x86-64/libsodium.so.18.2.0').pipe(fs.createWriteStream(publishFolder + '/libsodium.dll'))
-	fs.createReadStream('bin/youtube-dl/linux/youtube-dl.exe').pipe(fs.createWriteStream(publishFolder + '/youtube-dl.exe'))
-}
+gulp.task('run', ['build'], myShell(`dotnet BundtBot.dll`, { cwd: buildOutputFolder}))
 
 gulp.task('publish', ['dotnet-restore'], (cb) => {
-	exec(`dotnet publish ${projectFilePath}`, (error, stdout, stderr) => {
-		console.log(stdout)
+	myShell(`dotnet publish ${projectFilePath}`, () => {
 		copylinuxbinspublish()
+		copyToken(secret.testbottoken, publishFolder)
 		cb()
 	})
 })
 
-gulp.task('tar', ['publish', 'copytokentest', 'copyconfigtest'], (cb) => {
+gulp.task('tar', ['publish', 'copyconfigtest'], (cb) => {
 	exec('node do tar', (error, stdout, stderr) => {
 		console.log(stdout)
 		cb()
@@ -143,20 +121,32 @@ gulp.task('clean-testerbot', (cb) => {
 	})
 })
 
-gulp.task('run-testerbot', ['build-testerbot'], myShell(`dotnet ${testerBotProjectName}.dll`, { verbose: true, cwd: testerBotOutputFolder }))
+gulp.task('run-testerbot', ['build-testerbot'], myShell(`dotnet ${testerBotProjectName}.dll`, { cwd: testerBotOutputFolder }))
 
 // Start remote server commands
 
-gulp.task('rlogs', myShell(
-	`ssh ${secret.testusername}@${secret.testhost} "journalctl -f -o cat -u bundtbot.service"`,
-	{ verbose: true }))
+// TODO Make use something native to node, cross platform
+gulp.task('rlogs', myShell(`ssh ${secret.testusername}@${secret.testhost} "journalctl -f -o cat -u bundtbot.service"`))
 
 gulp.task('setup-server', myShell('grunt sshexec:setup'))
 
 gulp.task('restart-remote', myShell('grunt sshexec:restart'))
 
-function sftpDeploy(cb)
-{
+function copywindowsbinsbuild() {
+	copy('bin/opus/windows-1.1.2-x86-64/opus.dll', buildOutputFolder + '/libopus.dll')
+	copy('bin/libsodium/windows-1.0.12-x86-64/libsodium.dll', buildOutputFolder + '/libsodium.dll')
+	copy('bin/youtube-dl/windows/youtube-dl.exe', buildOutputFolder + '/youtube-dl.exe')
+	copy('bin/ffmpeg/windows/ffmpeg.exe', buildOutputFolder + '/ffmpeg.exe')
+	copy('bin/ffmpeg/windows/ffprobe.exe', buildOutputFolder + '/ffprobe.exe')
+}
+
+function copylinuxbinspublish() {
+	copy('bin/opus/linux-1.1.2-x86-64/libopus.so.0.5.2', publishFolder + '/libopus.dll')
+	copy('bin/libsodium/linux-1.0.12-x86-64/libsodium.so.18.2.0', publishFolder + '/libsodium.dll')
+	copy('bin/youtube-dl/linux/youtube-dl.exe', publishFolder + '/youtube-dl.exe')
+}
+
+function sftpDeploy(cb) {
 	client.defaults({
 		port: 22,
 		host: secret.testhost,
@@ -176,15 +166,14 @@ function sftpDeploy(cb)
 	})
 }
 
-function cleanTar(cb)
-{
+function cleanTar(cb) {
 	fs.unlink(`${projectName}.tar.gz`, (err) => {
 		if (err) console.log(err)
 		if (cb) cb()
 	})
 }
 
-function myShell(command) {
+function myShell(command, options) {
 	var split = command.split(' ')
 	var cmd = split[0]
 	var args = []
@@ -194,23 +183,32 @@ function myShell(command) {
 	}
 
 	return (cb) => {
-		const commandSpawn = spawn(cmd, args);
+		var commandSpawn
+		if (options) {
+			commandSpawn = spawn(cmd, args, options)
+		} else {
+			commandSpawn = spawn(cmd, args)
+		}
 
 		commandSpawn.stdout.on('data', (data) => {
-			console.log(`stdout: ${data}`);
-		});
+			console.log(`stdout: ${data}`)
+		})
 
 		commandSpawn.stderr.on('data', (data) => {
-			console.log(`stderr: ${data}`);
-		});
+			console.log(`stderr: ${data}`)
+		})
 
 		commandSpawn.on('error', (err) => {
-			console.error('on error: ' + err);
-		});
+			console.error('on error: ' + err)
+		})
 
 		commandSpawn.on('close', (code) => {
-			console.log(`child process exited with code ${code}`);
+			console.log(`child process exited with code ${code}`)
 			cb()
-		});
+		})
 	}
+}
+
+function copy(srcFile, destFile) {
+	fs.createReadStream(srcFile).pipe(fs.createWriteStream(destFile))
 }
