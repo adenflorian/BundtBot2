@@ -59,7 +59,14 @@ namespace DiscordApiWrapper.WebSocket
             }
             else
             {
-                _logger.LogError(logMessage);
+                if (_isDisposing)
+                {
+                    _logger.LogInfo(logMessage);
+                }
+                else
+                {
+                    _logger.LogError(logMessage);
+                }
             }
         }
 

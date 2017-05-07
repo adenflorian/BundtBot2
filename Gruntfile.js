@@ -1,10 +1,6 @@
 module.exports = function (grunt) {
 
     var secret = grunt.file.readJSON('secret.json');
-    var bundtbotfile = 'BundtBot.tar.gz'
-    var destinationFolder = "bundtbot"
-    var executable = "BundtBot.dll"
-    var youtubedlExe = "youtube-dl.exe"
     var sshOptions = {
         host: secret.testhost,
         username: secret.testusername,
@@ -15,23 +11,6 @@ module.exports = function (grunt) {
     grunt.initConfig({
         pkg: grunt.file.readJSON('package.json'),
         sshexec: {
-            deploy: {
-                command: [
-                    "pwd",
-                    "echo 'stopping bundtbot service'",
-                    "service bundtbot stop",
-                    "echo 'deleting old app'",
-                    `rm -rf ${destinationFolder}`,
-                    `mkdir ${destinationFolder}`,
-                    "echo 'unpacking new app'",
-                    `tar xzf ${bundtbotfile} -C ${destinationFolder}`,
-                    `chmod +x ${destinationFolder}/${executable}`,
-                    `chmod +x ${destinationFolder}/${youtubedlExe}`,
-                    "echo 'starting bundtbot service'",
-                    "service bundtbot start"
-                ],
-                options: sshOptions
-            },
             restart: {
                 command: [
                     "pwd",
