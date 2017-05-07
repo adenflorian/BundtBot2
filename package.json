@@ -9,12 +9,10 @@
     "grunt-ssh": "^0.12.9",
     "gulp": "^3.9.1",
     "gulp-grunt": "^0.5.5",
-    "gulp-shell": "^0.5.2",
     "inquirer": "^2.0.0",
     "nodejs-websocket": "^1.7.1",
     "rimraf": "^2.6.1",
     "scp2": "^0.5.0",
-    "shelljs": "^0.7.6",
     "tar": "^2.2.1",
     "wait-until": "0.0.2"
   },

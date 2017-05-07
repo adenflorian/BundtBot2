@@ -1,0 +1,14 @@
+// This is the default configuration
+// Any fields in any other config.json will override the ones set here
+{
+    "on-server-created-yt": "https://www.youtube.com/watch?v=PQ1Oww-XCMM",
+    "command-prefix": "!",
+    "hi-response": "hi...I'm dev bot...",
+    "poke-response": "`squish`",
+    // Critical, Error, Warning, Information, Debug, or Trace
+    "loglevel-websocketclient": "Information",
+    "loglevel-restclientlogger": "Information",
+    "loglevel-discordgatewayclient": "Information",
+    "loglevel-voiceudpclient": "Information",
+    "loglevel-voicegatewayclient": "Information"
+}

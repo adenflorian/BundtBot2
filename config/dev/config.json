@@ -5,7 +5,7 @@
     "poke-response": "`squish`",
     // Critical, Error, Warning, Information, Debug, or Trace
     "loglevel-websocketclient": "Trace",
-    "loglevel-restclientlogger": "Trace",
+    "loglevel-restclientlogger": "Information",
     "loglevel-discordgatewayclient": "Trace",
     "loglevel-voiceudpclient": "Trace",
     "loglevel-voicegatewayclient": "Trace"

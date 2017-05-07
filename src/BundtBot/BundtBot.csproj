@@ -16,10 +16,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Update="Views\**\*;..\..\audio\*">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-    </None>
+    <None Include="Views\**\*" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,10 +1,9 @@
 const exec = require('child_process').exec
+const spawn = require('child_process').spawn;
 const copydir = require('copy-dir')
 const fs = require('fs')
 const gulp = require('gulp')
-const shell = require('gulp-shell')
 const rimraf = require('rimraf')
-const shelljs = require('shelljs')
 const client = require('scp2')
 
 const secretFilePath = './secret.json'
@@ -14,12 +13,11 @@ const projectFolder = `src/${projectName}`
 const projectFileName = `${projectName}.csproj`
 const projectFilePath = `${projectFolder}/${projectFileName}`
 
-const buildOutputFolder = `${projectFolder}/bin/debug/netcoreapp1.1`
+const projectBinFolder = `${projectFolder}/bin`
+const buildOutputFolder = `${projectBinFolder}/debug/netcoreapp1.1`
 const publishFolder = `${buildOutputFolder}/publish`
 
 const tarFileName = `${projectName}.tar.gz`
-const viewsFolderName = `Views`
-const viewsFolder = `${projectFolder}/${viewsFolderName}`
 
 const testFolder = 'test'
 const rateLimitTestsProjectName = 'RateLimitTests'
@@ -36,33 +34,34 @@ if (fs.existsSync(secretFilePath)) {
 	gulp.stop("***Run 'node setup.js' before using gulp!***")
 }
 
-gulp.task('clean', cleanTar)
-
-gulp.task('restore', shell.task(`dotnet restore ${projectFilePath}`, { verbose: true }))
-
-gulp.task('dotnet-restore', (cb) => {
-	exec('dotnet restore', (error, stdout, stderr) => {
-		console.log(stdout)
-		cb()
+gulp.task('clean', ['clean-testerbot'], (cb) => {
+	cleanTar(() => {
+		rimraf(projectBinFolder, (err) => {
+			if (err) throw err
+			rimraf(projectBinFolder, (err) => {
+				if (err) throw err
+				cb()
+			})
+		})
 	})
 })
 
-gulp.task('dotnet-build', ['dotnet-restore'], shell.task(`dotnet build ${projectFilePath}`, { verbose: true }))
+gulp.task('dotnet-restore', myShell(`dotnet restore ${projectFilePath}`))
 
-gulp.task('copyviews', ['dotnet-build'], (cb) => {
-	copydir(viewsFolder, `${buildOutputFolder}/${viewsFolderName}`, (err) => {
-		if (err) throw err
-		cb()
-	})
-})
+gulp.task('dotnet-build', ['dotnet-restore'], myShell(`dotnet build ${projectFilePath}`))
 
 gulp.task('copytokendev', ['dotnet-build'], () => {
-	fs.writeFileSync(`${buildOutputFolder}/bottoken`, secret.devbottoken)
+	copyToken(secret.devbottoken, buildOutputFolder)
 })
 
 gulp.task('copytokentest', ['publish'], () => {
-	fs.writeFileSync(`${publishFolder}/bottoken`, secret.testbottoken)
+	copyToken(secret.testbottoken, publishFolder)
 })
+
+function copyToken(token, outputFolder)
+{
+	fs.writeFileSync(`${outputFolder}/bottoken`, token)
+}
 
 gulp.task('copyconfigdev', ['dotnet-build'], () => {
 	fs.createReadStream('config/dev/config.json').pipe(fs.createWriteStream(buildOutputFolder + '/config.json'))
@@ -72,11 +71,11 @@ gulp.task('copyconfigtest', ['publish'], () => {
 	fs.createReadStream('config/test/config.json').pipe(fs.createWriteStream(publishFolder + '/config.json'))
 })
 
-gulp.task('build', ['dotnet-build', 'copyviews', 'copytokendev', 'copyconfigdev'], () => {
+gulp.task('build', ['dotnet-build', 'copytokendev', 'copyconfigdev'], () => {
 	copywindowsbinsbuild()
 })
 
-gulp.task('run', ['build'], shell.task(`dotnet BundtBot.dll`, { verbose: true, cwd: buildOutputFolder }))
+gulp.task('run', ['build'], myShell(`dotnet BundtBot.dll`, { verbose: true, cwd: buildOutputFolder }))
 
 function copywindowsbinsbuild() {
 	fs.createReadStream('bin/opus/windows-1.1.2-x86-64/opus.dll').pipe(fs.createWriteStream(buildOutputFolder + '/libopus.dll'))
@@ -100,22 +99,25 @@ gulp.task('publish', ['dotnet-restore'], (cb) => {
 	})
 })
 
-gulp.task('tar', ['publish', 'copytokentest', 'copyconfigtest'], shell.task('node do tar', { verbose: true }))
+gulp.task('tar', ['publish', 'copytokentest', 'copyconfigtest'], (cb) => {
+	exec('node do tar', (error, stdout, stderr) => {
+		console.log(stdout)
+		cb()
+	})
+})
 
 gulp.task('sftpdeploy', ['tar'], sftpDeploy)
 
-gulp.task('cleantar', cleanTar)
-
-gulp.task('sshdeploy', ['sftpdeploy'], shell.task('grunt sshexec:deploy', { verbose: true }))
+gulp.task('sshdeploy', ['sftpdeploy'], myShell('grunt sshexec:deploy'))
 
 gulp.task('deploy', ['publish', 'tar', 'sftpdeploy', 'sshdeploy'], cleanTar)
 
 // Start test commands
 
-gulp.task('test', shell.task('dotnet test test/BundtBotTests/BundtBotTests.csproj',
+gulp.task('test', myShell('dotnet test test/BundtBotTests/BundtBotTests.csproj',
 	{ verbose: true }))
 
-gulp.task('rate-limiter-tests', () => shelljs.exec(`dotnet test ${rateLimitTestsProjectFolder}/${rateLimitTestsProjectName}.csproj`))
+gulp.task('rate-limiter-tests', myShell(`dotnet test ${rateLimitTestsProjectFolder}/${rateLimitTestsProjectName}.csproj`))
 
 // TesterBot
 const testerBotProjectName = 'TesterBot'
@@ -136,21 +138,22 @@ gulp.task('build-testerbot', (cb) => {
 
 gulp.task('clean-testerbot', (cb) => {
 	rimraf(testerBotBinFolder, (err) => {
-		if (err) throw err
+		if (err) console.error(err)
+		cb()
 	})
 })
 
-gulp.task('run-testerbot', ['build-testerbot'], shell.task(`dotnet ${testerBotProjectName}.dll`, { verbose: true, cwd: testerBotOutputFolder }))
+gulp.task('run-testerbot', ['build-testerbot'], myShell(`dotnet ${testerBotProjectName}.dll`, { verbose: true, cwd: testerBotOutputFolder }))
 
 // Start remote server commands
 
-gulp.task('rlogs', shell.task(
+gulp.task('rlogs', myShell(
 	`ssh ${secret.testusername}@${secret.testhost} "journalctl -f -o cat -u bundtbot.service"`,
 	{ verbose: true }))
 
-gulp.task('setup-server', shell.task('grunt sshexec:setup', { verbose: true }))
+gulp.task('setup-server', myShell('grunt sshexec:setup'))
 
-gulp.task('restart-remote', shell.task('grunt sshexec:restart', { verbose: true }))
+gulp.task('restart-remote', myShell('grunt sshexec:restart'))
 
 function sftpDeploy(cb)
 {
@@ -179,4 +182,35 @@ function cleanTar(cb)
 		if (err) console.log(err)
 		if (cb) cb()
 	})
+}
+
+function myShell(command) {
+	var split = command.split(' ')
+	var cmd = split[0]
+	var args = []
+
+	for (var i = 1; i < split.length; i++) {
+		args[i - 1] = split[i]
+	}
+
+	return (cb) => {
+		const commandSpawn = spawn(cmd, args);
+
+		commandSpawn.stdout.on('data', (data) => {
+			console.log(`stdout: ${data}`);
+		});
+
+		commandSpawn.stderr.on('data', (data) => {
+			console.log(`stderr: ${data}`);
+		});
+
+		commandSpawn.on('error', (err) => {
+			console.error('on error: ' + err);
+		});
+
+		commandSpawn.on('close', (code) => {
+			console.log(`child process exited with code ${code}`);
+			cb()
+		});
+	}
 }
