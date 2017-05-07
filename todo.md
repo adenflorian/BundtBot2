@@ -7,6 +7,7 @@
   - be able to change log levels by class
   - be able to define in a json
 - [ ] allow multiple different text responses to certain events
+  - maybe utilize BundtFig for this
 - [ ] edit the same message continuously to do a ascii art animation
 
 ## Bugs
@@ -109,6 +110,7 @@
 - [x] refactor youtube code
 - [x] make it so bundtbot doesnt leave and rejoin channel in between clips
 - [ ] !volume
+- [ ] check for currently downlloading clips, aand dont start another download of the same thing
 - [ ] cache search string to video ids
 - [ ] make it so we can keep the same stream and stay speaking and just swap out audio streams with absolutely no interruption
 - [ ] make the youtube classes their own library

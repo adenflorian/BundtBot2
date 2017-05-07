@@ -78,7 +78,7 @@ namespace BundtBot
                     _djDictionary[server.Id].Start();
 
                     await server.TextChannels.First().SendMessageAsync("bundtbot online");
-                    await DoYoutubeCommandAsync(server.TextChannels.First(), BundtFig.GetValue("on-server-created-yt"));
+                    //await DoYoutubeCommandAsync(server.TextChannels.First(), BundtFig.GetValue("on-server-created-yt"));
                 }
                 catch (Exception ex)
                 {

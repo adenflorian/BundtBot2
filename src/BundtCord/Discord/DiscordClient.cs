@@ -14,6 +14,7 @@ using DiscordApiWrapper.Models;
 using DiscordApiWrapper.Models.Events;
 using DiscordApiWrapper.RestApi;
 using DiscordApiWrapper.Voice;
+using Newtonsoft.Json;
 
 namespace BundtCord.Discord
 {
@@ -81,10 +82,11 @@ namespace BundtCord.Discord
         void OnGuildMemberAdded(GuildMemberAdd guildMemberAdd)
         {
             // For each gateway event, we ask ourselves, which of the master dictionaries should be updated?
-            // ServerMembers
-            ServerMembers[guildMemberAdd.GuildId][guildMemberAdd.User.Id] = new ServerMember(guildMemberAdd.GuildId, guildMemberAdd.User.Id, this);
-            // Users?
+            var newServerMember = new ServerMember(guildMemberAdd, guildMemberAdd.GuildId, this);
+            ServerMembers[guildMemberAdd.GuildId][guildMemberAdd.User.Id] = newServerMember;
             Users[guildMemberAdd.User.Id] = new User(guildMemberAdd.User, this);
+
+            _logger.LogDebug($"New ServerMember: " + newServerMember);
         }
 
         void OnGuildChannelCreated(GuildChannel guildChannel)
@@ -131,11 +133,35 @@ namespace BundtCord.Discord
                 .ToList()
                 .ForEach(x => { Users[x.Id] = x; });
             discordGuild.Members
-                .Select(x => new ServerMember(discordGuild.Id, x.User.Id, this) as ServerMember)
+                .Select(x => new ServerMember(x, discordGuild.Id, this) as ServerMember)
                 .ToList()
                 .ForEach(x => { ServerMembers[x.Server.Id][x.User.Id] = x; });
 
             discordGuild.VoiceStates.ForEach(x => ProcessVoiceState(x));
+
+            // TODO
+            // discordGuild.AfkChannelId
+            // discordGuild.AfkChannelId
+            // discordGuild.AfkTimeout
+            // discordGuild.DefaultMessageNotificationsLevel
+            // discordGuild.EmbeddedChannelId
+            // discordGuild.Emojis
+            // discordGuild.Features
+            // discordGuild.IconHash
+            // discordGuild.IsGuildEmbeddable
+            // discordGuild.IsLarge
+            // discordGuild.IsUnavailable
+            // discordGuild.JoinedDate
+            // discordGuild.MemberCount
+            // discordGuild.MultiFactorAuthenticationLevel
+            // discordGuild.Name
+            // discordGuild.OwnerId
+            // discordGuild.Presences
+            // discordGuild.Roles
+            // discordGuild.SplashHash
+            // discordGuild.VerificationLevel
+            // discordGuild.VoiceRegionId
+            // discordGuild.VoiceStates
 
             ServerCreated?.Invoke(newServer);
         }

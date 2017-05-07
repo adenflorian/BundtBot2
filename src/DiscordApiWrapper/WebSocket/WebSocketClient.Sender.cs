@@ -56,6 +56,7 @@ namespace DiscordApiWrapper.WebSocket
 
         async Task SendAsync(string messageToSend, ClientWebSocket _clientWebSocket)
         {
+            Debug.Assert(messageToSend != null);
             _logger.LogDebug($"Sending message... ({messageToSend.GetHashAsLowercaseHex()})");
             await _clientWebSocket.SendAsync(CreateSendBuffer(messageToSend), WebSocketMessageType.Text, true, CancellationToken.None);
             _logger.LogDebug($"Sent! ({messageToSend.GetHashAsLowercaseHex()})");

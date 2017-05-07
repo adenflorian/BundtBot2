@@ -36,5 +36,16 @@ namespace BundtCord.Discord
         {
             await Server.VoiceClient.SendAudioAsync(pcmAudioStream);
         }
+
+        public override string ToString()
+        {
+            var x = "";
+
+            x += nameof(Id) + ": " + Id;
+            x += nameof(Name) + ": " + Name;
+            x += nameof(ServerId) + ": " + ServerId;
+
+            return x;
+        }
     }
 }

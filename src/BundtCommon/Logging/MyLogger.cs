@@ -33,7 +33,7 @@ namespace BundtBot
             _prefix = prefix;
             _prefixColor = prefixColor;
             _supportsAnsiColors = Console.LargestWindowHeight <= 0;
-            _logLevel.CurrentLogLevel = LogLevel.Trace;
+            _logLevel.CurrentLogLevel = LogLevel.Debug;
         }
 
         public void SetLogLevel(LogLevel logLevel)
