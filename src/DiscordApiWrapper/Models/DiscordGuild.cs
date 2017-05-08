@@ -48,7 +48,7 @@ namespace BundtBot.Discord.Models
 		public int VerificationLevel;
 
 		[JsonProperty("default_message_notifications")]
-		public int DefaultMessageNotificationsLevel;
+		public NotificationLevel DefaultMessageNotificationsLevel;
 
 		[JsonProperty("roles")]
 		public List<DiscordRole> Roles;

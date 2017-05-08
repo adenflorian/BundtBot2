@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using BundtBot.Discord.Models;
+using DiscordApiWrapper.Models;
 using DiscordApiWrapper.Voice;
 
 namespace BundtCord.Discord
@@ -11,12 +12,14 @@ namespace BundtCord.Discord
     {
         public ulong Id { get; }
         public TimeSpan AfkTimeout { get; internal set; }
+        public NotificationLevel DefaultMessageNotificationsLevel { get; internal set; }
+        public DiscordVoiceClient VoiceClient { get; internal set; }
+        public string MyVoiceSessionId { get; internal set; }
+
         public IEnumerable<TextChannel> TextChannels => _client.TextChannels.Values.Where(x => x.ServerId == Id);
         public VoiceChannel AfkChannel => _afkChannelId.HasValue ? _client.VoiceChannels.Values.First(x => x.Id == _afkChannelId) : null;
         public IEnumerable<VoiceChannel> VoiceChannels => _client.VoiceChannels.Values.Where(x => x.ServerId == Id);
         public IEnumerable<ServerMember> Members => _client.ServerMembers[Id].Values;
-        public DiscordVoiceClient VoiceClient { get; internal set; }
-        public string MyVoiceSessionId { get; internal set; }
 
         DiscordClient _client;
 
@@ -28,7 +31,7 @@ namespace BundtCord.Discord
             _client = client;
             _afkChannelId = discordGuild.AfkChannelId;
             AfkTimeout = discordGuild.AfkTimeout;
-            // discordGuild.DefaultMessageNotificationsLevel
+            DefaultMessageNotificationsLevel = discordGuild.DefaultMessageNotificationsLevel;
             // discordGuild.EmbeddedChannelId
             // discordGuild.Emojis
             // discordGuild.Features
@@ -73,6 +76,8 @@ namespace BundtCord.Discord
             str += nameof(MyVoiceSessionId) + ": " + (MyVoiceSessionId != null ? MyVoiceSessionId : "null");
             str += ", ";
             str += nameof(AfkTimeout) + ": " + AfkTimeout;
+            str += ", ";
+            str += nameof(DefaultMessageNotificationsLevel) + ": " + DefaultMessageNotificationsLevel;
             str += " }";
 
             return str;

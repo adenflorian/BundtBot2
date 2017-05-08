@@ -9,6 +9,7 @@
 - [ ] allow multiple different text responses to certain events
   - maybe utilize BundtFig for this
 - [ ] edit the same message continuously to do a ascii art animation
+- [ ] store all commands
 
 ## Bugs
 

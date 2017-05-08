@@ -2,11 +2,5 @@
     "on-server-created-yt": "https://www.youtube.com/watch?v=PQ1Oww-XCMM",
     "command-prefix": "$",
     "hi-response": "hi...I'm dev bot...",
-    "poke-response": "`squish`",
-    // Critical, Error, Warning, Information, Debug, or Trace
-    // "loglevel-websocketclient": "Trace",
-    // "loglevel-restclientlogger": "Information",
-    // "loglevel-discordgatewayclient": "Trace",
-    // "loglevel-voiceudpclient": "Trace",
-    // "loglevel-voicegatewayclient": "Trace"
+    "poke-response": "`squish`"
 }
