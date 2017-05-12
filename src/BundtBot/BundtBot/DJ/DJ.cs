@@ -115,9 +115,16 @@ namespace BundtBot
             _djStream.RemoveEffects();
         }
 
-        internal void ChangeVolume(float volumeFloat)
+        public void ChangeVolume(int volume)
         {
-            throw new NotImplementedException();
+            if (_djStream == null) throw new DJException("I don't think anything is playing, I could be wrong tho ¯\\_(ツ)_/¯");
+            _djStream.SetVolume(volume);
+        }
+
+        public void Shitty()
+        {
+            if (_djStream == null) throw new DJException("I don't think anything is playing, I could be wrong tho ¯\\_(ツ)_/¯");
+            _djStream.AddShittyEffect();
         }
     }
 }

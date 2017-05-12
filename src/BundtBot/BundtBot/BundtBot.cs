@@ -246,13 +246,29 @@ namespace BundtBot
                 }
                 catch (DJException dje) { await message.ReplyAsync(dje.Message); }
             }));
+            _commandManager.AddCommand(new TextCommand("shittier", async (message, receivedCommand) =>
+            {
+                try
+                {
+                    _djDictionary[message.Server.Id].Shitty();
+                    await message.ReplyAsync("*why*");
+                }
+                catch (DJException dje) { await message.ReplyAsync(dje.Message); }
+            }));
             _commandManager.AddCommand(new TextCommand("vol", async (message, receivedCommand) =>
             {
                 try
                 {
                     var desiredVolumeString = receivedCommand.Args[0];
-                    var volumeFloat = float.Parse(desiredVolumeString);
-                    _djDictionary[message.Server.Id].ChangeVolume(volumeFloat);
+                    int volumeInt;
+                    if (int.TryParse(desiredVolumeString, out volumeInt))
+                    {
+                        _djDictionary[message.Server.Id].ChangeVolume(volumeInt);
+                    }
+                    else
+                    {
+                        await message.ReplyAsync("Uasge example: " + _commandManager.CommandPrefix + "vol 5");
+                    }
                 }
                 catch (DJException dje) { await message.ReplyAsync(dje.Message); }
             }, minimumArgCount: 1));
