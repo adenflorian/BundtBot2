@@ -246,6 +246,16 @@ namespace BundtBot
                 }
                 catch (DJException dje) { await message.ReplyAsync(dje.Message); }
             }));
+            _commandManager.AddCommand(new TextCommand("vol", async (message, receivedCommand) =>
+            {
+                try
+                {
+                    var desiredVolumeString = receivedCommand.Args[0];
+                    var volumeFloat = float.Parse(desiredVolumeString);
+                    _djDictionary[message.Server.Id].ChangeVolume(volumeFloat);
+                }
+                catch (DJException dje) { await message.ReplyAsync(dje.Message); }
+            }, minimumArgCount: 1));
         }
 
         async Task DoYoutubeCommandAsync(TextChannel textchannel, string args)

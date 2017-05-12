@@ -6,7 +6,7 @@ namespace BundtBot
     public class DjStream : Stream
     {
         Stream OriginalBasePcmAudioStream;
-        Stream WetPcmAudioStream;
+        StreamWrapper WetPcmAudioStream;
 
         public override bool CanRead => WetPcmAudioStream.CanRead;
         public override bool CanSeek => WetPcmAudioStream.CanSeek;
@@ -16,31 +16,31 @@ namespace BundtBot
 
         public DjStream(Stream pcmAudioStream)
         {
-            OriginalBasePcmAudioStream = pcmAudioStream;
-            WetPcmAudioStream = pcmAudioStream;
+            SwapOutBaseStream(pcmAudioStream);
         }
 
         public void SwapOutBaseStream(Stream newBaseStream)
         {
-            OriginalBasePcmAudioStream.Dispose();
-            WetPcmAudioStream.Dispose();
+            OriginalBasePcmAudioStream?.Dispose();
             OriginalBasePcmAudioStream = newBaseStream;
-            WetPcmAudioStream = newBaseStream;
+            
+            WetPcmAudioStream?.Dispose();
+            WetPcmAudioStream = new NoFxStream(newBaseStream);
         }
 
-        public void EnableFastforward()
+        public void AddFastforwardEffect()
         {
             WetPcmAudioStream = new FastForwardAudioEffectStream(WetPcmAudioStream);
         }
 
-        public void EnableSloMo()
+        public void AddSloMoEffect()
         {
             WetPcmAudioStream = new SloMoAudioEffectStream(WetPcmAudioStream);
         }
 
-        public void DisableEffects()
+        public void RemoveEffects()
         {
-            WetPcmAudioStream = OriginalBasePcmAudioStream;
+            WetPcmAudioStream = new NoFxStream(OriginalBasePcmAudioStream);
         }
 
         public override void Flush()

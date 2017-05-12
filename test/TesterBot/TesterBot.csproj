@@ -6,6 +6,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Include="..\..\config\config-global.json" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\src\BundtCommands\BundtCommands.csproj" />
     <ProjectReference Include="..\..\src\BundtCommon\BundtCommon.csproj" />
     <ProjectReference Include="..\..\src\BundtCord\BundtCord.csproj" />

@@ -5,9 +5,9 @@ using System.IO;
 namespace BundtBot
 {
     // TODO Make disposable
-    public class SloMoAudioEffectStream : Stream
+    public class SloMoAudioEffectStream : StreamWrapper
     {
-        public readonly Stream BasePcmAudioStream;
+        public Stream BasePcmAudioStream;
 
         public override bool CanRead => BasePcmAudioStream.CanRead;
         public override bool CanSeek => BasePcmAudioStream.CanSeek;
@@ -89,6 +89,12 @@ namespace BundtBot
         public override void Write(byte[] buffer, int offset, int count)
         {
             BasePcmAudioStream.Write(buffer, offset, count);
+        }
+
+        public override void SwapOutBaseStream(Stream newBaseStream)
+        {
+            BasePcmAudioStream?.Dispose();
+            BasePcmAudioStream = newBaseStream;
         }
     }
 }

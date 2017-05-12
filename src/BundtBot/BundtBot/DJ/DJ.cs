@@ -17,7 +17,7 @@ namespace BundtBot
         ConcurrentQueue<AudioRequest> _audioQueue = new ConcurrentQueue<AudioRequest>();
         AudioRequest _currentlyPlayingRequest;
         bool _cancelCurrentSong;
-        DjStream _djStream;
+        DjStream _djStream = new DjStream(new DummyStream());
 
         public void Start()
         {
@@ -35,8 +35,8 @@ namespace BundtBot
                         _currentlyPlayingRequest = audioRequest;
 
                         using (var pcmAudioFileStream = audioRequest.WavAudioFile.OpenRead())
-                        using (_djStream = new DjStream(pcmAudioFileStream))
                         {
+                            _djStream.SwapOutBaseStream(pcmAudioFileStream);
                             var task = audioRequest.VoiceChannel.SendAudioAsync(_djStream);
 
                             await Wait.Until(() => _cancelCurrentSong || task.IsCompleted).StartAsync();
@@ -49,8 +49,6 @@ namespace BundtBot
                             
                             if (_audioQueue.Count == 0) await audioRequest.VoiceChannel.Server.LeaveVoice();
                         }
-
-                        _djStream = null;
                     }
                     catch (Exception ex)
                     {
@@ -102,19 +100,24 @@ namespace BundtBot
         public void FastForward()
         {
             if (_djStream == null) throw new DJException("I don't think anything is playing, I could be wrong tho ¯\\_(ツ)_/¯");
-            _djStream.EnableFastforward();
+            _djStream.AddFastforwardEffect();
         }
 
         public void SloMo()
         {
             if (_djStream == null) throw new DJException("I don't think anything is playing, I could be wrong tho ¯\\_(ツ)_/¯");
-            _djStream.EnableSloMo();
+            _djStream.AddSloMoEffect();
         }
 
         public void StopEffects()
         {
             if (_djStream == null) throw new DJException("I don't think anything is playing, I could be wrong tho ¯\\_(ツ)_/¯");
-            _djStream.DisableEffects();
+            _djStream.RemoveEffects();
+        }
+
+        internal void ChangeVolume(float volumeFloat)
+        {
+            throw new NotImplementedException();
         }
     }
 }

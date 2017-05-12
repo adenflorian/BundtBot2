@@ -144,6 +144,7 @@ gulp.task('build-testerbot', (cb) => {
 		console.log(stdout)
 		if (error) throw error
 		fs.writeFileSync(testerBotOutputFolder + '/bottoken', secret.testerbottoken)
+		copySync('config/dev/config.json', testerBotOutputFolder + '/config.json')
 		cb()
 	})
 })
