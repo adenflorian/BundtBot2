@@ -183,6 +183,10 @@ namespace BundtBot
             {
                 await DoYoutubeCommandAsync(message.TextChannel, receivedCommand.ArgumentsString);
             }, minimumArgCount: 1));
+            _commandManager.AddCommand(new TextCommand("sc", async (message, receivedCommand) =>
+            {
+                await DoYoutubeCommandAsync(message.TextChannel, receivedCommand.ArgumentsString, true);
+            }, minimumArgCount: 1));
             _commandManager.AddCommand(new TextCommand("next", async (message, receivedCommand) =>
             {
                 try
@@ -274,7 +278,7 @@ namespace BundtBot
             }, minimumArgCount: 1));
         }
 
-        async Task DoYoutubeCommandAsync(TextChannel textchannel, string args)
+        async Task DoYoutubeCommandAsync(TextChannel textchannel, string args, bool doSoundcloudSearch = false)
         {
             if (textchannel.Server.VoiceChannels.Count() == 0)
             {
@@ -293,7 +297,14 @@ namespace BundtBot
                 }
                 else
                 {
-                    youtubeDlUrl = YoutubeDlUrl.FromSearchString(args);
+                    if (doSoundcloudSearch == false)
+                    {
+                        youtubeDlUrl = YoutubeDlUrl.FromYoutubeSearchString(args);
+                    }
+                    else
+                    {
+                        youtubeDlUrl = YoutubeDlUrl.FromSoundcloudSearchString(args);
+                    }
                 }
 
                 var youtubeInfo = await _youtubeDl.DownloadInfoAsync(youtubeDlUrl);

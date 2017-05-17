@@ -19,9 +19,17 @@ namespace BundtBot.Youtube
         /// <summary>
         /// Will search youtube and download first video found.
         /// </summary>
-        public static YoutubeDlUrl FromSearchString(string searchString)
+        public static YoutubeDlUrl FromYoutubeSearchString(string searchString)
         {
             return new YoutubeDlUrl($"\"ytsearch1:{searchString}\"");
+        }
+
+        /// <summary>
+        /// Will search soundcloud and download first audioclip found.
+        /// </summary>
+        public static YoutubeDlUrl FromSoundcloudSearchString(string searchString)
+        {
+            return new YoutubeDlUrl($"\"scsearch1:{searchString}\"");
         }
 
         YoutubeDlUrl(string youtubeDlUrl)
