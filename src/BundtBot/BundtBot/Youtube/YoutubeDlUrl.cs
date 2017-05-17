@@ -32,6 +32,12 @@ namespace BundtBot.Youtube
             return new YoutubeDlUrl($"\"scsearch1:{searchString}\"");
         }
 
+        // If you want to add more search options
+        // First see this page: https://rg3.github.io/youtube-dl/supportedsites.html
+        // If the site you want has a :search thingy, then look for a python file for that extractor here: https://rg3.github.io/youtube-dl/supportedsites.html
+        // Inside that python file search for _SEARCH_KEY
+        // You should be able to connect the dots from there...
+
         YoutubeDlUrl(string youtubeDlUrl)
         {
             UrlOrSearchString = youtubeDlUrl;
